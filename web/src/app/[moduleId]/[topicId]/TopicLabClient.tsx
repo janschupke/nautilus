@@ -43,14 +43,20 @@ export function TopicLabClient({ moduleId, topic }: TopicLabClientProps) {
     const prev =
       idx <= 0
         ? { href: `/${moduleId}`, label: "Module Summary" }
-        : { href: `/${moduleId}/${topics[idx - 1]!.id}`, label: topics[idx - 1]!.label };
+        : {
+            href: `/${moduleId}/${topics[idx - 1]!.id}`,
+            label: topics[idx - 1]!.label,
+          };
 
     const modIndex = MANIFEST.modules.findIndex((m) => m.id === moduleId);
     const nextMod = MANIFEST.modules[modIndex + 1];
 
     const next =
       idx < topics.length - 1
-        ? { href: `/${moduleId}/${topics[idx + 1]!.id}`, label: topics[idx + 1]!.label }
+        ? {
+            href: `/${moduleId}/${topics[idx + 1]!.id}`,
+            label: topics[idx + 1]!.label,
+          }
         : nextMod
           ? { href: `/${nextMod.id}`, label: "Next Module" }
           : null;
@@ -139,12 +145,18 @@ export function TopicLabClient({ moduleId, topic }: TopicLabClientProps) {
 
       {/* Prev / next navigation */}
       <div className="flex items-center justify-between gap-4 border-t border-stroke pt-6">
-        <Link href={prevHref} className={`${lab.btnGhost} flex items-center gap-2`}>
+        <Link
+          href={prevHref}
+          className={`${lab.btnGhost} flex items-center gap-2`}
+        >
           <span aria-hidden>←</span>
           <span className="max-w-[20rem] truncate">{prevLabel}</span>
         </Link>
         {nextHref && (
-          <Link href={nextHref} className={`${lab.btnGhost} flex items-center gap-2`}>
+          <Link
+            href={nextHref}
+            className={`${lab.btnGhost} flex items-center gap-2`}
+          >
             <span className="max-w-[20rem] truncate">{nextLabel}</span>
             <span aria-hidden>→</span>
           </Link>

@@ -46,7 +46,9 @@ export function derive(raw: Params): { values: Derived; errors: string[] } {
   const get = (k: keyof Params) => known[k]!;
   const set = (k: keyof Params, v: bigint) => {
     if (has(k) && get(k) !== v) {
-      errors.push(`Contradiction: computed ${k} = ${v} but input says ${get(k)}`);
+      errors.push(
+        `Contradiction: computed ${k} = ${v} but input says ${get(k)}`,
+      );
     } else {
       known[k] = v;
     }
@@ -55,10 +57,14 @@ export function derive(raw: Params): { values: Derived; errors: string[] } {
   if (has("p") && get("p") < 2n) errors.push("p must be ≥ 2");
   if (has("g") && get("g") < 1n) errors.push("g must be ≥ 1");
 
-  if (has("p") && has("g") && has("a")) set("A", modPow(get("g"), get("a"), get("p")));
-  if (has("p") && has("g") && has("b")) set("B", modPow(get("g"), get("b"), get("p")));
-  if (has("p") && has("B") && has("a")) set("s", modPow(get("B"), get("a"), get("p")));
-  if (has("p") && has("A") && has("b")) set("s", modPow(get("A"), get("b"), get("p")));
+  if (has("p") && has("g") && has("a"))
+    set("A", modPow(get("g"), get("a"), get("p")));
+  if (has("p") && has("g") && has("b"))
+    set("B", modPow(get("g"), get("b"), get("p")));
+  if (has("p") && has("B") && has("a"))
+    set("s", modPow(get("B"), get("a"), get("p")));
+  if (has("p") && has("A") && has("b"))
+    set("s", modPow(get("A"), get("b"), get("p")));
 
   return { values: known, errors };
 }

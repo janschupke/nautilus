@@ -229,7 +229,7 @@ describe("vlsmAllocate", () => {
   const base = "192.168.0.0/24";
   const entries = [
     { id: "a", name: "Alpha", hosts: "50" },
-    { id: "b", name: "Beta",  hosts: "25" },
+    { id: "b", name: "Beta", hosts: "25" },
     { id: "c", name: "Gamma", hosts: "12" },
   ];
 
@@ -245,7 +245,9 @@ describe("vlsmAllocate", () => {
 
   it("allocates largest subnet first (Alpha/50 → /26)", () => {
     const result = vlsmAllocate(base, entries, "v4") as Array<{
-      name: string; cidr: string; prefix: number;
+      name: string;
+      cidr: string;
+      prefix: number;
     }>;
     const alpha = result.find((r) => r.name === "Alpha")!;
     expect(alpha.prefix).toBe(26);
@@ -254,7 +256,9 @@ describe("vlsmAllocate", () => {
 
   it("allocates second subnet after the first block (Beta/25 → /27 at .64)", () => {
     const result = vlsmAllocate(base, entries, "v4") as Array<{
-      name: string; cidr: string; prefix: number;
+      name: string;
+      cidr: string;
+      prefix: number;
     }>;
     const beta = result.find((r) => r.name === "Beta")!;
     expect(beta.prefix).toBe(27);
@@ -263,7 +267,9 @@ describe("vlsmAllocate", () => {
 
   it("allocates third subnet after second block (Gamma/12 → /28 at .96)", () => {
     const result = vlsmAllocate(base, entries, "v4") as Array<{
-      name: string; cidr: string; prefix: number;
+      name: string;
+      cidr: string;
+      prefix: number;
     }>;
     const gamma = result.find((r) => r.name === "Gamma")!;
     expect(gamma.prefix).toBe(28);
@@ -272,7 +278,9 @@ describe("vlsmAllocate", () => {
 
   it("marks an entry as errored when the base network is exhausted", () => {
     const tooMany = Array.from({ length: 6 }, (_, i) => ({
-      id: String(i), name: `S${i}`, hosts: "60",
+      id: String(i),
+      name: `S${i}`,
+      hosts: "60",
     }));
     const result = vlsmAllocate("10.0.0.0/24", tooMany, "v4") as Array<{
       error?: string;
@@ -287,9 +295,9 @@ describe("vlsmAllocate", () => {
 
   it("skips entries with empty names or invalid host counts", () => {
     const sparse = [
-      { id: "1", name: "",      hosts: "10" },  // no name → skipped
+      { id: "1", name: "", hosts: "10" }, // no name → skipped
       { id: "2", name: "Valid", hosts: "10" },
-      { id: "3", name: "Bad",   hosts: "0" },   // 0 hosts → skipped
+      { id: "3", name: "Bad", hosts: "0" }, // 0 hosts → skipped
     ];
     const result = vlsmAllocate(base, sparse, "v4") as object[];
     expect(result).toHaveLength(1);

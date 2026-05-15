@@ -33,9 +33,19 @@ export default function RootLayout({
       <body className="min-h-full bg-zinc-950 font-sans text-zinc-100">
         {/* Narrow-screen notice — hidden at ≥800px */}
         <div className="flex h-screen flex-col items-center justify-center gap-6 px-8 text-center min-[800px]:hidden">
-          <Image src={nautilusIcon} alt="Nautilus" width={400} height={400} className="opacity-60" />
-          <p className="text-lg font-medium text-zinc-200">Nautilus is not supported on small screens.</p>
-          <p className="text-base text-zinc-500">Open the site on a device with a screen width of at least 800 px.</p>
+          <Image
+            src={nautilusIcon}
+            alt="Nautilus"
+            width={400}
+            height={400}
+            className="opacity-60"
+          />
+          <p className="text-lg font-medium text-zinc-200">
+            Nautilus is not supported on small screens.
+          </p>
+          <p className="text-base text-zinc-500">
+            Open the site on a device with a screen width of at least 800 px.
+          </p>
         </div>
         {/* Full app — hidden below 800px */}
         <div className="hidden min-[800px]:block min-[800px]:contents">

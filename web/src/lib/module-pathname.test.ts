@@ -22,7 +22,9 @@ describe("moduleIdFromPathname", () => {
   it("returns the moduleId for a known module", () => {
     expect(moduleIdFromPathname("/networking")).toBe("networking");
     expect(moduleIdFromPathname("/basics")).toBe("basics");
-    expect(moduleIdFromPathname("/linux-fundamentals")).toBe("linux-fundamentals");
+    expect(moduleIdFromPathname("/linux-fundamentals")).toBe(
+      "linux-fundamentals",
+    );
   });
 
   it("accepts a trailing slash", () => {

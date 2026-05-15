@@ -40,7 +40,9 @@ function ModuleCard({
   const { title, topicCount, total, correct, incorrect, unanswered } = summary;
 
   return (
-    <div className={`${lab.panel} ${lab.panelLink} relative flex flex-col gap-3`}>
+    <div
+      className={`${lab.panel} ${lab.panelLink} relative flex flex-col gap-3`}
+    >
       {/* Stretched link — covers the whole card; Reset button sits above it via z-10 */}
       <Link
         href={`/${summary.moduleId}`}
@@ -55,22 +57,32 @@ function ModuleCard({
             {total === 1 ? "question" : "questions"}
           </p>
         </div>
-        <button type="button" onClick={onReset} className={`relative z-10 ${lab.btnDangerSm}`}>
+        <button
+          type="button"
+          onClick={onReset}
+          className={`relative z-10 ${lab.btnDangerSm}`}
+        >
           Reset
         </button>
       </div>
 
       <div className="flex gap-4 text-sm">
         <span className={lab.statCorrect}>
-          <span className="font-mono font-semibold tabular-nums">{correct}</span>{" "}
+          <span className="font-mono font-semibold tabular-nums">
+            {correct}
+          </span>{" "}
           correct
         </span>
         <span className={lab.statIncorrect}>
-          <span className="font-mono font-semibold tabular-nums">{incorrect}</span>{" "}
+          <span className="font-mono font-semibold tabular-nums">
+            {incorrect}
+          </span>{" "}
           incorrect
         </span>
         <span className={lab.statUnanswered}>
-          <span className="font-mono font-semibold tabular-nums">{unanswered}</span>{" "}
+          <span className="font-mono font-semibold tabular-nums">
+            {unanswered}
+          </span>{" "}
           unanswered
         </span>
       </div>

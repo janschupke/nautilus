@@ -12,7 +12,7 @@ export function parseJSON(raw: string): ParseResult {
       ok: false,
       message: msg,
       line: m ? parseInt(m[1], 10) : null,
-      col:  m ? parseInt(m[2], 10) : null,
+      col: m ? parseInt(m[2], 10) : null,
     };
   }
 }
@@ -24,11 +24,16 @@ function lineCommentStart(line: string): number {
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
     if (inStr) {
-      if (c === "\\") { i++; continue; }
+      if (c === "\\") {
+        i++;
+        continue;
+      }
       if (c === strChar) inStr = false;
     } else {
-      if (c === '"' || c === "'") { inStr = true; strChar = c; }
-      else if (c === "/" && line[i + 1] === "/") return i;
+      if (c === '"' || c === "'") {
+        inStr = true;
+        strChar = c;
+      } else if (c === "/" && line[i + 1] === "/") return i;
     }
   }
   return -1;
@@ -41,28 +46,51 @@ function fixSingleQuotes(s: string): string {
   while (i < s.length) {
     const c = s[i];
     if (c === '"') {
-      out += c; i++;
+      out += c;
+      i++;
       while (i < s.length) {
         const d = s[i];
-        if (d === "\\") { out += d + (s[i + 1] ?? ""); i += 2; continue; }
-        out += d; i++;
+        if (d === "\\") {
+          out += d + (s[i + 1] ?? "");
+          i += 2;
+          continue;
+        }
+        out += d;
+        i++;
         if (d === '"') break;
       }
     } else if (c === "'") {
-      out += '"'; i++;
+      out += '"';
+      i++;
       while (i < s.length) {
         const d = s[i];
         if (d === "\\") {
           const next = s[i + 1] ?? "";
-          if (next === "'") { out += "'"; i += 2; continue; }
-          out += d + next; i += 2; continue;
+          if (next === "'") {
+            out += "'";
+            i += 2;
+            continue;
+          }
+          out += d + next;
+          i += 2;
+          continue;
         }
-        if (d === '"') { out += '\\"'; i++; continue; }
-        if (d === "'") { out += '"'; i++; break; }
-        out += d; i++;
+        if (d === '"') {
+          out += '\\"';
+          i++;
+          continue;
+        }
+        if (d === "'") {
+          out += '"';
+          i++;
+          break;
+        }
+        out += d;
+        i++;
       }
     } else {
-      out += c; i++;
+      out += c;
+      i++;
     }
   }
   return out;
@@ -75,7 +103,10 @@ function closeBraces(s: string): string {
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
     if (inStr) {
-      if (c === "\\") { i++; continue; }
+      if (c === "\\") {
+        i++;
+        continue;
+      }
       if (c === '"') inStr = false;
     } else {
       if (c === '"') inStr = true;
@@ -104,9 +135,9 @@ export function repairJSON(raw: string): string {
 
   // 3. Python / JS literals
   s = s
-    .replace(/\bTrue\b/g,  "true")
+    .replace(/\bTrue\b/g, "true")
     .replace(/\bFalse\b/g, "false")
-    .replace(/\bNone\b/g,  "null")
+    .replace(/\bNone\b/g, "null")
     .replace(/\bundefined\b/g, "null");
 
   // 4. Single quotes → double quotes

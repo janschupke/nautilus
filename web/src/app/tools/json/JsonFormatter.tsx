@@ -1,20 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import {
-  parseJSON,
-  countLines,
-  countKeys,
-  type ParseResult,
-} from "./json";
+import { parseJSON, countLines, countKeys, type ParseResult } from "./json";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { lab } from "@/ui/lab";
 
 export function JsonFormatter() {
-  const [input, setInput]       = useState("");
-  const [output, setOutput]     = useState("");
-  const [result, setResult]     = useState<ParseResult | null>(null);
-  const { copied, copy }        = useCopyToClipboard();
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [result, setResult] = useState<ParseResult | null>(null);
+  const { copied, copy } = useCopyToClipboard();
   const [indentSize, setIndentSize] = useState(2);
 
   const run = useCallback(
@@ -32,13 +27,12 @@ export function JsonFormatter() {
     [run, indentSize],
   );
 
-  const minify = useCallback(
-    () => run((v) => JSON.stringify(v)),
-    [run],
-  );
+  const minify = useCallback(() => run((v) => JSON.stringify(v)), [run]);
 
   const clear = useCallback(() => {
-    setInput(""); setOutput(""); setResult(null);
+    setInput("");
+    setOutput("");
+    setResult(null);
   }, []);
 
   const copyOutput = useCallback(() => {
@@ -46,15 +40,20 @@ export function JsonFormatter() {
   }, [output, copy]);
 
   const parsedValue = result?.ok ? result.value : null;
-  const isArray  = Array.isArray(parsedValue);
-  const isObject = parsedValue !== null && typeof parsedValue === "object" && !isArray;
+  const isArray = Array.isArray(parsedValue);
+  const isObject =
+    parsedValue !== null && typeof parsedValue === "object" && !isArray;
 
   return (
     <div className="space-y-4">
       {/* Controls */}
       <div className={`${lab.panel} flex flex-wrap items-center gap-3`}>
-        <button onClick={prettify} className={lab.btnPrimary}>Prettify</button>
-        <button onClick={minify}   className={lab.btnGhost}>Minify</button>
+        <button onClick={prettify} className={lab.btnPrimary}>
+          Prettify
+        </button>
+        <button onClick={minify} className={lab.btnGhost}>
+          Minify
+        </button>
 
         <div className="flex items-center gap-2 ml-2">
           <span className={`${lab.hint} text-sm`}>Indent</span>
@@ -69,7 +68,10 @@ export function JsonFormatter() {
           ))}
         </div>
 
-        <button onClick={clear} className={`${lab.btnGhost} ml-auto text-fg-muted`}>
+        <button
+          onClick={clear}
+          className={`${lab.btnGhost} ml-auto text-fg-muted`}
+        >
           Clear
         </button>
       </div>
@@ -77,18 +79,22 @@ export function JsonFormatter() {
       {/* Status */}
       {result && (
         <div className="flex items-center gap-3">
-          {result.ok
-            ? <span className={lab.badgeOk}>Valid JSON</span>
-            : <span className={lab.badgeBad}>Invalid JSON</span>}
+          {result.ok ? (
+            <span className={lab.badgeOk}>Valid JSON</span>
+          ) : (
+            <span className={lab.badgeBad}>Invalid JSON</span>
+          )}
           {result.ok && parsedValue !== null && (
             <span className={lab.hint}>
-              {isArray  && `Array · ${countKeys(parsedValue)} items`}
+              {isArray && `Array · ${countKeys(parsedValue)} items`}
               {isObject && `Object · ${countKeys(parsedValue)} keys`}
               {!isArray && !isObject && typeof parsedValue}
             </span>
           )}
           {!result.ok && result.line !== null && (
-            <span className={lab.hint}>line {result.line}, col {result.col}</span>
+            <span className={lab.hint}>
+              line {result.line}, col {result.col}
+            </span>
           )}
         </div>
       )}
@@ -103,11 +109,17 @@ export function JsonFormatter() {
       {/* Editor panes */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <label className={lab.fieldLabel} htmlFor="json-input">Input</label>
+          <label className={lab.fieldLabel} htmlFor="json-input">
+            Input
+          </label>
           <textarea
             id="json-input"
             value={input}
-            onChange={(e) => { setInput(e.target.value); setResult(null); setOutput(""); }}
+            onChange={(e) => {
+              setInput(e.target.value);
+              setResult(null);
+              setOutput("");
+            }}
             placeholder={'{\n  "key": "value"\n}'}
             rows={20}
             className={`${lab.textareaBase} resize-y ${lab.fieldBorder}`}
@@ -118,9 +130,14 @@ export function JsonFormatter() {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <label className={lab.fieldLabel} htmlFor="json-output">Output</label>
+            <label className={lab.fieldLabel} htmlFor="json-output">
+              Output
+            </label>
             {output && (
-              <button onClick={copyOutput} className={`${lab.btnGhostSm} px-3 py-1 text-sm`}>
+              <button
+                onClick={copyOutput}
+                className={`${lab.btnGhostSm} px-3 py-1 text-sm`}
+              >
                 {copied ? "Copied" : "Copy"}
               </button>
             )}
@@ -136,7 +153,8 @@ export function JsonFormatter() {
           />
           {output && (
             <p className={lab.hint}>
-              {countLines(output)} lines · {output.length.toLocaleString()} chars
+              {countLines(output)} lines · {output.length.toLocaleString()}{" "}
+              chars
             </p>
           )}
         </div>

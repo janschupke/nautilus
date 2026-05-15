@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  countKeys,
-  countLines,
-  parseJSON,
-  repairJSON,
-} from "./json";
+import { countKeys, countLines, parseJSON, repairJSON } from "./json";
 
 // ── parseJSON ─────────────────────────────────────────────────────────────────
 

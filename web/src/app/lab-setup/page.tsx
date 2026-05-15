@@ -167,7 +167,10 @@ docker compose up -d`}</Cmd>
           <p className={`mt-3 ${lab.docBody}`}>
             Or copy the file to your working directory:
           </p>
-          <Cmd>docker compose cp vpn:/config/peer_isopod/peer_isopod.conf ./isopod.conf</Cmd>
+          <Cmd>
+            docker compose cp vpn:/config/peer_isopod/peer_isopod.conf
+            ./isopod.conf
+          </Cmd>
           <p className={`mt-3 ${lab.muted}`}>
             The config contains a private key, the server endpoint, and the
             allowed IPs route (<Code>10.78.8.0/24</Code>). Keep it local — it
@@ -315,9 +318,9 @@ docker compose up -d --force-recreate client`}</Cmd>
         <SubSection title="6 — macOS / Windows: Docker Desktop not running">
           <p className={lab.docBody}>
             Docker Desktop must be running (macOS menu bar / Windows system
-            tray) for port forwarding to work. If you started the containers in a previous
-            session and Docker Desktop was restarted since then, the port
-            mappings may have been dropped. Bring everything back up:
+            tray) for port forwarding to work. If you started the containers in
+            a previous session and Docker Desktop was restarted since then, the
+            port mappings may have been dropped. Bring everything back up:
           </p>
           <Cmd>{`docker compose down
 docker compose up -d`}</Cmd>

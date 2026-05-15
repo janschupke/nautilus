@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { answersMatch, anyAnswerMatches, normalizeAnswer } from "./normalize-answer";
+import {
+  answersMatch,
+  anyAnswerMatches,
+  normalizeAnswer,
+} from "./normalize-answer";
 
 describe("normalizeAnswer", () => {
   it("converts CRLF and CR to LF", () => {

@@ -59,9 +59,6 @@ export function ModuleSidebar() {
   const activeTopicId = topicRouteFromPathname(pathname)?.topicId ?? null;
   // Used only for visual active state on the module heading link itself.
   const activeModulePageId = moduleIdFromPathname(pathname);
-  // Used for auto-expand when navigating to a topic.
-  const activeModuleId =
-    activeModulePageId ?? (activeTopicId ? findModuleIdForTopic(activeTopicId) : null);
 
   useEffect(() => {
     if (!activeTopicId) return;
@@ -71,16 +68,16 @@ export function ModuleSidebar() {
 
   // Pending scroll: set on route change, cleared once the element is found in the DOM.
   // Stored in refs (not state) so caret-only modulesRaw updates cannot arm them.
-  const pendingScrollTopicRef  = useRef<string | null>(null);
+  const pendingScrollTopicRef = useRef<string | null>(null);
   const pendingScrollModuleRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (activeTopicId) {
-      pendingScrollTopicRef.current  = activeTopicId;
+      pendingScrollTopicRef.current = activeTopicId;
       pendingScrollModuleRef.current = null;
     } else if (activeModulePageId) {
       pendingScrollModuleRef.current = activeModulePageId;
-      pendingScrollTopicRef.current  = null;
+      pendingScrollTopicRef.current = null;
     }
   }, [pathname, activeTopicId, activeModulePageId]);
 
@@ -91,7 +88,10 @@ export function ModuleSidebar() {
       const el = navRef.current.querySelector<HTMLElement>(
         `[data-sidebar-topic="${CSS.escape(topicId)}"]`,
       );
-      if (el) { el.scrollIntoView({ block: "nearest", behavior: "smooth" }); pendingScrollTopicRef.current = null; }
+      if (el) {
+        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        pendingScrollTopicRef.current = null;
+      }
       return;
     }
     const moduleId = pendingScrollModuleRef.current;
@@ -99,7 +99,10 @@ export function ModuleSidebar() {
       const el = navRef.current.querySelector<HTMLElement>(
         `[data-sidebar-module="${CSS.escape(moduleId)}"]`,
       );
-      if (el) { el.scrollIntoView({ block: "nearest", behavior: "smooth" }); pendingScrollModuleRef.current = null; }
+      if (el) {
+        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        pendingScrollModuleRef.current = null;
+      }
     }
   }, [pathname, modulesRaw]);
 
@@ -124,7 +127,10 @@ export function ModuleSidebar() {
           return (
             <div key={mod.id} className="mb-5">
               {/* Module header: caret toggle on left, link to summary on right */}
-              <div className="flex w-full items-center rounded-md" data-sidebar-module={mod.id}>
+              <div
+                className="flex w-full items-center rounded-md"
+                data-sidebar-module={mod.id}
+              >
                 <button
                   type="button"
                   aria-label={collapsed ? "Expand module" : "Collapse module"}

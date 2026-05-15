@@ -25,12 +25,32 @@ const EXAMPLES: { label: string; params: Params }[] = [
 
 const FIELD_META: { key: keyof Params; label: string; hint: string }[] = [
   { key: "p", label: "p — prime modulus", hint: "Large prime shared publicly" },
-  { key: "g", label: "g — generator", hint: "Primitive root modulo p (shared publicly)" },
-  { key: "a", label: "a — 🦐 Shrimp private key", hint: "Secret; only 🦐 Shrimp knows this" },
-  { key: "b", label: "b — 🦀 Crab private key",   hint: "Secret; only 🦀 Crab knows this" },
-  { key: "A", label: "A — 🦐 Shrimp public key",  hint: "g^a mod p — sent to 🦀 Crab" },
-  { key: "B", label: "B — 🦀 Crab public key",    hint: "g^b mod p — sent to 🦐 Shrimp" },
-  { key: "s", label: "s — shared secret",     hint: "B^a mod p = A^b mod p" },
+  {
+    key: "g",
+    label: "g — generator",
+    hint: "Primitive root modulo p (shared publicly)",
+  },
+  {
+    key: "a",
+    label: "a — 🦐 Shrimp private key",
+    hint: "Secret; only 🦐 Shrimp knows this",
+  },
+  {
+    key: "b",
+    label: "b — 🦀 Crab private key",
+    hint: "Secret; only 🦀 Crab knows this",
+  },
+  {
+    key: "A",
+    label: "A — 🦐 Shrimp public key",
+    hint: "g^a mod p — sent to 🦀 Crab",
+  },
+  {
+    key: "B",
+    label: "B — 🦀 Crab public key",
+    hint: "g^b mod p — sent to 🦐 Shrimp",
+  },
+  { key: "s", label: "s — shared secret", hint: "B^a mod p = A^b mod p" },
 ];
 
 function Field({
@@ -50,9 +70,7 @@ function Field({
     <div>
       <div className="flex items-baseline justify-between gap-2">
         <label className={lab.fieldLabel}>{meta.label}</label>
-        {derived && (
-          <span className="text-xs text-accent-fg">derived</span>
-        )}
+        {derived && <span className="text-xs text-accent-fg">derived</span>}
       </div>
       <p className={`text-xs ${lab.hint} mb-1`}>{meta.hint}</p>
       <input
@@ -75,12 +93,19 @@ const EMPTY: Params = { p: "", g: "", a: "", b: "", A: "", B: "", s: "" };
 
 export function DHCalculator() {
   const [params, setParams] = useState<Params>(EMPTY);
-  const [result, setResult] = useState<{ values: Derived; errors: string[] } | null>(null);
+  const [result, setResult] = useState<{
+    values: Derived;
+    errors: string[];
+  } | null>(null);
   const [derivedKeys, setDerivedKeys] = useState<Set<keyof Params>>(new Set());
 
   function update(key: keyof Params, value: string) {
     setParams((p) => ({ ...p, [key]: value }));
-    setDerivedKeys((prev) => { const s = new Set(prev); s.delete(key); return s; });
+    setDerivedKeys((prev) => {
+      const s = new Set(prev);
+      s.delete(key);
+      return s;
+    });
   }
 
   function calculate() {
@@ -130,7 +155,10 @@ export function DHCalculator() {
             {ex.label}
           </button>
         ))}
-        <button onClick={reset} className={`${lab.btnGhost} ml-auto text-fg-muted`}>
+        <button
+          onClick={reset}
+          className={`${lab.btnGhost} ml-auto text-fg-muted`}
+        >
           Clear
         </button>
       </div>
@@ -139,7 +167,9 @@ export function DHCalculator() {
       {result && result.errors.length > 0 && (
         <div className={`${lab.errorBanner} space-y-1`}>
           {result.errors.map((e, i) => (
-            <p key={i} className={lab.errorBannerText}>{e}</p>
+            <p key={i} className={lab.errorBannerText}>
+              {e}
+            </p>
           ))}
         </div>
       )}
@@ -166,26 +196,30 @@ export function DHCalculator() {
         <div className={lab.panel}>
           <h2 className={`${lab.heading3} mb-4`}>🦐 Shrimp</h2>
           <div className="space-y-4">
-            {FIELD_META.slice(2, 4).filter((m) => m.key === "a").map((m) => (
-              <Field
-                key={m.key}
-                meta={m}
-                value={params[m.key]}
-                derived={derivedKeys.has(m.key)}
-                onChange={(v) => update(m.key, v)}
-                onSubmit={calculate}
-              />
-            ))}
-            {FIELD_META.slice(4, 6).filter((m) => m.key === "A").map((m) => (
-              <Field
-                key={m.key}
-                meta={m}
-                value={params[m.key]}
-                derived={derivedKeys.has(m.key)}
-                onChange={(v) => update(m.key, v)}
-                onSubmit={calculate}
-              />
-            ))}
+            {FIELD_META.slice(2, 4)
+              .filter((m) => m.key === "a")
+              .map((m) => (
+                <Field
+                  key={m.key}
+                  meta={m}
+                  value={params[m.key]}
+                  derived={derivedKeys.has(m.key)}
+                  onChange={(v) => update(m.key, v)}
+                  onSubmit={calculate}
+                />
+              ))}
+            {FIELD_META.slice(4, 6)
+              .filter((m) => m.key === "A")
+              .map((m) => (
+                <Field
+                  key={m.key}
+                  meta={m}
+                  value={params[m.key]}
+                  derived={derivedKeys.has(m.key)}
+                  onChange={(v) => update(m.key, v)}
+                  onSubmit={calculate}
+                />
+              ))}
           </div>
         </div>
 
@@ -193,26 +227,30 @@ export function DHCalculator() {
         <div className={lab.panel}>
           <h2 className={`${lab.heading3} mb-4`}>🦀 Crab</h2>
           <div className="space-y-4">
-            {FIELD_META.slice(2, 4).filter((m) => m.key === "b").map((m) => (
-              <Field
-                key={m.key}
-                meta={m}
-                value={params[m.key]}
-                derived={derivedKeys.has(m.key)}
-                onChange={(v) => update(m.key, v)}
-                onSubmit={calculate}
-              />
-            ))}
-            {FIELD_META.slice(4, 6).filter((m) => m.key === "B").map((m) => (
-              <Field
-                key={m.key}
-                meta={m}
-                value={params[m.key]}
-                derived={derivedKeys.has(m.key)}
-                onChange={(v) => update(m.key, v)}
-                onSubmit={calculate}
-              />
-            ))}
+            {FIELD_META.slice(2, 4)
+              .filter((m) => m.key === "b")
+              .map((m) => (
+                <Field
+                  key={m.key}
+                  meta={m}
+                  value={params[m.key]}
+                  derived={derivedKeys.has(m.key)}
+                  onChange={(v) => update(m.key, v)}
+                  onSubmit={calculate}
+                />
+              ))}
+            {FIELD_META.slice(4, 6)
+              .filter((m) => m.key === "B")
+              .map((m) => (
+                <Field
+                  key={m.key}
+                  meta={m}
+                  value={params[m.key]}
+                  derived={derivedKeys.has(m.key)}
+                  onChange={(v) => update(m.key, v)}
+                  onSubmit={calculate}
+                />
+              ))}
           </div>
         </div>
       </div>
@@ -227,11 +265,13 @@ export function DHCalculator() {
           onChange={(v) => update("s", v)}
           onSubmit={calculate}
         />
-        {result && result.values.s !== undefined && result.errors.length === 0 && (
-          <p className={`mt-3 text-sm text-accent-fg`}>
-            ✓ Shared secret verified — both sides compute the same value.
-          </p>
-        )}
+        {result &&
+          result.values.s !== undefined &&
+          result.errors.length === 0 && (
+            <p className={`mt-3 text-sm text-accent-fg`}>
+              ✓ Shared secret verified — both sides compute the same value.
+            </p>
+          )}
       </div>
     </div>
   );

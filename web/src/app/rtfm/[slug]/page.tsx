@@ -21,7 +21,11 @@ export default async function CheatsheetPage({ params }: Props) {
 
   return (
     <div className={lab.content}>
-      <Breadcrumb parent={{ href: "/rtfm", label: "RTFM" }} current={meta.title} mono />
+      <Breadcrumb
+        parent={{ href: "/rtfm", label: "RTFM" }}
+        current={meta.title}
+        mono
+      />
 
       <div className={lab.panel}>
         <LabMarkdown markdown={markdown} variant="summary" />

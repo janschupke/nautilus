@@ -158,7 +158,9 @@ describe("QuestionBlock", () => {
       />,
     );
     await user.click(screen.getByRole("button", { name: "Accepted answers" }));
-    expect(screen.getByRole("dialog", { name: /Accepted answers/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("dialog", { name: /Accepted answers/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText("hi")).toBeInTheDocument();
   });
 

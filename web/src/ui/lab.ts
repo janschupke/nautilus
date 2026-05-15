@@ -27,7 +27,8 @@ export const lab = {
   navCategoryToggle:
     "flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-left text-base font-semibold uppercase tracking-wide text-fg-faint outline-none hover:bg-surface-raised hover:text-fg-soft focus-visible:ring-2 focus-visible:ring-accent-stroke/80",
   /** Applied to the module heading link when the module summary page is the active route. */
-  navCategoryActive: "bg-accent-surface/35 text-fg-soft ring-1 ring-accent-stroke/60",
+  navCategoryActive:
+    "bg-accent-surface/35 text-fg-soft ring-1 ring-accent-stroke/60",
   navCategoryChevron: "w-5 shrink-0 text-center text-base text-fg-faint",
   /** Module label inside the nav row (link/span); truncates so the ring stays visible. */
   navModuleTitle: "min-w-0 flex-1 truncate",
@@ -120,7 +121,8 @@ export const lab = {
   errorBannerText: "font-mono text-sm text-danger-fg",
 
   /** Data table element — used inside LabTable wrapper. */
-  table: "w-full min-w-[28rem] border-collapse text-left text-base text-zinc-300",
+  table:
+    "w-full min-w-[28rem] border-collapse text-left text-base text-zinc-300",
   /** Data table header cell — shared between lab-setup and markdown summary tables. */
   tableTh:
     "border border-zinc-700 bg-zinc-900/80 px-3 py-2 font-semibold text-zinc-100",

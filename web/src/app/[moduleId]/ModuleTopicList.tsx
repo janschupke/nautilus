@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import { topicHasInteractiveContent } from "@/content/manifest";
-import { parseProgressRaw, readLabProgressSnapshot, subscribeLabProgress } from "@/lib/storage";
+import {
+  parseProgressRaw,
+  readLabProgressSnapshot,
+  subscribeLabProgress,
+} from "@/lib/storage";
 import { getTopicLabProgressCounts } from "@/lib/module-completion";
 import { ModuleSidebarProgressRing } from "@/components/ModuleSidebarProgressRing";
 import { lab } from "@/ui/lab";
@@ -20,13 +24,18 @@ export function ModuleTopicList({ moduleId, topics }: ModuleTopicListProps) {
     readLabProgressSnapshot,
     () => "{}",
   );
-  const progress = useMemo(() => parseProgressRaw(progressJson), [progressJson]);
+  const progress = useMemo(
+    () => parseProgressRaw(progressJson),
+    [progressJson],
+  );
 
   return (
     <ul className="space-y-2">
       {topics.map((topic) => {
         const interactive = topicHasInteractiveContent(topic.id);
-        const counts = interactive ? getTopicLabProgressCounts(progress, topic.id) : null;
+        const counts = interactive
+          ? getTopicLabProgressCounts(progress, topic.id)
+          : null;
         return (
           <li key={topic.id}>
             <Link

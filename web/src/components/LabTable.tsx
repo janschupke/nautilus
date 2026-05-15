@@ -13,7 +13,9 @@ export function LabTable({
   className?: string;
 }) {
   return (
-    <div className={`overflow-x-auto rounded-md border border-zinc-800 ${className ?? ""}`}>
+    <div
+      className={`overflow-x-auto rounded-md border border-zinc-800 ${className ?? ""}`}
+    >
       <table className={lab.table}>{children}</table>
     </div>
   );

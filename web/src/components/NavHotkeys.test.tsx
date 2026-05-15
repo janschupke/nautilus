@@ -20,18 +20,18 @@ const FLAT_NAV: NavItem[] = MANIFEST.modules.flatMap((mod) => [
   })),
 ]);
 
-const FIRST = FLAT_NAV[0]!;                             // first module summary
-const LAST  = FLAT_NAV[FLAT_NAV.length - 1]!;           // last topic
+const FIRST = FLAT_NAV[0]!; // first module summary
+const LAST = FLAT_NAV[FLAT_NAV.length - 1]!; // last topic
 
 // First module: summary + first topic
-const firstMod     = MANIFEST.modules[0]!;
+const firstMod = MANIFEST.modules[0]!;
 const firstModHref = `/${firstMod.id}`;
 const firstTopicHref = `/${firstMod.id}/${firstMod.topics[0]!.id}`;
 const secondTopicHref = `/${firstMod.id}/${firstMod.topics[1]!.id}`;
 const lastTopicOfFirstMod = firstMod.topics.at(-1)!.id;
 
 // Second module: summary
-const secondMod    = MANIFEST.modules[1]!;
+const secondMod = MANIFEST.modules[1]!;
 const secondModHref = `/${secondMod.id}`;
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
@@ -139,7 +139,9 @@ describe("NavHotkeys", () => {
     it("crosses module boundary: second module summary → last topic of first module", () => {
       setup(secondModHref);
       fireKey("k");
-      expect(mockPush).toHaveBeenCalledWith(`/${firstMod.id}/${lastTopicOfFirstMod}`);
+      expect(mockPush).toHaveBeenCalledWith(
+        `/${firstMod.id}/${lastTopicOfFirstMod}`,
+      );
     });
 
     it("wraps from first item to last", () => {

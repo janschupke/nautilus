@@ -111,24 +111,56 @@ describe("derive — full textbook exchange (p=23, g=5, a=6, b=15)", () => {
 
 describe("derive — partial inputs", () => {
   it("derives A when p, g, a are known but not b", () => {
-    const { values } = derive({ p: "23", g: "5", a: "6", b: "", A: "", B: "", s: "" });
+    const { values } = derive({
+      p: "23",
+      g: "5",
+      a: "6",
+      b: "",
+      A: "",
+      B: "",
+      s: "",
+    });
     expect(values.A).toBe(8n);
     expect(values.B).toBeUndefined();
     expect(values.s).toBeUndefined();
   });
 
   it("derives s from A and b (Crab's path)", () => {
-    const { values } = derive({ p: "23", g: "5", a: "", b: "15", A: "8", B: "", s: "" });
+    const { values } = derive({
+      p: "23",
+      g: "5",
+      a: "",
+      b: "15",
+      A: "8",
+      B: "",
+      s: "",
+    });
     expect(values.s).toBe(2n);
   });
 
   it("derives s from B and a (Shrimp's path)", () => {
-    const { values } = derive({ p: "23", g: "5", a: "6", b: "", A: "", B: "19", s: "" });
+    const { values } = derive({
+      p: "23",
+      g: "5",
+      a: "6",
+      b: "",
+      A: "",
+      B: "19",
+      s: "",
+    });
     expect(values.s).toBe(2n);
   });
 
   it("retains provided values in the result", () => {
-    const { values } = derive({ p: "23", g: "5", a: "6", b: "15", A: "", B: "", s: "" });
+    const { values } = derive({
+      p: "23",
+      g: "5",
+      a: "6",
+      b: "15",
+      A: "",
+      B: "",
+      s: "",
+    });
     expect(values.p).toBe(23n);
     expect(values.g).toBe(5n);
     expect(values.a).toBe(6n);
@@ -139,26 +171,58 @@ describe("derive — partial inputs", () => {
 describe("derive — contradiction detection", () => {
   it("reports contradiction when A is provided but does not match g^a mod p", () => {
     // Correct A = 8, but we supply 99
-    const { errors } = derive({ p: "23", g: "5", a: "6", b: "", A: "99", B: "", s: "" });
+    const { errors } = derive({
+      p: "23",
+      g: "5",
+      a: "6",
+      b: "",
+      A: "99",
+      B: "",
+      s: "",
+    });
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0]).toMatch(/contradiction/i);
   });
 
   it("reports contradiction when s is provided incorrectly", () => {
-    const { errors } = derive({ p: "23", g: "5", a: "6", b: "15", A: "", B: "", s: "999" });
+    const { errors } = derive({
+      p: "23",
+      g: "5",
+      a: "6",
+      b: "15",
+      A: "",
+      B: "",
+      s: "999",
+    });
     expect(errors.length).toBeGreaterThan(0);
   });
 });
 
 describe("derive — validation", () => {
   it("returns no values and no errors for fully empty input", () => {
-    const { values, errors } = derive({ p: "", g: "", a: "", b: "", A: "", B: "", s: "" });
+    const { values, errors } = derive({
+      p: "",
+      g: "",
+      a: "",
+      b: "",
+      A: "",
+      B: "",
+      s: "",
+    });
     expect(Object.keys(values)).toHaveLength(0);
     expect(errors).toHaveLength(0);
   });
 
   it("returns no errors when only p and g are provided", () => {
-    const { errors } = derive({ p: "23", g: "5", a: "", b: "", A: "", B: "", s: "" });
+    const { errors } = derive({
+      p: "23",
+      g: "5",
+      a: "",
+      b: "",
+      A: "",
+      B: "",
+      s: "",
+    });
     expect(errors).toHaveLength(0);
   });
 });

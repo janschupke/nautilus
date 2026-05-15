@@ -93,8 +93,12 @@ function InfoPanel({ version }: { version: Version }) {
         <div className={lab.panel}>
           <ResultRow label="Network address" value={info.cidr} />
           {info.mask && <ResultRow label="Subnet mask" value={info.mask} />}
-          {info.wildcard && <ResultRow label="Wildcard mask" value={info.wildcard} />}
-          {info.broadcast && <ResultRow label="Broadcast address" value={info.broadcast} />}
+          {info.wildcard && (
+            <ResultRow label="Wildcard mask" value={info.wildcard} />
+          )}
+          {info.broadcast && (
+            <ResultRow label="Broadcast address" value={info.broadcast} />
+          )}
           <ResultRow label="First usable address" value={info.first} />
           <ResultRow label="Last usable address" value={info.last} />
           <ResultRow label="Total addresses" value={info.total} />
@@ -109,7 +113,9 @@ function InfoPanel({ version }: { version: Version }) {
 // ── VLSM planner ─────────────────────────────────────────────────────────────
 
 let nextId = 0;
-function makeId() { return String(++nextId); }
+function makeId() {
+  return String(++nextId);
+}
 function makeEntry(name = "", hosts = ""): SubnetEntry {
   return { id: makeId(), name, hosts };
 }
@@ -127,7 +133,7 @@ function VlsmPlanner({ version }: { version: Version }) {
   const removeEntry = (id: string) =>
     setEntries((e) => e.filter((x) => x.id !== id));
   const updateEntry = (id: string, field: "name" | "hosts", val: string) =>
-    setEntries((e) => e.map((x) => x.id === id ? { ...x, [field]: val } : x));
+    setEntries((e) => e.map((x) => (x.id === id ? { ...x, [field]: val } : x)));
 
   function plan() {
     setResult(vlsmAllocate(base.trim(), entries, version));
@@ -177,7 +183,10 @@ function VlsmPlanner({ version }: { version: Version }) {
         </div>
         <div className="space-y-2">
           {entries.map((e) => (
-            <div key={e.id} className="grid grid-cols-[1fr_9rem_auto] items-center gap-2">
+            <div
+              key={e.id}
+              className="grid grid-cols-[1fr_9rem_auto] items-center gap-2"
+            >
               <input
                 type="text"
                 value={e.name}
@@ -218,7 +227,15 @@ function VlsmPlanner({ version }: { version: Version }) {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-stroke bg-surface-raised/50">
-                {["Name", "Need", "Prefix", "Allocated CIDR", "First host", "Last host", "Usable"].map((h) => (
+                {[
+                  "Name",
+                  "Need",
+                  "Prefix",
+                  "Allocated CIDR",
+                  "First host",
+                  "Last host",
+                  "Usable",
+                ].map((h) => (
                   <th
                     key={h}
                     className="px-3 py-2.5 text-left font-semibold text-fg-faint uppercase tracking-wide text-xs"
@@ -233,19 +250,33 @@ function VlsmPlanner({ version }: { version: Version }) {
                 <tr
                   key={a.id}
                   className={`border-b border-stroke last:border-0 ${
-                    a.error ? "bg-danger-surface/10" : "hover:bg-surface-raised/30"
+                    a.error
+                      ? "bg-danger-surface/10"
+                      : "hover:bg-surface-raised/30"
                   }`}
                 >
                   <td className="px-3 py-2.5 font-medium text-fg">{a.name}</td>
-                  <td className="px-3 py-2.5 text-fg-muted tabular-nums">{a.required}</td>
-                  <td className="px-3 py-2.5 font-mono text-fg-soft">/{a.prefix}</td>
-                  <td className="px-3 py-2.5 font-mono text-accent-fg">{a.cidr}</td>
-                  <td className="px-3 py-2.5 font-mono text-fg-soft">{a.first}</td>
-                  <td className="px-3 py-2.5 font-mono text-fg-soft">{a.last}</td>
                   <td className="px-3 py-2.5 text-fg-muted tabular-nums">
-                    {a.error
-                      ? <span className="text-danger-fg">{a.error}</span>
-                      : a.usable.toLocaleString()}
+                    {a.required}
+                  </td>
+                  <td className="px-3 py-2.5 font-mono text-fg-soft">
+                    /{a.prefix}
+                  </td>
+                  <td className="px-3 py-2.5 font-mono text-accent-fg">
+                    {a.cidr}
+                  </td>
+                  <td className="px-3 py-2.5 font-mono text-fg-soft">
+                    {a.first}
+                  </td>
+                  <td className="px-3 py-2.5 font-mono text-fg-soft">
+                    {a.last}
+                  </td>
+                  <td className="px-3 py-2.5 text-fg-muted tabular-nums">
+                    {a.error ? (
+                      <span className="text-danger-fg">{a.error}</span>
+                    ) : (
+                      a.usable.toLocaleString()
+                    )}
                   </td>
                 </tr>
               ))}
@@ -286,9 +317,11 @@ export function SubnettingCalculator() {
         />
       </div>
 
-      {mode === "info"
-        ? <InfoPanel key={version} version={version} />
-        : <VlsmPlanner key={version} version={version} />}
+      {mode === "info" ? (
+        <InfoPanel key={version} version={version} />
+      ) : (
+        <VlsmPlanner key={version} version={version} />
+      )}
     </div>
   );
 }

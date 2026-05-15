@@ -21,9 +21,7 @@ export function parseIPv4(ip: string): bigint | null {
 }
 
 export function formatIPv4(addr: bigint): string {
-  return [24n, 16n, 8n, 0n]
-    .map((s) => String((addr >> s) & 0xffn))
-    .join(".");
+  return [24n, 16n, 8n, 0n].map((s) => String((addr >> s) & 0xffn)).join(".");
 }
 
 function ipv4Class(addr: bigint): string {
@@ -65,19 +63,32 @@ export function formatIPv6(addr: bigint): string {
   for (let i = 7; i >= 0; i--)
     g.push(((addr >> BigInt(i * 16)) & 0xffffn).toString(16));
 
-  let bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+  let bestStart = -1,
+    bestLen = 0,
+    curStart = -1,
+    curLen = 0;
   for (let i = 0; i < 8; i++) {
     if (g[i] === "0") {
-      if (curStart < 0) { curStart = i; curLen = 1; }
-      else curLen++;
-      if (curLen > bestLen) { bestStart = curStart; bestLen = curLen; }
+      if (curStart < 0) {
+        curStart = i;
+        curLen = 1;
+      } else curLen++;
+      if (curLen > bestLen) {
+        bestStart = curStart;
+        bestLen = curLen;
+      }
     } else {
-      curStart = -1; curLen = 0;
+      curStart = -1;
+      curLen = 0;
     }
   }
 
   if (bestLen < 2) return g.join(":");
-  return g.slice(0, bestStart).join(":") + "::" + g.slice(bestStart + bestLen).join(":");
+  return (
+    g.slice(0, bestStart).join(":") +
+    "::" +
+    g.slice(bestStart + bestLen).join(":")
+  );
 }
 
 // ── CIDR parser ───────────────────────────────────────────────────────────────
@@ -87,7 +98,8 @@ export function parseCIDR(
   version: Version,
 ): { addr: bigint; prefix: number } | string {
   const slash = cidr.lastIndexOf("/");
-  if (slash < 0) return `Enter in CIDR notation, e.g. ${version === "v4" ? "10.0.0.0/8" : "2001:db8::/32"}`;
+  if (slash < 0)
+    return `Enter in CIDR notation, e.g. ${version === "v4" ? "10.0.0.0/8" : "2001:db8::/32"}`;
   const ipPart = cidr.slice(0, slash).trim();
   const prefixPart = cidr.slice(slash + 1).trim();
   const maxPrefix = BITS[version];
@@ -150,9 +162,10 @@ export function calcInfo(cidr: string, version: Version): InfoResult | string {
     network: fmt(net),
     first: fmt(net),
     last: fmt(last),
-    total: total > 1_000_000_000_000n
-      ? `2^${bits - prefix} (≈ ${(Number(total / 10n ** BigInt(String(total).length - 4)) / 1000).toFixed(1)}×10^${String(total).length - 1})`
-      : total.toLocaleString(),
+    total:
+      total > 1_000_000_000_000n
+        ? `2^${bits - prefix} (≈ ${(Number(total / 10n ** BigInt(String(total).length - 4)) / 1000).toFixed(1)}×10^${String(total).length - 1})`
+        : total.toLocaleString(),
     usable: `2^${bits - prefix}`,
     prefix,
   };
@@ -175,7 +188,11 @@ export type Allocation = {
   error?: string;
 };
 
-export function minPrefixForHosts(required: number, bits: number, version: Version): number {
+export function minPrefixForHosts(
+  required: number,
+  bits: number,
+  version: Version,
+): number {
   const req = BigInt(required);
   for (let p = bits; p >= 0; p--) {
     const block = 1n << BigInt(bits - p);
@@ -195,7 +212,8 @@ export function vlsmAllocate(
   const { addr, prefix: basePrefix } = parsed;
   const bits = BITS[version];
   const net = addr & bitmask(basePrefix, bits);
-  const baseEnd = net | (~bitmask(basePrefix, bits) & ((1n << BigInt(bits)) - 1n));
+  const baseEnd =
+    net | (~bitmask(basePrefix, bits) & ((1n << BigInt(bits)) - 1n));
   const fmt = version === "v4" ? formatIPv4 : formatIPv6;
 
   const valid = entries
@@ -208,7 +226,10 @@ export function vlsmAllocate(
   let current = net;
 
   for (const s of sorted) {
-    const prefix = Math.max(basePrefix, minPrefixForHosts(s.req, bits, version));
+    const prefix = Math.max(
+      basePrefix,
+      minPrefixForHosts(s.req, bits, version),
+    );
     const blockSize = 1n << BigInt(bits - prefix);
 
     const rem = current % blockSize;
@@ -216,9 +237,15 @@ export function vlsmAllocate(
 
     if (aligned + blockSize - 1n > baseEnd) {
       results.push({
-        id: s.id, name: s.name, required: s.req,
-        prefix, cidr: "—", first: "—", last: "—",
-        usable: 0n, error: "Out of space in base network",
+        id: s.id,
+        name: s.name,
+        required: s.req,
+        prefix,
+        cidr: "—",
+        first: "—",
+        last: "—",
+        usable: 0n,
+        error: "Out of space in base network",
       });
       continue;
     }
@@ -229,7 +256,9 @@ export function vlsmAllocate(
     const last = version === "v4" && prefix < 31 ? broadcast - 1n : broadcast;
 
     results.push({
-      id: s.id, name: s.name, required: s.req,
+      id: s.id,
+      name: s.name,
+      required: s.req,
       prefix,
       cidr: `${fmt(aligned)}/${prefix}`,
       first: fmt(first),

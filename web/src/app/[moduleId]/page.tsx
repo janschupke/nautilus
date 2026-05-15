@@ -18,9 +18,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
   return (
     <div className={lab.content}>
-      <PageHeader title={mod.title}>
-        {content?.intro}
-      </PageHeader>
+      <PageHeader title={mod.title}>{content?.intro}</PageHeader>
 
       <ModuleTopicList moduleId={moduleId} topics={mod.topics} />
     </div>
