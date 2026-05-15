@@ -1,6 +1,6 @@
 # Nautilus
 
-Numbered, hands-on shell curriculum (modules **01–41**) plus a **Next.js lab UI** under `web/` where learners check answers against the key, read optional module summaries, and track progress in the browser.
+Hands-on shell curriculum organized into modules, plus a **Next.js lab UI** under `web/` where learners check answers, read topic summaries, and track progress in the browser.
 
 ## Repository layout
 
@@ -9,15 +9,15 @@ nautilus/
   README.md                 # this file
   web/                      # Next.js 16 app (React 19, Tailwind 4, Vitest)
     src/content/            # manifest, topic JSON, module registration
-    src/app/                # routes: home, /[moduleId]/[topicId], /lab-setup, /stats
+    src/app/                # routes: home, /[moduleId]/[topicId], /lab-setup, /stats, /tools, /rtfm
   lab/                      # Docker LAN lab: SSH client, web/API, DB, FTP, mail, forensics, VPN
     compose.yml             # fixed-subnet LAN definition
     hosts/                  # per-host Dockerfiles and lab fixture files
 ```
 
-Module order and sidebar groupings are defined in `web/src/content/manifest.ts`. The web app loads **41** interactive topic definitions from JSON under `web/src/content/topics/`.
+Module order and sidebar groupings are defined in `web/src/content/manifest.ts`. Topic questions and summaries live in JSON files under `web/src/content/topics/`.
 
-## Run the lab (development)
+## Run the web UI (development)
 
 ```bash
 cd web
@@ -77,24 +77,15 @@ curl -fsS http://127.0.0.1:8080/api/status.php
 - Exercise fixture files live under **`lab/hosts/client/labs/`** and are COPY'd into `/home/isopod/labs/` at image build time.
 - Keep fixtures deterministic and safe to commit. Lab credentials are fake and documented; do not add real secrets.
 
-## Sync module summaries into the UI
+## Web app: registering topics and sidebar progress
 
-Module pages can show optional **`summaryMarkdown`** (from each folder’s **`summary.md`**). After editing course `summary.md` files, regenerate JSON:
-
-```bash
-cd web
-npm run sync:summaries    # scripts/sync-module-summaries.mjs
-```
-
-## Web app: registering labs and sidebar progress
-
-| Location                                     | Role                                                                                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `web/src/content/lab-modules.ts`             | **Register** interactive topics: add a loader entry pointing at your JSON (sidebar links and `getLabTopic` follow this map). |
-| `web/src/content/lab-module-question-ids.ts` | Keep in sync with `lab-modules.ts`; used for sidebar progress rings and “all correct” styling.                               |
-| `web/src/content/topics/<module>/*.json`     | Per-topic questions, expected outputs, solutions, optional `summaryMarkdown`. Prompts reference `/home/isopod/labs` paths or lab host IPs. |
-| `web/src/content/modules/*.json`             | Per-module intro text shown on the module summary page.                                                                       |
-| `web/src/ui/lab.ts`                          | Shared layout/typography class strings for the lab shell.                                                                      |
+| Location | Role |
+|---|---|
+| `web/src/content/lab-modules.ts` | **Register** interactive topics: add a loader entry pointing at your JSON (sidebar links and `getLabTopic` follow this map). |
+| `web/src/content/lab-module-question-ids.ts` | Keep in sync with `lab-modules.ts`; used for sidebar progress rings and "all correct" styling. |
+| `web/src/content/topics/<module>/*.json` | Per-topic questions, expected outputs, solutions, optional `summaryMarkdown`. Prompts reference `/home/isopod/labs` paths or lab host IPs. |
+| `web/src/content/modules/*.json` | Per-module intro text shown on the module summary page. |
+| `web/src/ui/lab.ts` | Shared layout/typography class strings for the lab shell. |
 
 ## Persistence (browser)
 
@@ -103,38 +94,13 @@ npm run sync:summaries    # scripts/sync-module-summaries.mjs
 
 ## Course content & authoring
 
-### Purpose
+See **`docs/requirements.md`** for question design rules and content standards.
 
-Exercise-first shell practice: realistic CLI tasks (logs, HTTP, packets on a lab interface), with theory in each module’s **`summary.md`**, not duplicated here.
-
-### Per-module files (normative)
-
-Each **`NN-topic-slug/`** directory should include:
-
-| File            | Role                                                        |
-| --------------- | ----------------------------------------------------------- |
-| `summary.md`    | Concepts, flags, Linux vs macOS notes.                      |
-| `assignment.md` | Numbered tasks; later items may depend on earlier ones.     |
-| `solution.md`   | Explained solutions; multiple valid approaches when useful. |
-| `answers.md`    | Answers only, keyed to assignment numbering.                |
-| `lab/seed/`     | Safe-to-commit fixtures copied or mounted into lab hosts.    |
-
-### Tooling conventions (course standard)
+### Tooling conventions
 
 - **Shell:** **`#!/usr/bin/env bash`** in authored scripts and solutions unless a module documents an exception. Document POSIX / `dash` limits where relevant; avoid zsh-only features in course material.
-- **Beyond shell:** prefer **Python 3** (stdlib first) when Bash + `awk` / `sed` / `jq` is a poor fit. Do not introduce **Perl** or **Ruby** in new exercises unless justified in that module’s `summary.md`.
+- **Beyond shell:** prefer **Python 3** (stdlib first) when Bash + `awk` / `sed` / `jq` is a poor fit.
 - **Search:** treat **GNU `grep`** (including **`grep -P`** where available) and **`rg`** as primary CLI search tools. On macOS, use **`ggrep`** or **`rg`** for PCRE; stock BSD `grep` has no `-P`.
-
-### Ethics and lab scope
-
-- Prefer **localhost**, **user-controlled VMs**, or **explicitly allowed** endpoints for HTTP, scanning, or auth drills. Do not normalize probing arbitrary third-party networks.
-- Call out **corporate network / EDR** risk where a pattern could look suspicious (e.g. reverse shells, aggressive `nmap`).
-- Offensive-adjacent modules must pair exercises with **authorization**, **scope**, and defensive context.
-
-### Non-goals
-
-- Standalone “how to list files” modules (those belong as steps inside larger exercises).
-- Instructions that require **testing against third-party networks without consent**.
 
 ### Agents (Next.js)
 
