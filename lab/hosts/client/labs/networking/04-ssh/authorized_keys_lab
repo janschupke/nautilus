@@ -1,0 +1,5 @@
+# Lab-only fake public keys — not for authentication. Never paste real private keys.
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiM fake-alice@lab
+
+command="/usr/local/bin/git-shell",no-port-forwarding,no-agent-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCi fake-ro@readonly

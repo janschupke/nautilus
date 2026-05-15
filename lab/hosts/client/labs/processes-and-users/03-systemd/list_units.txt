@@ -1,0 +1,5 @@
+UNIT                          LOAD   ACTIVE SUB     DESCRIPTION
+ssh.service                   loaded active running OpenSSH server
+nginx.service                 loaded failed failed  Web server
+dbus.socket                   loaded active running D-Bus socket
+backup.timer                  loaded active waiting Run backup hourly

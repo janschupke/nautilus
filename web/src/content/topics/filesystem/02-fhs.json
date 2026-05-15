@@ -1,0 +1,70 @@
+{
+  "id": "02-fhs",
+  "title": "Filesystem literacy",
+  "shortTitle": "02 — Filesystem literacy",
+  "workdir": "/home/isopod/labs/filesystem/02-fhs/",
+  "intro": "Work from home. Answers use the container's Linux filesystem. Use **`grep`**, **`awk`**, **`cut`**, **`sort`**, **`wc`**, or **`sed`** on paths such as **`/etc`**, **`/var/log`**, **`/proc`**, and **`/usr/local`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Which top-level directory on this Linux system contains both `log/` and `spool/` as immediate subdirectories?",
+      "expectedOutput": "/var",
+      "solutionMarkdown": "```bash\nls /var\n```\n\n**`/var`** holds logs, caches, spools, and similar host-local mutable data under the FHS."
+    },
+    {
+      "id": "q2",
+      "prompt": "Where on this container's filesystem is the SSH server configuration file `sshd_config` located? Give just the containing directory path.",
+      "expectedOutput": "/etc",
+      "solutionMarkdown": "```bash\nfind / -name sshd_config -type f 2>/dev/null | head -1 | xargs dirname\n```\n\n**`/etc`** holds system-wide static configuration files."
+    },
+    {
+      "id": "q3",
+      "prompt": "From **`/etc/passwd`**, print every username whose login shell is **`/bin/bash`**, one per line, sorted lexicographically.",
+      "expectedOutput": "analyst\ndeploy\nisopod\nroot",
+      "solutionMarkdown": "```bash\nawk -F: '$7 == \"/bin/bash\" { print $1 }' /etc/passwd | sort\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "How many lines in **`/var/log/auth.log`** contain the string `sshd`?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c sshd /var/log/auth.log\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "From **`/etc/passwd`**, print the login shell for user **`backupsvc`**.",
+      "expectedOutput": "/usr/sbin/nologin",
+      "solutionMarkdown": "```bash\nawk -F: '$1 == \"backupsvc\" { print $7 }' /etc/passwd\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Print the exact contents of **`/proc/sys/kernel/ostype`**.",
+      "expectedOutput": "Linux",
+      "solutionMarkdown": "```bash\ncat /proc/sys/kernel/ostype\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "`/proc/self` is a special symlink. When resolved, it points to a directory inside `/proc` named after a number. What does that number identify?",
+      "expectedOutput": "The calling process's PID.",
+      "solutionMarkdown": "```bash\nreadlink /proc/self\n```\n\nThe resolved path is `/proc/<PID>` for the process that called `readlink` — the number is the calling process's PID."
+    },
+    {
+      "id": "q8",
+      "prompt": "From **`/etc/systemd/system/course-worker.service`**, what is the absolute path assigned to `WorkingDirectory=`?",
+      "expectedOutput": "/srv/www/app",
+      "solutionMarkdown": "```bash\ngrep '^WorkingDirectory=' /etc/systemd/system/course-worker.service | cut -d= -f2-\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "From **`/proc/mounts`**, what filesystem type (third column) is used for the entry whose mount point is `/proc`?",
+      "expectedOutput": "proc",
+      "solutionMarkdown": "```bash\nawk '$2 == \"/proc\" { print $3; exit }' /proc/mounts\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "From **`/proc/mounts`**, print the mount point (second field) for the line whose first field is exactly `proc`.",
+      "expectedOutput": "/proc",
+      "solutionMarkdown": "```bash\nawk '$1 == \"proc\" { print $2; exit }' /proc/mounts\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Navigate standard hierarchy (FHS) mentally; know where logs, units, and caches typically live on Linux vs macOS.\n- Read Linux `/proc` and `/sys` pseudo-files for CPU, memory, cmdline, limits (high level).\n- Map macOS analogs (`log show`, `/Library/LaunchDaemons`, `sysctl`).\n\n## Scope\n\n**In scope:** orientation, safe read-only inspection. **Out of scope:** modifying `systemd` units (**16**), SIP-protected paths on macOS."
+}

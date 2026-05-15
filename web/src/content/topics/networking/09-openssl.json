@@ -1,0 +1,52 @@
+{
+  "id": "09-openssl",
+  "title": "TLS with openssl",
+  "shortTitle": "09 — TLS with openssl",
+  "workdir": "/home/isopod/labs/networking/09-openssl/",
+  "intro": "Work from the module directory. Part A parses **`lab-cert-x509-text.txt`**; Part B uses **`lab.cert.pem`** with **`openssl x509`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "From **`lab-cert-x509-text.txt`**, print the **Subject** line (the certificate subject, not the public key info section).",
+      "expectedOutput": "Subject: CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco",
+      "solutionMarkdown": "```bash\ngrep '^        Subject: CN=' /home/isopod/labs/26-tls-with-openssl/lab-cert-x509-text.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Print the **`Not Before:`** line from the **`Validity`** section.",
+      "expectedOutput": "Not Before: May 13 04:48:23 2026 GMT",
+      "solutionMarkdown": "Leading indentation collapses on compare; submit the trimmed **`Not Before:`** line."
+    },
+    {
+      "id": "q3",
+      "prompt": "Print the **`Not After :`** line (space before colon, OpenSSL text spelling).",
+      "expectedOutput": "Not After : Aug 15 04:48:23 2028 GMT",
+      "solutionMarkdown": "Match **`Not After :`** in the **`Validity`** block."
+    },
+    {
+      "id": "q4",
+      "prompt": "From **`lab-cert-x509-text.txt`**, print the **SHA-256 fingerprint** line.",
+      "expectedOutput": "sha256 Fingerprint=66:7D:89:20:8C:7A:B1:AA:02:BF:F2:4C:98:93:4E:BD:7B:38:FF:87:CF:78:92:46:22:C4:54:FA:F6:DE:5E:AD",
+      "solutionMarkdown": "```bash\ngrep '^sha256 Fingerprint=' /home/isopod/labs/26-tls-with-openssl/lab-cert-x509-text.txt\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "Use `openssl x509` to extract the subject field from **`lab.cert.pem`** in machine-readable form, suppressing the certificate output. What does stdout show?",
+      "expectedOutput": "subject=CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco",
+      "solutionMarkdown": "```bash\nopenssl x509 -in lab.cert.pem -noout -subject\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Use `openssl x509` to print the validity dates from **`lab.cert.pem`** in machine-readable form, suppressing the certificate body. What two lines does stdout show?",
+      "expectedOutput": "notBefore=May 13 04:48:23 2026 GMT\nnotAfter=Aug 15 04:48:23 2028 GMT",
+      "solutionMarkdown": "```bash\nopenssl x509 -in lab.cert.pem -noout -dates\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Use `openssl x509` on **`lab.cert.pem`** to print only the SHA-256 fingerprint, suppressing the certificate body. The output should match what the text dump shows. What does stdout show?",
+      "expectedOutput": "sha256 Fingerprint=66:7D:89:20:8C:7A:B1:AA:02:BF:F2:4C:98:93:4E:BD:7B:38:FF:87:CF:78:92:46:22:C4:54:FA:F6:DE:5E:AD",
+      "solutionMarkdown": "```bash\nopenssl x509 -in lab.cert.pem -noout -fingerprint -sha256\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Read **PEM** certificates with **`openssl x509`**: subject, validity window, fingerprints.\n- Interpret **`openssl x509 -text`** output (issuer, subject, validity, SANs, public key block).\n- Use **`openssl s_client`** to inspect a **handshake** against an endpoint you control (**localhost** only in exercises).\n\n## Scope\n\n**In scope:** `openssl x509` for inspection; parsing fixed **fixture** text; optional **`s_client`** / **`s_server`** on **127.0.0.1**. **Out of scope:** building a production PKI, ACME automation, TLS record cryptography, certificate pinning in apps.\n\n## Concept outline\n\n1. **PEM vs DER** — Base64 between `-----BEGIN CERTIFICATE-----` / `END`; `-inform PEM|DER`.\n2. **`openssl x509`** — `-noout`, `-text`, `-subject`, `-issuer`, `-dates`, `-serial`, `-fingerprint` (`-sha256`).\n3. **Reading `-text`** — `Subject:` vs `Subject Public Key Info:`; `Validity` / `Not Before` / `Not After`; trailing **`sha256 Fingerprint=`** when you pass **`-fingerprint -sha256`** alongside **`-text`** (OpenSSL appends it after the block).\n4. **`openssl s_client`** — `-connect host:port`, `-servername` (SNI), `-showcerts`; stdin closed to end the session (`echo | …` or `</dev/null`).\n5. **Trust** — fixture cert is **self-signed** and **not** in any system trust store; `-CAfile` / `verify` return codes in real scripts.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|--------------|\n| Inspect cert file | `openssl x509` | `step certificate inspect`, `certtool` (GnuTLS) |\n| TLS handshake probe | `openssl s_client` | `curl -v` (less raw), `gnutls-cli` |\n| Pretty print / graph | — | `step`, web PKI viewers (paste with care) |"
+}

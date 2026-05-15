@@ -1,0 +1,70 @@
+{
+  "id": "11-yq",
+  "title": "yq for YAML",
+  "shortTitle": "11 — yq for YAML",
+  "workdir": "/home/isopod/labs/basics/11-yq/",
+  "intro": "Work from the module directory. Use Mike Farah **`yq`** v4+ for questions 1–9; question 10 uses text tools only.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "**`manifest.yaml`** is a Kubernetes Deployment manifest. What is the value of `metadata.name`?",
+      "expectedOutput": "payments-api",
+      "solutionMarkdown": "```bash\nyq -r '.metadata.name' manifest.yaml\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "From **`manifest.yaml`**, print every `spec.containers[].image`, one per line, in document order.",
+      "expectedOutput": "payments:1.4.0\nenvoy:1.28",
+      "solutionMarkdown": "```bash\nyq -r '.spec.containers[].image' manifest.yaml\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "**`settings.yaml`** holds application configuration. What is the value of `database.host`?",
+      "expectedOutput": "db.internal",
+      "solutionMarkdown": "```bash\nyq -r '.database.host' settings.yaml\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "**`jobs.yaml`** defines a list of scheduled jobs. List all job IDs in alphabetical order, one per line.",
+      "expectedOutput": "export-7\ningest-001\nnightly",
+      "solutionMarkdown": "```bash\nyq -r '.jobs[].id' jobs.yaml | sort\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "From **`jobs.yaml`**, how many jobs have a `priority` strictly greater than `5`?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "Filter **`jobs[]`** with `select(.priority > 5)` then count the results."
+    },
+    {
+      "id": "q6",
+      "prompt": "**`inventory.yaml`** has an `items` list where each item has a `qty` field. What is the total quantity across all items?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "Emit quantities with `yq -r '.items[].qty' inventory.yaml` then pipe to `awk` or sum in the shell."
+    },
+    {
+      "id": "q7",
+      "prompt": "**`stacked.yaml`** contains two YAML documents separated by `---`. What is the `kind` of each document? List them in order, one per line.",
+      "expectedOutput": "ConfigMap\nService",
+      "solutionMarkdown": "```bash\nyq -r '.kind' stacked.yaml\n```\n\n`yq` iterates all documents in the file when you use `.kind` without a document index filter."
+    },
+    {
+      "id": "q8",
+      "prompt": "Convert **`manifest.yaml`** to JSON and print it as a single compact line with no indentation.",
+      "expectedOutput": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"name\":\"payments-api\",\"labels\":{\"app\":\"payments\",\"tier\":\"backend\"}},\"spec\":{\"replicas\":3,\"containers\":[{\"name\":\"app\",\"image\":\"payments:1.4.0\",\"ports\":[{\"containerPort\":8080}]},{\"name\":\"sidecar\",\"image\":\"envoy:1.28\"}]}}",
+      "solutionMarkdown": "```bash\nyq -o=json -I=0 '.' manifest.yaml\n```\n\n`-o=json` selects JSON output; `-I=0` sets indentation to 0 (compact)."
+    },
+    {
+      "id": "q9",
+      "prompt": "**`profile.yaml`** uses YAML merge anchors to share base configuration between environments. After merge resolution, what is the value of `production.timeout_ms`?",
+      "expectedOutput": "2000",
+      "solutionMarkdown": "```bash\nyq --yaml-fix-merge-anchor-to-spec=true -r '.production.timeout_ms' profile.yaml\n```\n\nThe `production` mapping overrides `timeout_ms: 2000` on top of the merged base, so the result is `2000`."
+    },
+    {
+      "id": "q10",
+      "prompt": "**`manifest.canon.txt`** is a plain-text copy of the manifest (no `yq` available). Using only text-processing tools, extract the value of the `tier` label.",
+      "expectedOutput": "backend",
+      "solutionMarkdown": "```bash\ngrep 'tier:' manifest.canon.txt | awk '{print $2}'\n```\n\nOr simply `grep -oP 'tier: \\K\\S+'` if GNU grep is available."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Read nested keys and **walk arrays** with Mike Farah **`yq`** expressions.\n- Choose **raw output** (`-r`) vs structured output for downstream tools.\n- Handle **multi-document** YAML with `yq` document iteration.\n- Convert YAML to **compact JSON** for piping into **`jq`**, HTTP clients, or checksums.\n- Understand **merge anchors** (`<<:`) and how overrides interact with inherited values.\n- Recognize **`yq` is not universal**: the **Mike Farah** and **kislyuk** tools share a name but differ in flags and semantics.\n\n## Scope\n\n**In scope:** query, filter, emit JSON, multi-doc reads, one text-only drill (`grep`/`awk`/`sed`) on a canonical-style excerpt. **Out of scope:** full **Kubernetes** schema validation, **JSONPath** servers, in-place **`yq -i`** editing workflows."
+}

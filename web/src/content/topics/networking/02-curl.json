@@ -1,0 +1,70 @@
+{
+  "id": "02-curl",
+  "title": "HTTP with curl",
+  "shortTitle": "02 — HTTP with curl",
+  "workdir": "/home/isopod/labs/networking/02-curl/",
+  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. All graded items use the authorized Docker-LAN web target **`http://lab-web/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Fetch `http://lab-web/api/status.php` as JSON. What is the value of the `.service` key?",
+      "expectedOutput": "nautilus-lab-web",
+      "solutionMarkdown": "```bash\ncurl -s http://lab-web/api/status.php | jq -r .service\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Fetch only the response headers for `http://lab-web/api/status.php` without downloading the body. What is the value of the `X-Lab-Host` header?",
+      "expectedOutput": "lab-web",
+      "solutionMarkdown": "```bash\ncurl -sI http://lab-web/api/status.php | awk -F': ' 'tolower($1) == \"x-lab-host\" { gsub(/\\r/, \"\", $2); print $2 }'\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Request `http://lab-web/no-such-page.txt` and capture only the HTTP status code, discarding the body. What code does the server return?",
+      "expectedOutput": "404",
+      "solutionMarkdown": "```bash\ncurl -s -o /dev/null -w '%{http_code}\\n' http://lab-web/no-such-page.txt\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Fetch `http://lab-web/redirect-manual.php`, following any redirect to the final destination. What is the first line of the final response body?",
+      "expectedOutput": "Nautilus LAN Lab Manual",
+      "solutionMarkdown": "```bash\ncurl -sL http://lab-web/redirect-manual.php | head -n1\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "Send a GET request to `http://lab-web/api/echo.php` where the query parameter `q` contains the literal string `a&b=c` (the `&` is part of the value, not a separator) and a second parameter named `empty` has no value. URL-encode the values to avoid shell misinterpretation. The endpoint returns JSON with a `.query` object. Print `.query.q`, a `|` separator, then `empty` if `.query.empty` is an empty string. What is the result?",
+      "expectedOutput": "a&b=c|empty",
+      "solutionMarkdown": "```bash\ncurl -sG http://lab-web/api/echo.php --data-urlencode 'q=a&b=c' --data-urlencode 'empty' | jq -r '.query.q + \"|\" + (if .query.empty == \"\" then \"empty\" else .query.empty end)'\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Send a GET request to `http://lab-web/api/echo.php` with the `User-Agent` header set to `nautilus-lab-curl/1.0`. The endpoint echoes request metadata as JSON. What does the `.user_agent` field contain?",
+      "expectedOutput": "nautilus-lab-curl/1.0",
+      "solutionMarkdown": "```bash\ncurl -s -A 'nautilus-lab-curl/1.0' http://lab-web/api/echo.php | jq -r .user_agent\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "POST the JSON body `{\"name\":\"lab\"}` to `http://lab-web/api/inspect.php` with `Content-Type: application/json`. The endpoint returns JSON. From the response, print `.method` and `.content_type` separated by a space. What is the result?",
+      "expectedOutput": "POST application/json",
+      "solutionMarkdown": "```bash\ncurl -s -X POST -H 'Content-Type: application/json' -d '{\"name\":\"lab\"}' http://lab-web/api/inspect.php | jq -r '.method + \" \" + .content_type'\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "Repeat the same POST from question 7. The endpoint also computes a SHA-256 hash of the raw request body and returns it as `.body_sha256`. What is the hex digest?",
+      "expectedOutput": "15e22f5289a63446ac11293a0752eeaa781863dca36b79fa4fa5b313f59c9221",
+      "solutionMarkdown": "```bash\ncurl -s -X POST -H 'Content-Type: application/json' -d '{\"name\":\"lab\"}' http://lab-web/api/inspect.php | jq -r .body_sha256\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Request `http://lab-web/redirect-manual.php` without following the redirect. Capture both the HTTP status code and the full redirect URL from the response. Print them separated by a space. What is the result?",
+      "expectedOutput": "302 http://lab-web/downloads/manual.txt",
+      "solutionMarkdown": "```bash\ncurl -s -o /dev/null -w '%{http_code} %{redirect_url}\\n' http://lab-web/redirect-manual.php\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "Fetch `http://lab-web/no-such-page.txt` in fail-on-error mode, discarding all output. What exit code does curl return when the server responds with a 4xx error?",
+      "expectedOutput": "22",
+      "solutionMarkdown": "```bash\ncurl -fsS http://lab-web/no-such-page.txt >/dev/null 2>&1\necho $?\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Use verbs, custom headers, query strings, and form modes (`--data`, `--data-urlencode`, multipart).\n- Control TLS verification, SNI, client certs, and pinned public key concepts (lab).\n- Save/download with content disposition hints; resume downloads; retry policies.\n- Read exit codes and write shell-friendly silent checks (`-f`, `-sS`).\n\n## Scope\n\n**In scope:** `curl` as CLI HTTP client against the authorized lab web host **`http://lab-web/`** on the Docker LAN. **Out of scope:** full REST client UX (use `httpie`, `xh` as alternates), TLS deep dives, and third-party probing.\n\n## Concept outline\n\n1. **Basics** — `-G` with `--data-urlencode`, `-H`, `-A` user agent, `-e` referer (ethical use).\n2. **Bodies** — JSON with `-d @file` + `Content-Type`; `-F` files.\n3. **Auth** — Basic, Bearer token header, Digest (rare); `.netrc` mention and risk.\n4. **TLS** — `-k` lab-only, `--cacert`, `--cert`/`--key`, TLS version forcing for legacy labs.\n5. **Output** — `-o`, `-w '%{http_code}'`, `-D headers.txt`, `-J` remote header filename.\n6. **Debug** — `-v` / `--trace-ascii` for learning; redact tokens in saved logs.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| HTTP/S CLI | `curl` | `wget` (**20**), `httpie` / `xh`, `aria2c` (multi-connection), `openssl s_client` (**26**) for bare TLS probes. |\n| WebSocket | `curl` (limited) | `websocat`, `wscat`, `socat` (**27**). |\n| gRPC | N/A | `grpcurl`, `buf curl`. |\n| Load testing | N/A | `hey`, `vegeta`, `k6` — out of scope but point from performance mindset. |"
+}

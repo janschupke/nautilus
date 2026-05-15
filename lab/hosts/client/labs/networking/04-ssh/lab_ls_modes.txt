@@ -1,0 +1,5 @@
+# Synthetic permission strings for lab discussion (RFC5737-style names only).
+# Fields: path<TAB>ls_mode_nine_chars
+id_ed25519_lab	-rw-------
+ssh_lab_dir	drwxr-xr-x
+authorized_keys_lab	-rw-rw-r--

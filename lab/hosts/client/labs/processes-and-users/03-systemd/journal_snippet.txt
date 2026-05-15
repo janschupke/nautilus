@@ -1,0 +1,4 @@
+May 13 10:00:01 labhost sshd[100]: ERROR bad host key in /etc/ssh/ssh_host_rsa_key
+May 13 10:00:02 labhost nginx[200]: ERROR upstream timed out
+May 13 10:00:03 labhost sshd[101]: Accepted publickey for alice
+May 13 10:00:04 labhost cron[300]: (root) CMD (/usr/bin/true)

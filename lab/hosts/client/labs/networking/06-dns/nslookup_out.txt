@@ -1,0 +1,4 @@
+Non-authoritative answer:
+www.lab.example	canonical name = edge.lab.example.
+Name:	edge.lab.example
+Address: 198.51.100.7

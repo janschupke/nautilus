@@ -1,0 +1,13 @@
+# nc / netcat lab transcript (localhost only)
+# Do not aim these patterns at hosts you do not own or without permission.
+
+## TCP echo
+# nc -l 127.0.0.1 18080
+# printf 'ping\n' | nc 127.0.0.1 18080
+
+## UDP
+# nc -u -l 127.0.0.1 18081
+# printf 'hi\n' | nc -u -w1 127.0.0.1 18081
+
+# Anti-pattern example (avoid on laptops on untrusted networks):
+# nc -l 0.0.0.0 19999

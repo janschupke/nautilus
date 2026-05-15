@@ -1,0 +1,4 @@
+timestamp	sensor	alert_type	encoded_flag
+20260513T10:00	fw-edge-01	packet-loss	VGltZW91dA==
+20260513T10:01	ids-core-02	intrusion	oneynapyr-7749
+20260513T10:02	vpn-gw-03	timeout	UmV0cnlpbmc=

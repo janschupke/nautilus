@@ -1,0 +1,4 @@
+www.lab.example is an alias for edge.lab.example.
+edge.lab.example has address 198.51.100.7
+edge.lab.example has IPv6 address 2001:db8::7
+cdn.lab.example has address 198.51.100.99

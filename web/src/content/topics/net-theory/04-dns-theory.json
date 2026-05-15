@@ -1,0 +1,70 @@
+{
+  "id": "04-dns-theory",
+  "title": "DNS record types and resolution",
+  "shortTitle": "04 — DNS record types and resolution",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on DNS record types and protocol behaviour. Understanding DNS is essential for diagnosing service failures, verifying TLS certificate issuance, and understanding how traffic is directed.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What DNS record type maps a hostname to an IPv4 address?",
+      "expectedOutput": "A",
+      "solutionMarkdown": "The **A record** (Address record) stores a 32-bit IPv4 address. A single hostname can have multiple A records for load distribution (round-robin DNS). Example:\n```\napi.example.com.  300  IN  A  93.184.216.34\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "What DNS record type maps a hostname to an IPv6 address?",
+      "expectedOutput": "AAAA",
+      "solutionMarkdown": "The **AAAA record** (Quad-A) stores a 128-bit IPv6 address. Most resolvers query for both A and AAAA simultaneously (Happy Eyeballs, [RFC 8305](https://www.rfc-editor.org/rfc/rfc8305)) and use the first response that succeeds."
+    },
+    {
+      "id": "q3",
+      "prompt": "What DNS record type is used for reverse DNS lookups (mapping an IP address back to a hostname)?",
+      "expectedOutput": "PTR",
+      "solutionMarkdown": "**PTR records** live in the `in-addr.arpa.` (IPv4) or `ip6.arpa.` (IPv6) zones. For `93.184.216.34`, the lookup is `34.216.184.93.in-addr.arpa`. PTR records are checked by SMTP servers to verify sender legitimacy and appear in `traceroute` output."
+    },
+    {
+      "id": "q4",
+      "prompt": "What DNS record type holds authoritative zone metadata, including the serial number, refresh interval, and the primary name server?",
+      "expectedOutput": "SOA",
+      "solutionMarkdown": "The **SOA (Start of Authority)** record is the first record in every zone. It contains:\n- Primary nameserver hostname\n- Responsible party email\n- Serial number (incremented on every zone change)\n- Refresh, Retry, Expire intervals\n- Negative caching TTL\n\nSecondary servers poll the primary using the serial number to decide whether to initiate a zone transfer."
+    },
+    {
+      "id": "q5",
+      "prompt": "What DNS record type delegates authority for a zone to one or more name servers?",
+      "expectedOutput": "NS",
+      "solutionMarkdown": "**NS (Name Server)** records list the authoritative name servers for a zone. The registrar publishes NS records at the parent zone (e.g., `.com`) pointing to the zone's own authoritative servers. Changing NS records at the registrar is how you delegate DNS to a new provider."
+    },
+    {
+      "id": "q6",
+      "prompt": "What DNS record type directs email to a mail server and carries a priority value?",
+      "expectedOutput": "MX",
+      "solutionMarkdown": "**MX (Mail Exchanger)** records have a priority (lower = preferred) and a hostname. Example:\n```\nexample.com.  300  IN  MX  10 mail1.example.com.\nexample.com.  300  IN  MX  20 mail2.example.com.\n```\nMX records must point to A/AAAA records, not CNAMEs ([RFC 2181](https://www.rfc-editor.org/rfc/rfc2181)). Missing or misconfigured MX records cause mail delivery failures."
+    },
+    {
+      "id": "q7",
+      "prompt": "What DNS record type is used to publish SPF sender policies, DKIM public keys, and DMARC policies?",
+      "expectedOutput": "TXT",
+      "solutionMarkdown": "**TXT records** store arbitrary text. Key uses:\n- `v=spf1 ...` — SPF policy (authorised senders)\n- `_domainkey` subdomain — DKIM public key\n- `_dmarc` subdomain — DMARC policy\n- Domain ownership verification (Let's Encrypt, Google, etc.)\n\nTXT records have no formal size limit but UDP responses constrain practical length."
+    },
+    {
+      "id": "q8",
+      "prompt": "What DNS record type enables service discovery by encoding protocol, port number, and target hostname in a single record?",
+      "expectedOutput": "SRV",
+      "solutionMarkdown": "**SRV records** ([RFC 2782](https://www.rfc-editor.org/rfc/rfc2782)) have the format `_service._proto.name TTL IN SRV priority weight port target`. Example for SIP:\n```\n_sip._tcp.example.com.  IN  SRV  10 20 5060 sip.example.com.\n```\nUsed by SIP, XMPP, Kubernetes, and many other protocols for automatic endpoint discovery."
+    },
+    {
+      "id": "q9",
+      "prompt": "DNS normally uses UDP port 53. In which two situations does DNS use TCP instead?",
+      "expectedOutput": "zone transfers and responses exceeding 512 bytes",
+      "solutionMarkdown": "DNS falls back to **TCP 53** when:\n1. **Zone transfers** (AXFR/IXFR) — always TCP\n2. **Responses larger than 512 bytes** — the server sets the TC (truncated) bit in the UDP response, prompting the client to retry over TCP\n\n[RFC 7766](https://www.rfc-editor.org/rfc/rfc7766) makes TCP mandatory for all resolvers regardless of response size. EDNS0 ([RFC 6891](https://www.rfc-editor.org/rfc/rfc6891)) extends the UDP payload limit to 4096+ bytes, reducing TCP fallbacks in practice."
+    },
+    {
+      "id": "q10",
+      "prompt": "What DNS record type restricts which certificate authorities are permitted to issue TLS certificates for a domain?",
+      "expectedOutput": "CAA",
+      "solutionMarkdown": "**CAA (Certification Authority Authorization)** records ([RFC 8659](https://www.rfc-editor.org/rfc/rfc8659)). CAs are required by the CA/Browser Forum to check CAA records before issuing a certificate. Example:\n```\nexample.com.  IN  CAA  0 issue \"letsencrypt.org\"\nexample.com.  IN  CAA  0 issuewild \";\"\n```\nA missing CAA record means any CA may issue. A CAA record with an unknown CA name blocks issuance from that CA."
+    }
+  ],
+  "summaryMarkdown": "## DNS record type quick reference\n\n| Type | Purpose |\n|---|---|\n| A | Hostname → IPv4 |\n| AAAA | Hostname → IPv6 |\n| CNAME | Alias → canonical name |\n| MX | Domain → mail server |\n| NS | Zone delegation |\n| PTR | IP → hostname (reverse) |\n| SOA | Zone authority metadata |\n| SRV | Service discovery |\n| TXT | Arbitrary text (SPF, DKIM, DMARC, verification) |\n| CAA | CA authorisation |\n\n## Resolution mechanics\n\n1. Client queries recursive resolver (e.g. 8.8.8.8)\n2. Resolver queries root servers → TLD servers → authoritative server\n3. Authoritative server returns the answer\n4. Resolver caches per TTL and returns to client\n\n**Negative caching** (NXDOMAIN) is controlled by the SOA's minimum TTL field."
+}

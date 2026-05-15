@@ -1,0 +1,20 @@
+# Synthetic SSH client config for parsing labs only (no real hosts).
+# Indentation uses two spaces after each Host line.
+
+Host work
+  HostName jumpbox.lab.example
+  User alice
+  Port 2222
+  IdentityFile ~/.ssh/id_ed25519_work
+  IdentitiesOnly yes
+
+Host gitlab
+  HostName gitlab.lab.example
+  User deploy
+  Port 22
+  IdentityFile ~/.ssh/id_ed25519_gitlab
+
+Host backup
+  HostName 192.0.2.15
+  User backup-op
+  IdentityFile ~/.ssh/id_ed25519_backup

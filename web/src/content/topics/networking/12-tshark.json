@@ -1,0 +1,70 @@
+{
+  "id": "12-tshark",
+  "title": "tshark decode workflows",
+  "shortTitle": "12 — tshark decode workflows",
+  "workdir": "/home/isopod/labs/networking/12-tshark/",
+  "intro": "Work from the module directory. Treat the **`.tsv`** files (**`http_tls_fields.tsv`**, **`dns_fields.tsv`**, **`mixed_addr.tsv`**) as tab-separated tables.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "From **`http_tls_fields.tsv`**, print **every data line** (skip header) where **`tcp_dstport`** is **`443`**. Print the **full** line each time.",
+      "expectedOutput": "1 0.001 192.168.1.10 443\n2 0.002 192.168.1.10 443\n5 0.030 172.16.0.5 443\n6 0.040 192.168.1.10 443",
+      "solutionMarkdown": "Filter TSV rows on the destination port column."
+    },
+    {
+      "id": "q2",
+      "prompt": "From **`http_tls_fields.tsv`**, list **`ip_src`** for rows where **`tcp_dstport`** is **`80`**. **Unique**, **sorted** ascending, one IP per line.",
+      "expectedOutput": "192.168.1.10\n192.168.1.11",
+      "solutionMarkdown": "**`awk -F '\\t' …`** then **`sort -u`**."
+    },
+    {
+      "id": "q3",
+      "prompt": "In **one line** (no shell command), give a Wireshark **display filter** for **TCP segments whose destination port is 443** using **`tcp.dstport==443`**.",
+      "expectedOutput": "tcp.dstport==443",
+      "solutionMarkdown": "Display filter field **`tcp.dstport`**."
+    },
+    {
+      "id": "q4",
+      "prompt": "From **`dns_fields.tsv`**, print **`dns_qry_name`** only for rows where that name **contains** **`cdn`** (case-sensitive), **file order**.",
+      "expectedOutput": "cdn.partner.io\ncdn.partner.io\ntrack.badcdn.test",
+      "solutionMarkdown": "Substring filter on the query-name column."
+    },
+    {
+      "id": "q5",
+      "prompt": "How many rows in **`dns_fields.tsv`** have **`combo`** containing **`response`**? Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\nawk -F '\\t' 'NR>1 && $4 ~ /response/' ... | wc -l\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "From **`http_tls_fields.tsv`**, for data rows where **`http_method`** is exactly **`GET`**, print **`frame_num`:`ip_src`:`http_host`** (no spaces around colons), **one per match**, sorted by **`frame_num`** numeric ascending.",
+      "expectedOutput": "4:192.168.1.10:cdn.test\n7:192.168.1.11:site.org\n8:192.168.1.10:api.example",
+      "solutionMarkdown": "Join three columns; **`sort -t: -k1,1n`**."
+    },
+    {
+      "id": "q7",
+      "prompt": "From **`mixed_addr.tsv`**, print **full data lines** (not the header) where **`ip_dst`** contains **`:`** (IPv6 textual heuristic).",
+      "expectedOutput": "2 2001:db8::1\n4 2001:db8:aced::7",
+      "solutionMarkdown": "Filter non-header rows whose destination has a colon."
+    },
+    {
+      "id": "q8",
+      "prompt": "In **one sentence**, how does a **capture filter** (BPF, **`tcpdump`** while sniffing) differ from a **display filter** (**`tshark -Y`** on a read trace)?",
+      "expectedOutput": "Capture filters are BPF expressions evaluated while packets are collected (limited primitives, no per-field Wireshark dissector tree), whereas display filters are Wireshark expressions applied after capture to already-decoded frames and their fields (what tshark -Y uses).",
+      "solutionMarkdown": "Contrast **kernel-time BPF** vs **post-decode expression**."
+    },
+    {
+      "id": "q9",
+      "prompt": "From **`http_tls_fields.tsv`**, which **`ip_src`** appears on the **largest** number of rows (all ports)? Tie-break: lexicographically smallest IP. Print **only** that IP.",
+      "expectedOutput": "192.168.1.10",
+      "solutionMarkdown": "Count rows per **`ip_src`**; pick the max count."
+    },
+    {
+      "id": "q10",
+      "prompt": "Name the three **`tshark`** flags for: **(a)** read packets from a file, **(b)** display filter, **(c)** **`-T fields`** style output. Short forms fine.",
+      "expectedOutput": "(a) -r (read capture file). (b) -Y (display filter). (c) -T fields (tabular field output; typically with repeated -e).",
+      "solutionMarkdown": "**`-r`**, **`-Y`**, **`-T fields`** plus **`-e`** fields."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Run **`tshark`** on a file with **`-r`**, narrow with **`-Y`** **display filters**, and project columns with **`-T fields`** and **`-e`**.\n- Relate **Wireshark display filter** syntax to the **field names** you export (e.g. **`ip.src`**, **`tcp.dstport`**, **`dns.qry.name`**).\n- Post-process **tab-separated** **`tshark`** output using **`awk`** / **`sort`** like any other TSV.\n- State the difference between **BPF capture filters** and **display filters**.\n\n## Scope\n\n**In scope:** read-only decode, batch extraction, small filters. **Out of scope:** full TLS decryption setup, **Lua** dissectors, **`-X`** extcap plugins.\n\n## Concept outline\n\n1. **Invocation** — **`tshark -r file.pcap`**, **`-n`** / **`-N`** name resolution toggles, **`-c`** frame cap.\n2. **Display filters** — same language as Wireshark GUI; examples **`tcp.dstport==443`**, **`dns.qry.name contains \"cdn\"`**, **`ip.version == 6`**.\n3. **`-T fields`** — repeated **`-e`** builds columns; **`-E separator=\\t`**, **`-E header=y`**, **`-E occurrence=f`** for multi-value fields.\n4. **Performance** — narrow **`-Y`** early; avoid giant **`-e`** lists until needed; consider **`tshark -G fields`** for discovery.\n5. **Platform** — Wireshark **CLI** builds differ slightly by packaging; field names track the upstream **Wireshark** release.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Decode PCAP to text | `tshark` | Wireshark GUI, **`capinfos`**, **`editcap`** for slicing |\n| Regex on payloads | `tshark -Y` + `frame contains` | **`ngrep`**, **`tcpdump -A`** quick ASCII |\n| Huge batch stats | `tshark` + `awk` / DuckDB | **Brim** / **Zed**, **Moloch**/**Arkime** |"
+}

@@ -1,0 +1,70 @@
+{
+  "id": "04-processes",
+  "title": "Linux process model",
+  "shortTitle": "04 — Linux process model",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on how Linux creates, schedules, and terminates processes. Understanding the process model is foundational for scripting, debugging hangs, and writing reliable services.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What two system calls does a Linux process use to start a new program: one to duplicate itself and one to replace its memory image with a new program?",
+      "expectedOutput": "fork and exec",
+      "solutionMarkdown": "`fork()` creates an exact copy of the calling process (same code, data, open files — copy-on-write). `exec()` (family: `execve`, `execvp`, …) replaces the current process image with a new program without creating a new PID.\n\nShell execution model:\n```\nbash fork()s → child calls exec(ls) → ls runs as the child\n bash waits for child to exit\n```\nServers use fork-without-exec to create worker processes sharing the same code."
+    },
+    {
+      "id": "q2",
+      "prompt": "What PID is always assigned to the first user-space process that the Linux kernel starts after booting?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "**PID 1** is special:\n- It is started directly by the kernel (`/sbin/init` or systemd)\n- It cannot be killed with SIGKILL\n- When any process becomes orphaned, it is re-parented to PID 1\n- On systemd systems, PID 1 also manages the cgroup hierarchy and the journal\n\n`pstree -p` shows the full process tree rooted at PID 1."
+    },
+    {
+      "id": "q3",
+      "prompt": "What is the term for a process that has exited but whose parent has not yet called wait() to collect its exit status, leaving a table entry in the process table?",
+      "expectedOutput": "zombie",
+      "solutionMarkdown": "A **zombie process** (state `Z` in `ps`) has finished executing but its exit status has not been read by its parent. It consumes a process table slot but no CPU or memory.\n\nZombies are cleaned up when the parent calls `wait()` or `waitpid()`. A large number of zombies indicates a buggy parent. If the parent exits, the zombie is re-parented to PID 1 (systemd), which calls `wait()` automatically."
+    },
+    {
+      "id": "q4",
+      "prompt": "What is the term for a process whose parent has terminated, causing the kernel to re-parent it to PID 1?",
+      "expectedOutput": "orphan",
+      "solutionMarkdown": "An **orphan process** is re-parented to PID 1 (systemd) automatically by the kernel when its parent exits. This is normal and intentional for daemonisation — a process can deliberately double-fork to detach from its parent and become an orphan adopted by init.\n\nContrast with zombies: orphans are running; zombies have exited but not been waited on."
+    },
+    {
+      "id": "q5",
+      "prompt": "What single-character process state code in ps output indicates a process that is runnable — either executing on a CPU or waiting in the run queue?",
+      "expectedOutput": "R",
+      "solutionMarkdown": "Process state codes in `ps` output:\n\n| Code | State |\n|---|---|\n| `R` | Running / runnable |\n| `S` | Interruptible sleep (waiting for event) |\n| `D` | Uninterruptible sleep (I/O wait) |\n| `Z` | Zombie |\n| `T` | Stopped (SIGSTOP or debugger) |\n| `I` | Idle kernel thread |\n\nA `D` state process cannot be killed — it is blocked in a kernel call waiting for I/O to complete."
+    },
+    {
+      "id": "q6",
+      "prompt": "What process state code indicates a process in an uninterruptible sleep — typically blocked waiting for I/O — that cannot be interrupted by signals?",
+      "expectedOutput": "D",
+      "solutionMarkdown": "State `D` (uninterruptible sleep) means the process is inside a kernel code path that must not be interrupted — usually waiting for a disk read, NFS response, or similar. `kill -9` has no effect on a `D` state process.\n\nA sustained `D` state often indicates:\n- A hung NFS mount\n- A failing disk or driver\n- A kernel bug\n\nThe only resolution is often a reboot or unmounting the offending resource."
+    },
+    {
+      "id": "q7",
+      "prompt": "What is the range of nice values in Linux, from highest scheduling priority (most CPU-favoured) to lowest?",
+      "expectedOutput": "-20 to 19",
+      "solutionMarkdown": "Nice values range from **-20** (highest priority, most CPU-favoured) to **19** (lowest priority). The default is 0. Increasing niceness makes a process more polite to other processes.\n\n```bash\nnice -n 10 ./cpu-heavy-script   # start with niceness +10\nrenice -n 5 -p 1234             # change running process\n```\nOnly root can set negative nice values. The scheduler uses nice to weight CPU time allocation."
+    },
+    {
+      "id": "q8",
+      "prompt": "What kernel optimisation allows a parent and child process — immediately after fork() — to share the same physical memory pages until one of them writes to a page?",
+      "expectedOutput": "copy-on-write",
+      "solutionMarkdown": "**Copy-on-write (COW)**: after `fork()`, parent and child share the same physical pages, marked read-only. When either process writes to a page, the kernel copies that page so each has its own private copy.\n\nThis makes `fork()` very fast — no physical memory is copied upfront. Only pages that are actually modified are duplicated. Programs that fork and exec immediately (shells) never trigger a copy of the parent's data pages."
+    },
+    {
+      "id": "q9",
+      "prompt": "In the /proc virtual filesystem, what path contains runtime information — including open file descriptors, memory maps, and environment — for the process with PID 1234?",
+      "expectedOutput": "/proc/1234",
+      "solutionMarkdown": "Each running process has a directory at `/proc/<PID>/` containing:\n\n| File | Content |\n|---|---|\n| `cmdline` | Null-separated argv |\n| `status` | State, UID, memory stats |\n| `fd/` | Symlinks to open files |\n| `maps` | Memory map |\n| `environ` | Environment variables |\n| `exe` | Symlink to executable |\n\n```bash\nls -la /proc/1/fd    # open files of PID 1 (systemd)\ncat /proc/1/cmdline | tr '\\0' ' '\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "What field in /proc/<PID>/status shows the PID of the process that created (is the parent of) the given process?",
+      "expectedOutput": "PPid",
+      "solutionMarkdown": "```bash\ngrep PPid /proc/1234/status\n# PPid: 1\n```\n**PPid** (Parent PID) identifies the process that called `fork()` to create this one. Tracing PPid chains up to PID 1 gives the full ancestry.\n\n`ps -o pid,ppid,comm` shows PID, PPID, and command name in a compact table. `pstree` visualises the entire tree."
+    }
+  ],
+  "summaryMarkdown": "## Process states\n\n| Code | State | Killable? |\n|---|---|---|\n| `R` | Running / runnable | Yes |\n| `S` | Interruptible sleep | Yes |\n| `D` | Uninterruptible I/O wait | No |\n| `Z` | Zombie (exited, not waited) | N/A |\n| `T` | Stopped | Yes |"
+}

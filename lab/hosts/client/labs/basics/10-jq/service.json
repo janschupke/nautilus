@@ -1,0 +1,5 @@
+{
+  "timeouts": { "connect": 5, "read": 30 },
+  "routes": { "/health": "ok", "/api": "proxy" },
+  "apiVersion": "v2"
+}

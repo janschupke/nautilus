@@ -1,0 +1,70 @@
+{
+  "id": "05-rsync",
+  "title": "rsync for sync",
+  "shortTitle": "05 — rsync for sync",
+  "workdir": "/home/isopod/labs/networking/05-rsync/",
+  "intro": "Work from the module directory. Parse **`rsync_dryrun.txt`** and **`rsync_merge.txt`** unless noted.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In **`rsync_dryrun.txt`**, how many files are scheduled for **deletion** from the destination? Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c '^\\*deleting' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "From those **`*deleting`** lines, print the **basename** only (after the last **`/`**), **one per line**, sorted in **ASCII** order.",
+      "expectedOutput": "obsolete.log\nold_cache.dat",
+      "solutionMarkdown": "Parse **`*deleting …/path`**, take basename, **`sort`**."
+    },
+    {
+      "id": "q3",
+      "prompt": "How many **regular file transfers** (not deletions or directory changes) are listed? Print **only** the integer.",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\ngrep -c '^>f' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Print the **full relative path** from each **`>f`** line (path after the 11-character itemize code and its space), **one per line**, sorted in ASCII order.",
+      "expectedOutput": "README\nbootstrap.bin\nlib/core.so\nlib/plugins/a.so",
+      "solutionMarkdown": "Strip the itemize prefix from **`>f…`** lines, then **`sort`**."
+    },
+    {
+      "id": "q5",
+      "prompt": "How many of the transferred files are being **created for the first time** on the destination — i.e. all transfer attributes are new? Print **only** the integer.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -c '^>f+++++++++ ' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "How many **directory creations** appear in the dry-run output? Print **only** the integer.",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ngrep -c '^cd+++++++++' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Using **`rsync_merge.txt`** (merge semantics: **`+`** / **`-`**, **`*`** does not cross **`/`**, first match wins): would **`server.log`** at the **transfer root** be included? Answer **`YES`** or **`NO`** only.",
+      "expectedOutput": "YES",
+      "solutionMarkdown": "**`+ *.log`** matches **`server.log`** before **`- *`**."
+    },
+    {
+      "id": "q8",
+      "prompt": "Same rules: would **`nested/server.log`** be included? Answer **`YES`** or **`NO`** only.",
+      "expectedOutput": "NO",
+      "solutionMarkdown": "**`*.log`** does not match across **`/`**; **`- *`** wins."
+    },
+    {
+      "id": "q9",
+      "prompt": "In **two or three sentences**, explain the layout difference between **`rsync -a src/ dest/`** and **`rsync -a src dest/`** when **`src`** is a directory.",
+      "expectedOutput": "rsync -a src/ dest/ copies the contents of src into dest, so files land directly under dest/. rsync -a src dest/ copies the directory src as a whole, creating dest/src/.... The trailing slash on the source controls whether the destination receives a mirror of the folder's contents or a new subdirectory named like the source.",
+      "solutionMarkdown": "Compare **contents** vs **directory-as-a-whole** semantics."
+    },
+    {
+      "id": "q10",
+      "prompt": "In **three to five sentences**, contrast **`--delete`**, **`--delete-before`**, **`--delete-after`**, and **`--delete-delayed`**, and why **`--dry-run`** matters before any delete mode.",
+      "expectedOutput": "--delete removes files in the destination that are absent from the source so the destination converges to the source's shape; --delete-before does those deletes before new data is written (good for freeing space, risky if the run stops early); --delete-after deletes extras after the main file updates (old junk lingers longer); --delete-delayed batches deletes to run late in the transfer, deferring most removals until later in the run. All of them can destroy data if SRC/DEST are reversed, so rsync -n with identical arguments is mandatory before a real delete run.",
+      "solutionMarkdown": "Summarize timing of deletes vs transfers from **`answers.md`**."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Use trailing slash semantics (`src/` vs `src`) to control directory contents vs directory node.\n- Apply include/exclude filters (`--include`, `--exclude`, `--filter`).\n- Interpret `--dry-run` output before destructive `--delete` variants.\n- Choose checksum vs size/mtime for change detection (`-c` cost).\n\n## Scope\n\n**In scope:** local and over-SSH sync in lab. **Out of scope:** `rsync` daemon mode in production.\n\n## Concept outline\n\n1. **Basic invocations** — `-a` archive bits, `-v`, `-h`, `-z` compression trade-off on fast LAN.\n2. **Deletes** — `--delete`, `--delete-delayed`, `--backup` + `--backup-dir`.\n3. **Partial / resume** — `--partial`, `--inplace` risks; `rsync` 3.2+ features if available.\n4. **Remote** — `rsync -e \"ssh -i …\" user@host:path/`.\n5. **macOS** — bundled `rsync` age vs Homebrew modern `rsync` (feature gaps).\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Directory sync | `rsync` | `cp -a` (no delete/sync semantics), `tar` pipeline **13** (`tar cf - src \\| ssh … tar xf -`), `zsync` (HTTP), `rclone` (multi-backend cloud). |\n| Two-way sync | `rsync` one-way per direction | `unison`, `syncthing` GUIs; **not** `rsync` alone. |\n| Byte-level diff large files | `rsync --inplace` | `zsync`, `rdiff-backup`, `borg` for versioned backups. |\n| Mirror HTTP | N/A | `wget` (**20**), `lftp mirror`. |"
+}

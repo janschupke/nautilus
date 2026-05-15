@@ -1,0 +1,70 @@
+{
+  "id": "07-ipsec",
+  "title": "IPsec and VPN concepts",
+  "shortTitle": "07 — IPsec and VPN concepts",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on IPsec architecture — the framework used by site-to-site VPNs, remote-access VPNs (IKEv2/EAP), and WireGuard predecessors. Understanding IPsec is necessary for configuring firewall rules that allow VPN traffic and for diagnosing tunnel failures.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What are the two IPsec encapsulation modes?",
+      "expectedOutput": "transport and tunnel",
+      "solutionMarkdown": "**Transport mode** — encrypts/authenticates only the IP payload (TCP/UDP/etc.); the original IP header is kept. Used for host-to-host protection.\n\n**Tunnel mode** — encapsulates the entire original IP packet inside a new IP packet. Used for gateway-to-gateway (site-to-site) VPNs. The inner IP header contains the real source/destination; the outer header routes through the internet."
+    },
+    {
+      "id": "q2",
+      "prompt": "Which IPsec protocol provides both confidentiality (encryption) and data-origin authentication?",
+      "expectedOutput": "ESP",
+      "solutionMarkdown": "**ESP (Encapsulating Security Payload, IP protocol 50)** — encrypts the payload and optionally adds an authentication trailer (ICV). In tunnel mode, ESP encrypts the entire inner IP packet. Modern deployments use ESP with AES-GCM (provides both encryption and integrity in one pass)."
+    },
+    {
+      "id": "q3",
+      "prompt": "Which IPsec protocol provides integrity and authentication but no encryption?",
+      "expectedOutput": "AH",
+      "solutionMarkdown": "**AH (Authentication Header, IP protocol 51)** — protects the IP header and payload with a hash-based MAC but does not encrypt the payload. Because AH authenticates the outer IP header, it is incompatible with NAT (NAT changes the IP header, breaking the hash). AH is rarely used in modern deployments."
+    },
+    {
+      "id": "q4",
+      "prompt": "What IP protocol number is assigned to ESP?",
+      "expectedOutput": "50",
+      "solutionMarkdown": "**IP protocol 50**. Firewalls that block all unknown protocols will drop ESP unless explicitly permitted. A common diagnostic mistake is allowing only UDP 500 (IKE) but forgetting to permit IP protocol 50 for the actual data tunnel."
+    },
+    {
+      "id": "q5",
+      "prompt": "What IP protocol number is assigned to AH?",
+      "expectedOutput": "51",
+      "solutionMarkdown": "**IP protocol 51**. Less common than ESP. Because AH is incompatible with NAT (see AH vs ESP question), most modern IPsec deployments use ESP-only with authentication (ESP with NULL encryption + HMAC, or AES-GCM for both)."
+    },
+    {
+      "id": "q6",
+      "prompt": "What UDP port does IKE use for initial SA negotiation?",
+      "expectedOutput": "500",
+      "solutionMarkdown": "**UDP 500** ([RFC 7296](https://www.rfc-editor.org/rfc/rfc7296)). When either peer is behind NAT, IKE detects this (NAT-D payloads) and switches to **UDP 4500** (NAT Traversal). ESP packets are then encapsulated in UDP 4500 so NAT can track the connection."
+    },
+    {
+      "id": "q7",
+      "prompt": "What data structure stores the active parameters (SPI, algorithm, keys, lifetime) for one direction of an IPsec tunnel?",
+      "expectedOutput": "Security Association",
+      "solutionMarkdown": "A **Security Association (SA)** is a unidirectional logical connection carrying:\n- SPI (Security Parameters Index) — 32-bit tag in the ESP/AH header that identifies this SA\n- Encryption and integrity algorithms and keys\n- Sequence number counter (anti-replay)\n- Lifetime (bytes or time)\n\nA bidirectional tunnel requires two SAs (one in each direction). SAs are stored in the **Security Association Database (SAD)**."
+    },
+    {
+      "id": "q8",
+      "prompt": "What IKEv1 exchange mode protects peer identities by encrypting the ID payloads, at the cost of more round trips?",
+      "expectedOutput": "Main mode",
+      "solutionMarkdown": "**IKEv1 Main mode** ([RFC 2409](https://www.rfc-editor.org/rfc/rfc2409)) uses 6 messages to establish the IKE SA, encrypting the ID exchange after keys are established — protecting peer identities from passive eavesdroppers.\n\n**Aggressive mode** uses only 3 messages (faster) but sends the ID payload in cleartext, exposing identities and making it vulnerable to offline dictionary attacks on pre-shared keys."
+    },
+    {
+      "id": "q9",
+      "prompt": "What IKE feature allows IPsec to work through a NAT device by encapsulating ESP inside UDP?",
+      "expectedOutput": "NAT-T",
+      "solutionMarkdown": "**NAT-T (NAT Traversal, [RFC 3948](https://www.rfc-editor.org/rfc/rfc3948))** — IKE peers detect a NAT in the path via NAT-D (NAT Detection) payloads. Once detected, both peers switch to UDP 4500, and ESP packets are wrapped in UDP headers. The NAT device can now track them as regular UDP flows.\n\nFirewall rules must allow UDP 4500 in addition to UDP 500 and IP protocol 50 for IPsec to work through NAT."
+    },
+    {
+      "id": "q10",
+      "prompt": "In IKEv2, what single exchange creates the IKE SA and the first child SA (IPsec tunnel) simultaneously, replacing IKEv1's two-phase approach?",
+      "expectedOutput": "IKE_AUTH",
+      "solutionMarkdown": "In IKEv2 ([RFC 7296](https://www.rfc-editor.org/rfc/rfc7296)), the **IKE_AUTH** exchange (the second exchange, following IKE_SA_INIT) simultaneously authenticates both peers and creates the first child SA. This collapses IKEv1's Phase 1 + Phase 2 into 4 messages total. Subsequent tunnels use the **CREATE_CHILD_SA** exchange."
+    }
+  ],
+  "summaryMarkdown": "## IPsec component overview\n\n| Component | Function |\n|---|---|\n| AH (proto 51) | Integrity + auth, no encryption, NAT-incompatible |\n| ESP (proto 50) | Encryption + integrity, NAT-compatible with NAT-T |\n| IKE (UDP 500/4500) | Key exchange and SA negotiation |\n| SA | Unidirectional tunnel parameters (one per direction) |\n| SAD | Database of active SAs |\n| SPD | Security Policy Database — which traffic to protect |\n\n## IKEv1 vs IKEv2\n\n| Feature | IKEv1 | IKEv2 |\n|---|---|---|\n| Messages to establish | 6 (main) or 3 (aggressive) + 2 for Phase 2 | 4 total |\n| Identity protection | Main mode only | Always |\n| EAP support | No | Yes |\n| MOBIKE (mobility) | No | Yes |"
+}

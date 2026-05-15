@@ -1,0 +1,70 @@
+{
+  "id": "06-app-protocols",
+  "title": "Application-layer protocols",
+  "shortTitle": "06 — Application-layer protocols",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on FTP, DHCP, ICMP, and ARP — four protocols that appear constantly in packet captures and are essential to understand for both troubleshooting and security analysis.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In active FTP, which side initiates the data connection: the client or the server?",
+      "expectedOutput": "server",
+      "solutionMarkdown": "**Active FTP**: the client sends `PORT <IP,port>` on the control channel. The **server** then initiates a TCP connection from port 20 to the client's specified address. This breaks through NAT because the server cannot reach the private client IP — the reason passive mode was introduced."
+    },
+    {
+      "id": "q2",
+      "prompt": "In passive FTP, which side initiates the data connection: the client or the server?",
+      "expectedOutput": "client",
+      "solutionMarkdown": "**Passive FTP**: the client sends `PASV`. The server responds with an IP:port. The **client** then connects to that port. Because the client initiates all TCP connections, passive mode works through NAT and most firewalls. EPSV (extended passive) is the modern variant."
+    },
+    {
+      "id": "q3",
+      "prompt": "What are the four DHCP messages in the DORA process, in order?",
+      "expectedOutput": "Discover, Offer, Request, Acknowledge",
+      "solutionMarkdown": "```\nClient → broadcast: DHCPDISCOVER  (who can give me an address?)\nServer → broadcast: DHCPOFFER     (I can offer 192.168.1.50)\nClient → broadcast: DHCPREQUEST   (I accept 192.168.1.50 from that server)\nServer → broadcast: DHCPACK       (confirmed, lease for 86400s)\n```\nBroadcast is used throughout so multiple DHCP servers can see the exchange. DHCP relay agents forward DORA across subnets."
+    },
+    {
+      "id": "q4",
+      "prompt": "What ICMP type number is an Echo Request (the packet sent by ping)?",
+      "expectedOutput": "8",
+      "solutionMarkdown": "**ICMP type 8** — Echo Request. The target responds with **type 0** — Echo Reply. Both carry an Identifier and Sequence Number to match requests to responses. `ping` increments the sequence number each second. Firewalls that block ICMP type 8 prevent ping but not TCP/UDP connectivity."
+    },
+    {
+      "id": "q5",
+      "prompt": "What ICMP type number signals that a packet was discarded because its TTL field reached zero in transit?",
+      "expectedOutput": "11",
+      "solutionMarkdown": "**ICMP type 11** — Time Exceeded (code 0: TTL Exceeded in Transit). The router that decrements TTL to zero drops the packet and sends this back to the original source. **traceroute** exploits this by sending packets with TTL=1, 2, 3… and recording which routers generate type 11 responses."
+    },
+    {
+      "id": "q6",
+      "prompt": "What ICMP type number indicates that a destination is unreachable?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "**ICMP type 3** — Destination Unreachable. Key codes:\n\n| Code | Meaning |\n|---|---|\n| 0 | Net unreachable |\n| 1 | Host unreachable |\n| 2 | Protocol unreachable |\n| 3 | Port unreachable |\n| 4 | Fragmentation needed (Path MTU Discovery) |\n| 13 | Administratively prohibited |\n\nCode 3 (port unreachable) is returned when UDP hits a closed port. Code 4 is critical for PMTUD — blocking it causes black-hole routing."
+    },
+    {
+      "id": "q7",
+      "prompt": "What protocol resolves an IPv4 address to a hardware (MAC) address on a local network segment?",
+      "expectedOutput": "ARP",
+      "solutionMarkdown": "**ARP (Address Resolution Protocol, [RFC 826](https://www.rfc-editor.org/rfc/rfc826))**. A host broadcasts `who has 192.168.1.1? tell 192.168.1.50`. The owner of that IP unicasts back `192.168.1.1 is at aa:bb:cc:dd:ee:ff`. The result is cached in the ARP table (`arp -n` or `ip neigh`). ARP only works within a broadcast domain — inter-subnet traffic uses the default gateway's MAC."
+    },
+    {
+      "id": "q8",
+      "prompt": "What term describes an ARP reply sent without a preceding ARP request, used to announce a new IP-to-MAC binding and update neighbour caches?",
+      "expectedOutput": "gratuitous ARP",
+      "solutionMarkdown": "**Gratuitous ARP** — the sender claims its own IP as both the source and target. Used by:\n- HSRP/VRRP virtual routers on failover to update switches\n- Virtual machines migrating between hosts\n- Hosts reconfiguring their IP\n\nAttackers use gratuitous ARP for ARP poisoning / man-in-the-middle attacks — override a legitimate IP:MAC mapping in neighbours' caches."
+    },
+    {
+      "id": "q9",
+      "prompt": "What UDP port does a DHCP server listen on?",
+      "expectedOutput": "67",
+      "solutionMarkdown": "**UDP 67** (server) and **UDP 68** (client). The client sends from 68 to the broadcast address on port 67. DHCP relay agents ([RFC 3046](https://www.rfc-editor.org/rfc/rfc3046)) forward requests to a remote server, inserting the Option 82 circuit-ID so the server can assign the correct subnet."
+    },
+    {
+      "id": "q10",
+      "prompt": "What ICMP type number is sent by a router to tell a host to use a different first-hop router for a specific destination?",
+      "expectedOutput": "5",
+      "solutionMarkdown": "**ICMP type 5** — Redirect. A router sends this when it receives a packet from a host and knows a better next-hop on the same subnet. The host should update its routing cache. ICMP redirects are often disabled in hardened environments because they can be abused to poison host routing tables."
+    }
+  ],
+  "summaryMarkdown": "## ICMP type quick reference\n\nDefined in [RFC 792](https://www.rfc-editor.org/rfc/rfc792) (IPv4) and [RFC 4443](https://www.rfc-editor.org/rfc/rfc4443) (IPv6). Full type/code registry: [IANA ICMP Parameters](https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml)\n\n\n| Type | Name |\n|---|---|\n| 0 | Echo Reply |\n| 3 | Destination Unreachable |\n| 5 | Redirect |\n| 8 | Echo Request |\n| 11 | Time Exceeded |\n| 12 | Parameter Problem |\n\n## ARP vs NDP\n\nIPv6 replaces ARP with **NDP (Neighbour Discovery Protocol)**, which uses ICMPv6 messages:\n- Type 135: Neighbour Solicitation (≈ ARP request)\n- Type 136: Neighbour Advertisement (≈ ARP reply)\n\nNDP also handles router discovery and SLAAC (stateless address autoconfiguration)."
+}

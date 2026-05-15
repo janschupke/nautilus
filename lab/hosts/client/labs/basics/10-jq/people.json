@@ -1,0 +1,6 @@
+[
+  { "name": "alice", "active": true, "dept": "eng" },
+  { "name": "bob", "active": false, "dept": "sales" },
+  { "name": "carol", "active": true, "dept": "eng" },
+  { "name": "dan", "active": false, "dept": "eng" }
+]

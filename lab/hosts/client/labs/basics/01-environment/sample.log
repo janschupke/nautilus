@@ -1,0 +1,6 @@
+2026-01-10T12:00:01Z event=start status=ok
+2026-01-10T12:00:02Z event=probe latency_ms=4 node=web-01
+2026-01-10T12:00:03Z event=error code=ECONNREFUSED retries=3
+2026-01-10T12:00:04Z event=retry status=ok
+2026-01-10T12:00:05Z event=checkpoint FLAG=lab-wins-01
+2026-01-10T12:00:06Z event=drain status=complete

@@ -1,0 +1,70 @@
+{
+  "id": "13-scripts",
+  "title": "Shell scripting structure",
+  "shortTitle": "13 — Shell scripting structure",
+  "workdir": "/home/isopod/labs/basics/13-scripts/",
+  "intro": "Work from the module directory. Scripts to fix are in the working directory; put modified copies under **`work/`**. Use **`shellcheck`** to inspect scripts before and after fixing.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Copy **`sc2086_unquoted.sh`** to `work/sc2086_fixed.sh` and fix the ShellCheck issue it reports. Run the fixed script. What does it print?",
+      "expectedOutput": "Message: hello world",
+      "solutionMarkdown": "Quote the variable in the `printf` call — `\"$name\"` instead of `$name`. The unquoted variable causes word splitting."
+    },
+    {
+      "id": "q2",
+      "prompt": "Copy **`sc2162_read.sh`** to `work/sc2162_fixed.sh` and fix its ShellCheck issue. Pipe a line of text to the fixed script with `printf '%s\\n' 'hello' | bash work/sc2162_fixed.sh`. What does it print?",
+      "expectedOutput": "You typed: hello",
+      "solutionMarkdown": "Use `read -r` instead of bare `read` — `-r` prevents backslash interpretation of the input."
+    },
+    {
+      "id": "q3",
+      "prompt": "Run **`shellcheck`** on **`sc2006_backticks.sh`**. What is the primary diagnostic code it reports for the backtick issue?",
+      "expectedOutput": "SC2006",
+      "solutionMarkdown": "ShellCheck code **SC2006** flags backtick-style command substitution. Prefer `$(…)` for clarity and correct nesting."
+    },
+    {
+      "id": "q4",
+      "prompt": "Copy **`sc2155_declare_assign.sh`** to `work/sc2155_fixed.sh` and fix its ShellCheck issue. Run the fixed script — it should exit non-zero with no stdout. What does it print to stdout?",
+      "expectedOutput": "",
+      "solutionMarkdown": "Split `local` from the command substitution: declare the variable on one line, assign it on the next. This lets the exit code of the command propagate correctly."
+    },
+    {
+      "id": "q5",
+      "prompt": "Copy **`sc2164_cd.sh`** to `work/sc2164_fixed.sh` and fix its ShellCheck issue. Run the fixed script — it should exit non-zero with no stdout. What does it print to stdout?",
+      "expectedOutput": "",
+      "solutionMarkdown": "Add `|| exit 1` (or `|| return 1` inside a function) after the `cd` command so the script stops if the directory does not exist."
+    },
+    {
+      "id": "q6",
+      "prompt": "Copy **`sc2034_unused.sh`** to `work/sc2034_fixed.sh` and fix its ShellCheck issue. Run the fixed script. What does it print?",
+      "expectedOutput": "ok",
+      "solutionMarkdown": "Remove or use the unused variable so ShellCheck no longer reports SC2034."
+    },
+    {
+      "id": "q7",
+      "prompt": "**`trap_after_fail.sh`** tries to register a cleanup trap, but the registration happens after a command that will fail under `set -e`. Run the script with `work` as its argument. Does `work/trap_lab_stale` exist after the script exits? Answer `yes` or `no` on the first line, then explain in one sentence why.",
+      "expectedOutput": "yes\nthe script exits on false before the trap line executes, so no EXIT handler is registered to remove the directory.",
+      "solutionMarkdown": "Because `set -e` terminates the script when `false` runs, the subsequent `trap … EXIT` line never executes — no cleanup handler is ever registered."
+    },
+    {
+      "id": "q8",
+      "prompt": "**`trap_cleanup_ok.sh`** registers the EXIT trap before the command that fails. Run it with `work` as its argument. Does `work/trap_lab_stale` exist after the script exits? Answer `yes` or `no` on the first line, then explain in one sentence.",
+      "expectedOutput": "no\nthe EXIT trap is registered before the failing command, so cleanup still runs when set -e ends the script.",
+      "solutionMarkdown": "Because the `trap … EXIT` line runs before `false`, the EXIT handler is active when `set -e` terminates the script and removes the directory."
+    },
+    {
+      "id": "q9",
+      "prompt": "Copy **`trap_after_fail.sh`** to `work/trap_reordered.sh` and move the `trap … EXIT` line to before the `false` command. Run your modified script with `work` as its argument. Does `work/trap_lab_stale` exist afterward? Answer `yes` or `no` on the first line, then explain in one sentence.",
+      "expectedOutput": "no\nthe trap is active before false, so EXIT cleanup removes work/trap_lab_stale even though the script terminates non-zero.",
+      "solutionMarkdown": "Moving the trap before the failing command ensures cleanup runs regardless of whether the script exits cleanly or via `set -e`."
+    },
+    {
+      "id": "q10",
+      "prompt": "Copy **`functions_leaky_counter.sh`** to `work/functions_fixed.sh` and fix the variable scope issue so the loop counter does not leak out of the function. Run the fixed script. What are the last two lines of output?",
+      "expectedOutput": "2\nafter function i=unset",
+      "solutionMarkdown": "Declare the loop counter with `local` inside the function — `local i` — so it does not overwrite the caller's variable of the same name."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Read **ShellCheck** diagnostics (**SC…** codes) for common Bash issues (quoting, `read -r`, `local`/assignment masking, unused locals, `cd` guards).\n- Register **`trap` on `EXIT`** *before* commands that can fail under **`set -e`**, so temp directories are removed reliably.\n- Keep function-local state with **`local`**, avoiding accidental coupling to caller variables.\n- Know how to run **`shellcheck`** locally or via Docker, and when **`-S warning`** or **`-e`** is appropriate.\n\n## Scope\n\n**In scope:** **Bash**-centric scripting with POSIX notes. **Out of scope:** full software engineering (testing frameworks beyond `bats` mention).\n\n## Concept outline\n\n1. **Shebang & shell** — `#!/usr/bin/env bash`, `set -euo pipefail` recap.\n2. **Functions** — local variables, return codes vs `echo` capture antipattern.\n3. **`getopts`** — short flags; long flags via `getopt` GNU vs BSD fragmentation (caution).\n4. **`trap`** — `EXIT`, `INT`, `TERM`; idempotent cleanup.\n5. **`shellcheck`** — common warnings (unquoted vars, `read` without `-r`).\n6. **Testing** — `bats-core`, `shunit2` one-liner pointers."
+}

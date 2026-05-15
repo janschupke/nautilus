@@ -1,0 +1,9 @@
+frame_num	time_rel	ip_src	tcp_dstport	http_host	http_method
+1	0.001	192.168.1.10	443		
+2	0.002	192.168.1.10	443		
+3	0.010	192.168.1.11	80	cdn.test	POST
+4	0.020	192.168.1.10	80	cdn.test	GET
+5	0.030	172.16.0.5	443		
+6	0.040	192.168.1.10	443		
+7	0.050	192.168.1.11	80	site.org	GET
+8	0.060	192.168.1.10	80	api.example	GET

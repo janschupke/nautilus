@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /backup/
+
+User-agent: nautilus-lab-wget
+Allow: /

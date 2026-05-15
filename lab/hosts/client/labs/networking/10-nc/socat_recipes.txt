@@ -1,0 +1,5 @@
+# socat address snippets (loopback lab only; read before running)
+TCP-LISTEN:127.0.0.1,reuseaddr,fork  # generic TCP listener shape
+TCP-LISTEN:127.0.0.1,pf=ip4         # IPv4-only variant
+UDP-LISTEN:127.0.0.1,reuseaddr      # UDP listener on loopback
+STDIO                               # bridge terminal I/O (pair with TCP or UDP addresses)

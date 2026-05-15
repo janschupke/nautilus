@@ -1,0 +1,54 @@
+#
+# Fictitious WHOIS-style lab fixture (RFC 5737 documentation ranges).
+# Does not describe any real domain, organization, or contact.
+#
+
+   Domain Name: LAB-EXAMPLE.EDU
+   Registry Domain ID: lab-D1234567-EDU
+   Registrar WHOIS Server: whois.example-registrar.test
+   Registrar URL: https://www.example-registrar.test/
+   Updated Date: 2024-11-15T10:22:33Z
+   Creation Date: 2019-03-01T08:00:00Z
+   Registrar Registration Expiration Date: 2028-03-01T08:00:00Z
+   Registrar: EXAMPLE REGISTRAR LLC
+   Registrar IANA ID: 9999
+   Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited
+
+Registrant Organization: REDACTED FOR PRIVACY
+Registrant State/Province: EXAMPLE-STATE
+Registrant Country: US
+
+Admin Email: admin-contact@lab-whois-fixtures.example
+Tech Email: tech-contact@lab-whois-fixtures.example
+
+Name Server: NS2.LAB-DNS.EXAMPLE.TEST
+Name Server: NS1.LAB-DNS.EXAMPLE.TEST
+Name Server: NS2.LAB-DNS.EXAMPLE.TEST
+DNSSEC: unsigned
+
+>>> Last update of whois database: 2026-01-10T12:00:00Z <<<
+
+#
+# inetnum-style block (fictional RIR-style text; not live data)
+#
+
+inetnum:        198.51.100.0 - 198.51.100.255
+netname:        LAB-EXAMPLE-NET
+descr:          Documentation range per RFC 5737
+country:        US
+admin-c:        LAB10-REF
+tech-c:         LAB10-REF
+status:         ALLOCATED PA
+mnt-by:         MNT-LAB-EXAMPLE
+source:         REFERENCE
+
+organisation:   ORG-LAB1-REF
+org-name:       Example Training Organization
+mnt-ref:        MNT-LAB-EXAMPLE
+
+role:           LAB10-REF
+address:        1920 Fictional Boulevard, Lab City, EX 00000, US
+abuse-mailbox:  ip-abuse@lab-whois-fixtures.example
+nic-hdl:        LAB10-REF
+mnt-by:         MNT-LAB-EXAMPLE
+source:         REFERENCE

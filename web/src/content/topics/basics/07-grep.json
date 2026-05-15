@@ -1,0 +1,70 @@
+{
+  "id": "07-grep",
+  "title": "Search basics (grep and ripgrep)",
+  "shortTitle": "07 — Search basics (grep and ripgrep)",
+  "workdir": "/home/isopod/labs/basics/07-grep/",
+  "intro": "Work from home. You'll be searching across real system directories: **`/var/log`**, **`/etc`**, and **`/usr/local/share`**. Use **`grep`** for questions 1–8 unless noted.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "The system auth log at `/var/log/auth.log` records SSH and sudo activity. How many lines in that file contain the word `Failed`?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ngrep -c 'Failed' /var/log/auth.log\n```\n\nOne entry records a failed password attempt."
+    },
+    {
+      "id": "q2",
+      "prompt": "In `/var/log/auth.log`, find the line that records a failed login. What username was targeted?",
+      "expectedOutput": "admin",
+      "solutionMarkdown": "```bash\ngrep 'Failed' /var/log/auth.log\n```\n\nThe line reads `Failed password for invalid user admin` — the targeted account is **admin**."
+    },
+    {
+      "id": "q3",
+      "prompt": "The application log at `/var/log/course/app.log` records events with severity levels `INFO`, `WARN`, and `ERROR`. How many lines are NOT at `INFO` level?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -vc 'INFO' /var/log/course/app.log\n```\n\nThe file has one `ERROR` and one `WARN` entry — two non-`INFO` lines."
+    },
+    {
+      "id": "q4",
+      "prompt": "Search `/etc/course-lab/` (non-recursively, `*.conf` files only) for files that contain the key `API_KEY`. How many such files are there?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ngrep -l 'API_KEY' /etc/course-lab/*.conf | wc -l\n```\n\nOnly `app.conf` has the `.conf` extension — `app.conf.old` does not match `*.conf`."
+    },
+    {
+      "id": "q5",
+      "prompt": "One file inside `/etc/course-lab/` contains the word `staging`. Search the directory (non-recursively) across all files. What is the **filename** of the match (no path prefix)?",
+      "expectedOutput": "app.conf.old",
+      "solutionMarkdown": "```bash\ngrep -l 'staging' /etc/course-lab/* | xargs -n1 basename\n```\n\nThe old config `app.conf.old` records `environment=staging`."
+    },
+    {
+      "id": "q6",
+      "prompt": "Search `/var/log/course/archive/` recursively and case-insensitively for lines that contain the word `fail`. How many matching lines are there in total across all files?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -ri 'fail' /var/log/course/archive/ | wc -l\n```\n\n`build.log` has two matching lines: `fail deploy` and `fail backup`. The rotated `app.log.1` has none."
+    },
+    {
+      "id": "q7",
+      "prompt": "Inside `/usr/local/share/course/docs/` (search recursively), find all `.txt` files that contain a version string in the form `X.Y.Z` (three integers separated by dots). Print the full path of each matching file, one per line.",
+      "expectedOutput": "/usr/local/share/course/docs/versions.txt",
+      "solutionMarkdown": "```bash\ngrep -rlE '[0-9]+\\.[0-9]+\\.[0-9]+' /usr/local/share/course/docs/ --include='*.txt'\n```\n\nOnly `versions.txt` contains version strings like `1.2.3` and `v2.10.0`."
+    },
+    {
+      "id": "q8",
+      "prompt": "Search `/usr/local/share/course/docs/` recursively for any file containing `SECRET`. What is the value assigned to `SECRET` (everything after the `=`)?",
+      "expectedOutput": "42",
+      "solutionMarkdown": "```bash\ngrep -r 'SECRET' /usr/local/share/course/docs/\n```\n\nThe file `nested/vault.txt` contains `SECRET=42`."
+    },
+    {
+      "id": "q9",
+      "prompt": "The `/etc/course-lab/` directory contains a hidden subdirectory. Search that entire tree recursively (including hidden directories) for any line matching the pattern `MODULE[0-9][0-9]_FLAG=`. What is the full flag value (everything after `=`)?",
+      "expectedOutput": "trefoil-gate-884",
+      "solutionMarkdown": "```bash\ngrep -r 'MODULE[0-9][0-9]_FLAG=' /etc/course-lab/\n```\n\nThe flag is stored in `/etc/course-lab/.cache/flag`. Standard recursive `grep` follows hidden directories — just make sure you start at the right root."
+    },
+    {
+      "id": "q10",
+      "prompt": "The auth log records one sudo invocation. Find the `COMMAND=` field in that line and extract just the command path (the value after `COMMAND=`).",
+      "expectedOutput": "/usr/bin/id",
+      "solutionMarkdown": "```bash\ngrep 'sudo' /var/log/auth.log | grep -oP 'COMMAND=\\K\\S+'\n```\n\nOr with `awk`:\n```bash\ngrep 'sudo' /var/log/auth.log | awk -F'COMMAND=' '{print $2}'\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Choose fixed-string vs regex search; recursive directory search with sensible exclusions.\n- Use line vs binary mode; handle matches in binary files safely (`-I`, `-a`).\n- Compare BSD `grep` (macOS) with GNU `grep` and **ripgrep** (`rg`) for daily development search.\n\n## Scope\n\n**In scope:** CLI search in files and stdin. **Out of scope:** full PCRE / advanced **`grep` + `rg`** curriculum (**11**); codebase semantic search (LSP/ctags) as a sidebar only.\n\n## Concept outline\n\n1. **`grep` flags** — `-r`, `-R` (follow symlinks caution), `-n`, `-H`, `-h`, `-l`, `-L`, `-c`, `-o`, `-E`, `-F`, `-w`, `-x`.\n2. **Binary files** — `-I` skip, `-a` treat as text; why `grep` may say “Binary file matches”.\n3. **Performance** — `LANG=C` / `LC_ALL=C`; `grep -F` for literals.\n4. **`rg` (ripgrep)** — treat as the default recursive searcher in repos: `.gitignore` / `.rgignore` / `.ignore` defaults, `-S` / `--smart-case`, `-uuu` unrestricted, `-t` / `-T` file types, `-g` / `--glob`, `--hidden`, `--json` for tooling, **`--pcre2`** vs default Rust regex (full PCRE story in **11**).\n5. **Git-aware search** — `git grep` for committed tree vs working tree; integrates with revision ranges.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Recursive regex search | `grep -rE` | `rg` (default choice in repos), `ag` / `ack` (legacy), `ugrep` (`ug`) with SIMD and optional GPU path. |\n| Fixed-string search | `grep -F` | `rg -F`, `fgrep` compatibility name. |\n| Search in git tree | `git grep` | `rg` with path; `git grep` wins for `git log -S` style workflows (different command). |\n| Count per file | `grep -c` | `rg --count`, `rg --count-matches`. |\n| Filter lines (stdin) | `grep` | `rg` stdin; `awk /re/`; `sed -n '/re/p'`. |"
+}

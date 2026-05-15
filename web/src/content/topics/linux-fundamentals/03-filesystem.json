@@ -1,0 +1,70 @@
+{
+  "id": "03-filesystem",
+  "title": "Filesystem concepts",
+  "shortTitle": "03 — Filesystem concepts",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on how Linux represents files at the OS level: inodes, links, device files, and the virtual filesystem layer. These concepts underpin all file operations and are essential for understanding permissions, disk usage, and I/O.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What per-file kernel data structure stores a file's metadata — owner, permissions, size, and timestamps — but not its filename?",
+      "expectedOutput": "inode",
+      "solutionMarkdown": "An **inode** (index node) stores all file metadata except the filename. The filename-to-inode mapping is stored in directory entries. This separation enables:\n- Multiple filenames (hard links) pointing to the same inode\n- Renaming a file without changing its data\n\n`ls -i` shows inode numbers. `stat file` shows the full inode contents."
+    },
+    {
+      "id": "q2",
+      "prompt": "What type of link creates an additional directory entry pointing directly to the same inode as an existing file, sharing all metadata?",
+      "expectedOutput": "hard link",
+      "solutionMarkdown": "A **hard link** is a directory entry that references an existing inode. The inode's link count is incremented. Constraints:\n- Cannot cross filesystem boundaries\n- Cannot link to directories (prevents cycles)\n- The file data persists until all hard links are removed and no process holds the file open\n\n```bash\nln original.txt hardlink.txt\nls -li   # both show the same inode number\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "What type of link stores the path to another file rather than a direct inode reference, and can span filesystem boundaries?",
+      "expectedOutput": "symbolic link",
+      "solutionMarkdown": "A **symbolic link** (symlink) is a special file whose data is a path string. The kernel dereferences it on every access. Key differences from hard links:\n- Can cross filesystems and point to directories\n- Can be dangling (pointing to a non-existent target)\n- Has its own inode distinct from the target\n\n```bash\nln -s /etc/nginx/nginx.conf nginx.conf\nls -l nginx.conf\n# lrwxrwxrwx ... nginx.conf -> /etc/nginx/nginx.conf\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "What Linux design philosophy treats devices, sockets, and pipes as files accessible through the standard open/read/write/close interface?",
+      "expectedOutput": "everything is a file",
+      "solutionMarkdown": "**Everything is a file** — the Unix/Linux design principle that uses a unified file interface for:\n- Regular files and directories\n- Block and character devices (`/dev/sda`, `/dev/tty`)\n- Named pipes and UNIX sockets\n- Kernel interfaces (`/proc`, `/sys`)\n- Network connections (sockets)\n\nThis allows tools like `cat`, `dd`, and `cp` to operate on devices without special-casing."
+    },
+    {
+      "id": "q5",
+      "prompt": "What Linux kernel abstraction provides a uniform file operation interface (open, read, write) regardless of the underlying filesystem type?",
+      "expectedOutput": "VFS",
+      "solutionMarkdown": "The **VFS (Virtual File System)** is an abstraction layer in the kernel. Each filesystem (ext4, xfs, btrfs, tmpfs, procfs) registers function pointers for inode and file operations. System calls like `read()` go through VFS, which dispatches to the correct implementation.\n\nThis is why `cat` works identically on a file in ext4, an NFS mount, or a file in `/proc`."
+    },
+    {
+      "id": "q6",
+      "prompt": "What special file accepts any data written to it and produces no output, used to discard unwanted command output?",
+      "expectedOutput": "/dev/null",
+      "solutionMarkdown": "`/dev/null` is a character device that discards all writes and returns EOF on reads. Common uses:\n```bash\ncommand > /dev/null 2>&1  # suppress all output\ncommand < /dev/null        # provide empty stdin\n: > file.txt               # truncate a file\n```\nThe equivalent for random data is `/dev/zero` (infinite null bytes) and `/dev/urandom` (random bytes)."
+    },
+    {
+      "id": "q7",
+      "prompt": "What filesystem type stores all its data in RAM, is lost on reboot, and is used by systemd for /tmp and /run?",
+      "expectedOutput": "tmpfs",
+      "solutionMarkdown": "**tmpfs** is a memory-backed filesystem that grows and shrinks dynamically. It is stored in the kernel's page cache (which can be swapped). Uses:\n- `/tmp` — temporary files\n- `/run` — runtime PID files and sockets\n- `/dev/shm` — POSIX shared memory\n- Docker and container overlays\n\nCheck usage: `df -h /tmp`"
+    },
+    {
+      "id": "q8",
+      "prompt": "In ls -l output, what single character at position 1 of the permissions field indicates the entry is a symbolic link?",
+      "expectedOutput": "l",
+      "solutionMarkdown": "The first character of `ls -l` output indicates the file type:\n\n| Char | Type |\n|---|---|\n| `-` | Regular file |\n| `d` | Directory |\n| `l` | Symbolic link |\n| `c` | Character device |\n| `b` | Block device |\n| `p` | Named pipe (FIFO) |\n| `s` | Socket |\n\n`lrwxrwxrwx` means a symlink with all permissions set (permissions on the symlink itself are ignored; the target's permissions apply)."
+    },
+    {
+      "id": "q9",
+      "prompt": "What command shows the inode number of each file in the current directory?",
+      "expectedOutput": "ls -i",
+      "solutionMarkdown": "`ls -i` prepends the inode number to each filename. Useful for verifying hard links (same inode = same file) and for tracking files by inode when the name is unknown.\n\n```bash\nls -li\n# 1234567 -rw-r--r-- 2 user group 512 May 14 original.txt\n# 1234567 -rw-r--r-- 2 user group 512 May 14 hardlink.txt\n```\nThe `2` in the link count confirms both entries share one inode."
+    },
+    {
+      "id": "q10",
+      "prompt": "What command reports filesystem disk space usage, showing total size, used space, and available space for each mounted filesystem?",
+      "expectedOutput": "df",
+      "solutionMarkdown": "`df` (disk free) queries mounted filesystem metadata. Key flags:\n```bash\ndf -h        # human-readable sizes (G, M, K)\ndf -i        # inode usage instead of block usage\ndf -T        # include filesystem type\ndf /home     # report only the filesystem containing /home\n```\nContrast with `du` (disk usage), which recursively measures the size of files and directories."
+    }
+  ],
+  "summaryMarkdown": "## Common pseudo-filesystems\n\n| Mount | Type | Purpose |\n|---|---|---|\n| `/proc` | procfs | Kernel + process state |\n| `/sys` | sysfs | Device/driver config |\n| `/dev` | devtmpfs | Device nodes |\n| `/run` | tmpfs | Runtime sockets/PIDs |\n| `/tmp` | tmpfs | Temporary files |"
+}

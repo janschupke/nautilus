@@ -1,0 +1,6 @@
+device	mountpoint	fstype	opts
+/dev/sda1	/	ext4	rw,relatime
+/dev/sda2	/home	ext4	rw,nosuid,nodev,relatime
+tmpfs	/tmp	tmpfs	rw,nosuid,nodev,size=1048576k
+/dev/mapper/vg0-lv--var	/var	xfs	rw,relatime,attr2
+/dev/sdc1	/backup	xfs	rw,relatime

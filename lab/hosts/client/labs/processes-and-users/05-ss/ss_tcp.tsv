@@ -1,0 +1,7 @@
+netid	state	local	process
+tcp	LISTEN	0.0.0.0:22	users:(("sshd",pid=800,fd=3))
+tcp	LISTEN	0.0.0.0:443	users:(("nginx",pid=2001,fd=6))
+tcp	LISTEN	127.0.0.1:5432	users:(("postgres",pid=900,fd=5))
+tcp	LISTEN	[::]:80	users:(("nginx",pid=2002,fd=6))
+tcp	ESTAB	10.0.0.5:22	users:(("sshd",pid=1200,fd=4))
+udp	UNCONN	0.0.0.0:68	users:(("dhclient",pid=500,fd=3))

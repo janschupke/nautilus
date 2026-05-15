@@ -1,0 +1,75 @@
+{
+  "id": "04-sed",
+  "title": "sed for streaming edits",
+  "shortTitle": "04 — sed for streaming edits",
+  "workdir": "/home/isopod/labs/basics/04-sed/",
+  "intro": "Work from **`/home/isopod/`**. Use **`/home/isopod/data/edits/`**. Do not edit source data in place; use **`work/`** copies for **`sed -i`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Print only lines **3 through 5** of **`/home/isopod/data/edits/numbered-events.log`**.",
+      "expectedOutput": "2026-05-13T10:00:03Z ERROR postgres timeout\n2026-05-13T10:00:04Z WARN retrying postgres\n2026-05-13T10:00:05Z INFO recovered",
+      "solutionMarkdown": "```bash\nsed -n '3,5p' /home/isopod/data/edits/numbered-events.log\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Filter **`/home/isopod/data/edits/db-replay.sql`** so every line containing **`DROP`** is removed. How many lines remain?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nsed '/DROP/d' /home/isopod/data/edits/db-replay.sql | wc -l\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Replace every **`REDACT_ME`** with **`REDACTED`** in **`/home/isopod/data/edits/tokenized.conf`**. Paste full stdout.",
+      "expectedOutput": "auth=REDACTED\nretry=REDACTED\nnote=REDACTED tail",
+      "solutionMarkdown": "```bash\nsed 's/REDACT_ME/REDACTED/g' /home/isopod/data/edits/tokenized.conf\n```"
+    },
+    {
+      "id": "q4a",
+      "prompt": "**(a)** Replace only the first **`10.0.0.1`** on each line with **`192.0.2.10`** in **`/home/isopod/data/edits/ip-line.txt`**.",
+      "expectedOutput": "192.0.2.10 left 10.0.0.1 right\nonly 192.0.2.10 once\n192.0.2.10 A 10.0.0.1 B 10.0.0.1 C",
+      "solutionMarkdown": "```bash\nsed 's/10\\.0\\.0\\.1/192.0.2.10/' /home/isopod/data/edits/ip-line.txt\n```"
+    },
+    {
+      "id": "q4b",
+      "prompt": "**(b)** Same file: replace every **`10.0.0.1`** with **`192.0.2.10`**.",
+      "expectedOutput": "192.0.2.10 left 192.0.2.10 right\nonly 192.0.2.10 once\n192.0.2.10 A 192.0.2.10 B 192.0.2.10 C",
+      "solutionMarkdown": "```bash\nsed 's/10\\.0\\.0\\.1/192.0.2.10/g' /home/isopod/data/edits/ip-line.txt\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "Rewrite both **`http://`** prefixes in **`/home/isopod/data/edits/urls.txt`** to **`https://`**.",
+      "expectedOutput": "see https://lab-web/docs and also https://lab-web/api/status.php",
+      "solutionMarkdown": "```bash\nsed 's|http://|https://|g' /home/isopod/data/edits/urls.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Redact local parts before **`@`** to **`redacted`** in **`/home/isopod/data/edits/contacts.txt`**. Keep **`@`** and domain.",
+      "expectedOutput": "contact redacted@example.com please\nadmin redacted@corp.internal now",
+      "solutionMarkdown": "```bash\nsed -E 's/[A-Za-z0-9._%+-]+@/redacted@/g' /home/isopod/data/edits/contacts.txt\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "**`/home/isopod/data/edits/flag-line.txt`** contains a single line with an embedded `MODULE05_FLAG=value` token. Extract and print only the flag value.",
+      "expectedOutput": "silver-rim-220",
+      "solutionMarkdown": "```bash\nsed -n 's/.*MODULE05_FLAG=\\([^ ]*\\).*/\\1/p' /home/isopod/data/edits/flag-line.txt\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "For **`/home/isopod/data/edits/events.log`**, append a space and **`[review]`** to the end of every line containing **`WARN`**. Other lines unchanged.",
+      "expectedOutput": "INFO start\nWARN disk low [review]\nERROR db down\nWARN retry [review]\nINFO ok",
+      "solutionMarkdown": "```bash\nsed '/WARN/s/$/ [review]/' /home/isopod/data/edits/events.log\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Copy **`/home/isopod/data/edits/service.ini`** to **`work/service.ini`** and edit it in place so **`port=80`** becomes **`port=443`**. What does **`grep '^port=' work/service.ini`** print after the change?",
+      "expectedOutput": "port=443",
+      "solutionMarkdown": "```bash\nsed -i 's/^port=80$/port=443/' work/service.ini\ngrep '^port=' work/service.ini\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "Swap the two comma-separated fields in **`/home/isopod/data/edits/owner-queue.csv`**.",
+      "expectedOutput": "auth,alice\nnetwork,bob",
+      "solutionMarkdown": "```bash\nsed -E 's/^([^,]+),([^,]+)$/\\2,\\1/' /home/isopod/data/edits/owner-queue.csv\n```"
+    }
+  ]
+}

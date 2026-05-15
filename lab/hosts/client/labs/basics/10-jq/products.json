@@ -1,0 +1,7 @@
+{
+  "products": [
+    { "name": "clip", "price_cents": 50, "stock": 12 },
+    { "name": "stapler", "price_cents": 899, "stock": 0 },
+    { "name": "tape", "price_cents": 199, "stock": 3 }
+  ]
+}

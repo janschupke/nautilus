@@ -1,0 +1,76 @@
+{
+  "id": "05-gzip",
+  "title": "Compression tools",
+  "shortTitle": "05 — Compression tools",
+  "workdir": "/home/isopod/labs/filesystem/05-gzip/",
+  "intro": "Work from the module directory. Tools: **`gzip`** / **`gunzip`**, **`bzip2`**, **`zip`** / **`unzip`**. Do not overwrite the committed fixture files.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Report the byte sizes of **`corpus.txt`** (uncompressed) and **`corpus.txt.gz`** (compressed) as `U,C` — uncompressed first, compressed second, comma-separated with no spaces.",
+      "expectedOutput": "1024,50",
+      "solutionMarkdown": "```bash\necho \"$(wc -c < corpus.txt),$(wc -c < corpus.txt.gz)\"\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "What is the first line of **`corpus.txt.gz`** when decompressed?",
+      "expectedOutput": "M14 line zero",
+      "solutionMarkdown": "```bash\ngzip -dc corpus.txt.gz | head -n1\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Test the integrity of **`corpus.txt.gz`** without decompressing it to a file. What exit code indicates the archive is intact?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\ngzip -t corpus.txt.gz; echo $?\n```\n\n`gzip -t` verifies the checksum; exit code `0` means the archive is not corrupted."
+    },
+    {
+      "id": "q4",
+      "prompt": "How many lines does **`corpus.txt.bz2`** contain when decompressed?",
+      "expectedOutput": "11",
+      "solutionMarkdown": "```bash\nbzip2 -dc corpus.txt.bz2 | wc -l\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "Test the integrity of **`m14.zip`**. What exit code indicates success?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\nunzip -t m14.zip; echo $?\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "How many bytes does **`corpus.txt.gz`** expand to when fully decompressed?",
+      "expectedOutput": "1024",
+      "solutionMarkdown": "```bash\ngzip -dc corpus.txt.gz | wc -c\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Compare the sizes of **`corpus.txt.gz`** and **`corpus.txt.bz2`**. Which format produced the smaller file for this corpus?",
+      "expectedOutput": "gzip",
+      "solutionMarkdown": "```bash\nwc -c corpus.txt.gz corpus.txt.bz2\n```\n\n`corpus.txt.gz` is 50 bytes vs `corpus.txt.bz2` at 70 bytes — gzip wins on this highly repetitive corpus."
+    },
+    {
+      "id": "q8",
+      "prompt": "What is the name of the file stored inside **`m14.zip`**?",
+      "expectedOutput": "corpus.txt",
+      "solutionMarkdown": "```bash\nunzip -l m14.zip\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Decompress **`corpus.txt.gz`** to `work/corpus_restored.txt`. Compare it byte-for-byte with the original **`corpus.txt`**. What exit code does the comparison return when files are identical?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\nmkdir -p work\ngzip -dc corpus.txt.gz > work/corpus_restored.txt\ncmp corpus.txt work/corpus_restored.txt; echo $?\n```\n\n`cmp` exits `0` if the files match byte-for-byte."
+    },
+    {
+      "id": "q10",
+      "prompt": "What are the byte sizes of the two compressed fixture files in this module — **`corpus.txt.gz`** and **`corpus.txt.bz2`** — listed from smallest to largest as `S,L`?",
+      "expectedOutput": "50,70",
+      "solutionMarkdown": "```bash\nwc -c corpus.txt.gz corpus.txt.bz2 | sort -n | head -2\n```\n\n`corpus.txt.gz` = 50 bytes, `corpus.txt.bz2` = 70 bytes."
+    },
+    {
+      "id": "q11",
+      "prompt": "`secret.zip` is in the module directory. It contains a compressed file. Decompress the full chain — zip layer first, then the inner compression — and read the flag. What does it contain?",
+      "expectedOutput": "flag{gzip_bzip2_zip_chain}",
+      "solutionMarkdown": "```bash\nunzip -p secret.zip inner.txt.bz2 | bzip2 -dc\n```\n\n`unzip -p` sends the member to stdout without creating files; piping into `bzip2 -dc` decompresses the second layer in one pass."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Compress and decompress with `gzip` / `gunzip` / `zcat`; know `pigz` for parallel gzip.\n- Use `zip` / `unzip` for Windows-friendly bundles and selective extract.\n- Optionally use `zstd` levels and dictionary training (mention only).\n- Chain `xz` / `lz4` where installed for extreme ratios vs speed trade-offs.\n\n## Scope\n\n**In scope:** single-file and stream compressors commonly found on servers. **Out of scope:** `rar` licensing; proprietary codecs."
+}

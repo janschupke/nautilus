@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Text copy of a launchd job plist for reading in this module (not a loadable binary plist).
+  Synthetic example only.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.example.course.nightly</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/archive-logs</string>
+		<string>--yesterday</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>3</integer>
+		<key>Minute</key>
+		<integer>15</integer>
+		<key>Weekday</key>
+		<integer>1</integer>
+	</dict>
+	<key>RunAtLoad</key>
+	<true/>
+</dict>
+</plist>

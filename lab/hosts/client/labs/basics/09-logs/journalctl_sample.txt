@@ -1,0 +1,7 @@
+-- Logs begin at Wed 2026-05-13 13:55:01 UTC, end at Wed 2026-05-13 14:05:00 UTC. --
+May 13 14:00:01 labhost systemd[1]: Started nginx.service - A high performance web server.
+May 13 14:00:02 labhost nginx[1200]: ERROR upstream refused connection
+May 13 14:00:03 labhost sshd[1300]: Accepted publickey for ops from 198.51.100.7 port 22 ssh2
+May 13 14:00:04 labhost nginx[1201]: WARN slow cache fill
+May 13 14:00:05 labhost cron[1400]: (root) CMD (/usr/bin/true)
+May 13 14:00:06 labhost sshd[1301]: ERROR authentication failure for invalid user scanner

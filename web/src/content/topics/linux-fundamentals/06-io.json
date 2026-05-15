@@ -1,0 +1,69 @@
+{
+  "id": "06-io",
+  "title": "I/O, file descriptors, and streams",
+  "shortTitle": "06 — I/O, file descriptors, and streams",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on how Linux handles I/O at the process level. Understanding file descriptors and redirection is essential for scripting, piping tools together, and diagnosing where output goes.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What file descriptor number is assigned to standard input (stdin)?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "**File descriptor 0** is stdin. When a program calls `read(0, ...)`, it reads from its standard input. By default this is connected to the terminal, but it can be redirected from a file or pipe.\n\nThe three standard streams are set up by the shell before executing each command:\n- fd 0 → stdin\n- fd 1 → stdout\n- fd 2 → stderr"
+    },
+    {
+      "id": "q2",
+      "prompt": "What file descriptor number is assigned to standard output (stdout)?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "**File descriptor 1** is stdout. Writes to fd 1 go to the terminal by default. The shell's `>` operator redirects fd 1:\n```bash\nls -l > output.txt      # fd 1 → file\nls -l 1> output.txt     # explicit form\n```\nPrograms should write normal output to stdout and error messages to stderr (fd 2) so they can be separated."
+    },
+    {
+      "id": "q3",
+      "prompt": "What file descriptor number is assigned to standard error (stderr)?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "**File descriptor 2** is stderr. Error messages go here. Redirecting only stdout leaves errors visible:\n```bash\ncommand > output.txt       # stderr still goes to terminal\ncommand > out.txt 2> err.txt   # separate files\ncommand > out.txt 2>&1         # merge stderr into stdout\ncommand 2>/dev/null            # suppress errors\n```\nProgrammes use `fprintf(stderr, ...)` in C or `sys.stderr.write()` in Python to write to fd 2."
+    },
+    {
+      "id": "q4",
+      "prompt": "What shell operator connects the stdout of one command directly to the stdin of the next command?",
+      "expectedOutput": "|",
+      "solutionMarkdown": "The **pipe** (`|`) creates an anonymous pipe between two processes. The kernel buffers data between them. Pipes are set up by the shell before both commands start — they run concurrently, not sequentially.\n\n```bash\nps aux | grep nginx | awk '{print $1}'\n```\nThe `|&` variant pipes both stdout and stderr. Named pipes (`mkfifo`) allow unrelated processes to communicate through a filesystem path."
+    },
+    {
+      "id": "q5",
+      "prompt": "What shell redirection operator appends stdout to an existing file, preserving its current contents?",
+      "expectedOutput": ">>",
+      "solutionMarkdown": "`>>` opens the file with `O_APPEND` — writes are atomically appended to the end. Contrast with `>` which truncates the file first (`O_TRUNC`).\n\n```bash\necho 'line 1' > file.txt    # creates/overwrites\necho 'line 2' >> file.txt   # appends\n```\n`>>` is essential for log files shared by multiple processes — `O_APPEND` writes are atomic up to `PIPE_BUF` bytes."
+    },
+    {
+      "id": "q6",
+      "prompt": "What shell syntax redirects fd 2 (stderr) to the same destination as fd 1 (stdout), merging error output with normal output?",
+      "expectedOutput": "2>&1",
+      "solutionMarkdown": "`2>&1` means make fd 2 point to the same file description as fd 1. Order matters:\n```bash\ncommand > file.txt 2>&1    # correct: stdout→file, stderr→file\ncommand 2>&1 > file.txt    # wrong: stderr→original stdout (terminal), stdout→file\n```\nBash shorthand: `&>file.txt` (redirects both). In pipelines: `command 2>&1 | next`."
+    },
+    {
+      "id": "q7",
+      "prompt": "What shell construct embeds a multi-line block of text directly in a command's stdin, delimited by a marker word?",
+      "expectedOutput": "here document",
+      "solutionMarkdown": "A **here document** (heredoc) allows inline multi-line input:\n```bash\ncat <<EOF\nLine one\nLine two\nEOF\n\nssh user@host <<'ENDSSH'\ndate\nhostname\nENDSSH\n```\nUsing `<<'EOF'` (quoted marker) prevents variable expansion inside the document. Here documents are stored in a temporary file by the shell."
+    },
+    {
+      "id": "q8",
+      "prompt": "What does each numbered entry in the /proc/<PID>/fd/ directory represent?",
+      "expectedOutput": "an open file descriptor",
+      "solutionMarkdown": "Each entry in `/proc/<PID>/fd/` is a symbolic link named after the file descriptor number, pointing to the open file:\n```bash\nls -la /proc/$$/fd\n# lrwx 0 -> /dev/pts/0   (stdin: terminal)\n# lrwx 1 -> /dev/pts/0   (stdout: terminal)\n# lrwx 2 -> /dev/pts/0   (stderr: terminal)\n# lrwx 5 -> /tmp/work.log\n```\nThis is useful for identifying what files a process has open, recovering deleted files (via `/proc/<PID>/fd/<N>`), and debugging leaks."
+    },
+    {
+      "id": "q9",
+      "prompt": "What type of named file, created with mkfifo, allows two unrelated processes to communicate through the filesystem using standard read/write calls?",
+      "expectedOutput": "named pipe",
+      "solutionMarkdown": "A **named pipe** (FIFO) is a special filesystem entry. Unlike anonymous pipes, it has a path:\n```bash\nmkfifo /tmp/channel\ntail -f /var/log/app.log > /tmp/channel &   # writer\ngrep ERROR < /tmp/channel                  # reader\n```\nThe kernel buffers data between writer and reader. Writes block when the buffer is full; reads block when it is empty. Named pipes are unidirectional — use two for bidirectional communication."
+    },
+    {
+      "id": "q10",
+      "prompt": "What environment variable tells the dynamic linker where to search for shared libraries at runtime, overriding the default library path?",
+      "expectedOutput": "LD_LIBRARY_PATH",
+      "solutionMarkdown": "`LD_LIBRARY_PATH` adds directories to the runtime library search path:\n```bash\nLD_LIBRARY_PATH=/opt/myapp/lib ./myapp\n```\nThe linker searches in this order: `LD_LIBRARY_PATH` → RPATH (embedded in binary) → `/etc/ld.so.cache` → `/lib`, `/usr/lib`.\n\n**Security note**: Never set `LD_LIBRARY_PATH` globally in shell rc files — it can cause privilege escalation if setuid binaries pick up a malicious library."
+    }
+  ]
+}

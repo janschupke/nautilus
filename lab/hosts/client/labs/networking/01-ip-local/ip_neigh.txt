@@ -1,0 +1,6 @@
+10.78.8.1 dev eth0 lladdr 02:42:0a:4d:00:01 REACHABLE
+10.78.8.11 dev eth0 lladdr 02:42:0a:4d:00:0b REACHABLE
+10.78.8.20 dev eth0 lladdr 02:42:0a:4d:00:14 REACHABLE
+10.78.8.30 dev eth0 lladdr 02:42:0a:4d:00:1e STALE
+10.78.8.40 dev eth0 lladdr 02:42:0a:4d:00:28 STALE
+10.78.8.99 dev eth0  FAILED

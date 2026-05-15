@@ -1,0 +1,70 @@
+{
+  "id": "04-ssh",
+  "title": "SSH config, keys, and agents",
+  "shortTitle": "04 — SSH config, keys, and agents",
+  "workdir": "/home/isopod/labs/networking/04-ssh/",
+  "intro": "Work from the module directory. Fixtures: **`lab_ls_modes.txt`**, **`config_fragment`**, **`authorized_keys_lab`**, **`known_hosts_lab`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In **`lab_ls_modes.txt`**, what mode does row **`id_ed25519_lab`** show? Give the **three-digit octal** permission (no special bits).",
+      "expectedOutput": "600",
+      "solutionMarkdown": "Map symbolic **`rw-------`** to octal."
+    },
+    {
+      "id": "q2",
+      "prompt": "Same file: row **`ssh_lab_dir`** shows **`drwxr-xr-x`**. What is the **three-digit octal** permission?",
+      "expectedOutput": "755",
+      "solutionMarkdown": "Directory **`rwxr-xr-x`** → **`755`**."
+    },
+    {
+      "id": "q3",
+      "prompt": "Same file: look up the mode for row **`authorized_keys_lab`**. Is that mode recommended for a server-side **`authorized_keys`** file that **`sshd`** should trust? Answer **`yes`** or **`no`** only.",
+      "expectedOutput": "no",
+      "solutionMarkdown": "World/group write on **`authorized_keys`** is risky."
+    },
+    {
+      "id": "q4",
+      "prompt": "In **`config_fragment`**, **`Host work`** block: what is **`HostName`** (hostname only, no port)?",
+      "expectedOutput": "jumpbox.lab.example",
+      "solutionMarkdown": "Read **`HostName`** from the **`Host work`** stanza."
+    },
+    {
+      "id": "q5",
+      "prompt": "Same block: what **numeric TCP port** does **`Port`** set?",
+      "expectedOutput": "2222",
+      "solutionMarkdown": "Read **`Port`** in the **`Host work`** stanza."
+    },
+    {
+      "id": "q6",
+      "prompt": "Same block: what is **`IdentityFile`** **exactly as written** (including **`~`** if present)?",
+      "expectedOutput": "~/.ssh/id_ed25519_work",
+      "solutionMarkdown": "Copy the **`IdentityFile`** path verbatim."
+    },
+    {
+      "id": "q7",
+      "prompt": "In the **`Host gitlab`** block, what **`User`** is configured?",
+      "expectedOutput": "deploy",
+      "solutionMarkdown": "Read **`User`** under **`Host gitlab`**."
+    },
+    {
+      "id": "q8",
+      "prompt": "In **`Host work`**, does **`IdentitiesOnly`** appear set to **`yes`**? Answer **`yes`** or **`no`** only.",
+      "expectedOutput": "yes",
+      "solutionMarkdown": "Check for **`IdentitiesOnly yes`** in that stanza."
+    },
+    {
+      "id": "q9",
+      "prompt": "In **`authorized_keys_lab`**, on the line with **`command=`**: what is the **full path inside the double quotes** for **`command=`** (no quotes in your answer)?",
+      "expectedOutput": "/usr/local/bin/git-shell",
+      "solutionMarkdown": "Extract the path inside **`command=\"...\"`**."
+    },
+    {
+      "id": "q10",
+      "prompt": "In **`known_hosts_lab`**, on the **plain** (non-hashed) host line, how many **comma-separated hostname entries** appear **before** the first **space** on that line?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "Count comma-separated host fields before the key type field."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes (this module)\n\n- Relate **`ls -l`** permission strings on **`~/.ssh`**-shaped paths to **octal** modes and OpenSSH **strictness** expectations.\n- Read **`~/.ssh/config`**: **`Host`** stanzas, **`HostName`**, **`User`**, **`Port`**, **`IdentityFile`**, **`IdentitiesOnly`**.\n- Parse **`authorized_keys`** lines: **`command=`** and key-type fields (public material only in labs).\n- Recognize **plain** vs **hashed** **`known_hosts`** line prefixes.\n- Name **`ssh-add`** as the usual way to load keys into **`ssh-agent`**; state why **private** keys must never be pasted into tickets/chat.\n\n## Scope\n\n**In scope:** client-side SSH, key management, and **textual** parsing of config / **`authorized_keys`** / **`known_hosts`** (graded labs); file copy over SSH as course context. **Out of scope:** server **`sshd_config`** hardening workshop; tunneling abuse (note legal/telemetry only).\n\n## Concept outline\n\n1. **Key generation** — `ssh-keygen -t ed25519 -a 100`, comment field, passphrase trade-offs.\n2. **Agent** — `eval \"$(ssh-agent -s)\"`, timeout, `SSH_AUTH_SOCK` forwarding (`-A` risk banner).\n3. **Config file** — per-host blocks; wildcard abuse caution.\n4. **`scp` / `sftp`** — recursive `scp -r`; `sftp` batch `-b` script; `rsync` over SSH (**22**).\n5. **Known hosts** — `StrictHostKeyChecking`, `UserKnownHostsFile` for lab VMs.\n6. **Modern replacements** — `scp` deprecation notes in OpenSSH; `sftp` or `rsync` preferred for some orgs.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Remote shell | `ssh` | `mosh` (roaming UDP), `et` / EternalTerminal; `teleport` `tsh` in zero-trust shops. |\n| File copy | `scp` | `sftp`, `rsync` over SSH (**22**), `rclone` with `sftp` backend, `sshfs` (FUSE). |\n| Tunnel / SOCKS | `ssh -D`, `-L`, `-R` | `cloudflared tunnel`, `wg` / `tailscale` — different models; **27** `socat` quick relays. |\n| Key UI | `ssh-add` | `keychain` script (Linux), macOS Keychain, `gpg-agent` as `ssh` backend (`gpg --export-ssh-key`). |"
+}

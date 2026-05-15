@@ -1,0 +1,70 @@
+{
+  "id": "01-ports",
+  "title": "Well-known ports",
+  "shortTitle": "01 — Well-known ports",
+  "workdir": "/home/isopod/",
+  "intro": "Knowledge-based questions — no shell session needed. Answer from memory or look up in `/etc/services`. Port numbers are the exact integers; protocol names are lowercase unless they are acronyms.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What TCP port does SSH use?",
+      "expectedOutput": "22",
+      "solutionMarkdown": "SSH listens on **TCP 22** by default ([RFC 4251](https://www.rfc-editor.org/rfc/rfc4251)). Changing it to a high port reduces automated scan noise but is not a security control.\n\n```\n/etc/ssh/sshd_config: Port 22\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "What port does DNS use for standard queries (both TCP and UDP)?",
+      "expectedOutput": "53",
+      "solutionMarkdown": "DNS uses **port 53** on both UDP (queries ≤ 512 bytes) and TCP (zone transfers and large responses). [RFC 7766](https://www.rfc-editor.org/rfc/rfc7766) requires resolvers to support TCP."
+    },
+    {
+      "id": "q3",
+      "prompt": "What TCP port does SMTP use for server-to-server mail relay (MTA-to-MTA)?",
+      "expectedOutput": "25",
+      "solutionMarkdown": "**TCP 25** is the standard MTA relay port ([RFC 5321](https://www.rfc-editor.org/rfc/rfc5321)). Port 587 is the mail submission port (MSA), and port 465 is SMTPS (legacy implicit TLS). Residential ISPs typically block outbound 25 to prevent spam."
+    },
+    {
+      "id": "q4",
+      "prompt": "What TCP port does HTTPS use?",
+      "expectedOutput": "443",
+      "solutionMarkdown": "**TCP 443** ([RFC 2818](https://www.rfc-editor.org/rfc/rfc2818)). Modern browsers also use **UDP 443** for QUIC/HTTP3. Traffic analysis: TLS ClientHello on 443 should show SNI for the destination hostname."
+    },
+    {
+      "id": "q5",
+      "prompt": "What TCP port does the FTP control channel use?",
+      "expectedOutput": "21",
+      "solutionMarkdown": "FTP uses **TCP 21** for the control channel (commands and responses). The data channel uses TCP 20 in active mode or a negotiated high port in passive mode."
+    },
+    {
+      "id": "q6",
+      "prompt": "What UDP port does SNMP use when polling agents?",
+      "expectedOutput": "161",
+      "solutionMarkdown": "SNMP agents listen on **UDP 161**. The trap/inform receiver (manager) listens on **UDP 162**. SNMPv3 added authentication and encryption; v1/v2c community strings travel in plaintext."
+    },
+    {
+      "id": "q7",
+      "prompt": "What TCP port does BGP use?",
+      "expectedOutput": "179",
+      "solutionMarkdown": "BGP peers establish a TCP session on **port 179** ([RFC 4271](https://www.rfc-editor.org/rfc/rfc4271)). Because it runs over TCP, BGP relies on the OS for reliable delivery rather than building its own retransmission logic."
+    },
+    {
+      "id": "q8",
+      "prompt": "What TCP port does RDP (Remote Desktop Protocol) use by default?",
+      "expectedOutput": "3389",
+      "solutionMarkdown": "**TCP 3389** (and UDP 3389 for UDP transport). RDP on 3389 is heavily targeted by brute-force scanners; exposing it directly to the internet without a VPN or NLA is high risk."
+    },
+    {
+      "id": "q9",
+      "prompt": "What TCP port does PostgreSQL use by default?",
+      "expectedOutput": "5432",
+      "solutionMarkdown": "PostgreSQL listens on **TCP 5432** by default. MySQL/MariaDB uses 3306, MSSQL uses 1433, Oracle uses 1521. Recognising these in packet captures identifies unencrypted database traffic."
+    },
+    {
+      "id": "q10",
+      "prompt": "What UDP port does NTP use?",
+      "expectedOutput": "123",
+      "solutionMarkdown": "NTP uses **UDP 123** ([RFC 5905](https://www.rfc-editor.org/rfc/rfc5905)). Misconfigured NTP servers have been abused for DRDoS amplification (monlist attacks). Blocking inbound UDP 123 from untrusted sources is standard hardening."
+    }
+  ],
+  "summaryMarkdown": "## Purpose\n\nPort numbers are the first filter when reading firewall logs, pcap captures, or `ss`/`netstat` output. Recognising the service behind a port immediately narrows the investigation.\n\n## Key reference groups\n\n| Range | Meaning |\n|---|---|\n| 0–1023 | Well-known / system ports (require root to bind) |\n| 1024–49151 | Registered ports (IANA-assigned services) |\n| 49152–65535 | Dynamic / ephemeral (OS-assigned for client connections) |\n\nFull registry: [IANA Service Names and Port Numbers](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml)"
+}

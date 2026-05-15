@@ -1,0 +1,76 @@
+{
+  "id": "04-tar",
+  "title": "Archives (tar)",
+  "shortTitle": "04 — Archives (tar)",
+  "workdir": "/home/isopod/labs/filesystem/04-tar/",
+  "intro": "Work from the module directory. Use **`tar`** (and **`find`** / **`wc`** / **`sort`** where helpful). Extract only under **`work/`**. On macOS BSD `tar`, put **`-C directory`** immediately before **`-xf archive`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "List all member paths in **`m13_lab.tar`**, sorted alphabetically.",
+      "expectedOutput": "nested/num.txt\nreadme.txt",
+      "solutionMarkdown": "```bash\ntar -tf m13_lab.tar | sort\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Extract **`m13_lab.tar`** into an empty `work/m13b/` directory. What is the first line of `work/m13b/nested/num.txt`?",
+      "expectedOutput": "42",
+      "solutionMarkdown": "```bash\nmkdir -p work/m13b\ntar -C work/m13b -xf m13_lab.tar\nhead -n1 work/m13b/nested/num.txt\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Extract only the `readme.txt` member from **`m13_lab.tar`** into a fresh `work/m13c/` directory. How many regular files end up in `work/m13c` after extraction?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\nmkdir -p work/m13c\ntar -C work/m13c -xf m13_lab.tar readme.txt\nfind work/m13c -type f | wc -l\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "**`m13_lab.tar.gz`** is a gzip-compressed version of the archive. How many members does it contain?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ntar -tzf m13_lab.tar.gz | wc -l\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "List the members of **`m13_lab.tar.gz`**. Which member is stored inside a subdirectory?",
+      "expectedOutput": "nested/num.txt",
+      "solutionMarkdown": "```bash\ntar -tzf m13_lab.tar.gz | sort\n```\n\n`nested/num.txt` is the only member with a directory path component."
+    },
+    {
+      "id": "q6",
+      "prompt": "Create a new archive `work/mini.tar` containing only `readme.txt` from the module directory. What member path does listing the archive show?",
+      "expectedOutput": "readme.txt",
+      "solutionMarkdown": "```bash\ntar -cf work/mini.tar readme.txt\ntar -tf work/mini.tar\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Extract all members of **`m13_lab.tar`** into a fresh `work/m13f/` directory. How many regular files are created?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\nrm -rf work/m13f && mkdir -p work/m13f\ntar -C work/m13f -xf m13_lab.tar\nfind work/m13f -type f | wc -l\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "After the extraction in the previous question, list all regular files under `work/m13f`. Which file is inside a subdirectory? Give its path relative to `work/m13f`.",
+      "expectedOutput": "nested/num.txt",
+      "solutionMarkdown": "```bash\nfind work/m13f -type f | sort\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Print the first line of the `readme.txt` member from **`m13_lab.tar`** without writing anything to disk.",
+      "expectedOutput": "M13 readme",
+      "solutionMarkdown": "```bash\ntar -xOf m13_lab.tar readme.txt | head -n1\n```\n\n`-O` sends member content to stdout instead of creating a file."
+    },
+    {
+      "id": "q10",
+      "prompt": "Create a bzip2-compressed archive **`work/compressed.tar.bz2`** using the source files in **`m13_tree/`**. How many members does the resulting archive contain?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ntar -cjf work/compressed.tar.bz2 -C m13_tree .\ntar -tjf work/compressed.tar.bz2 | wc -l\n```\n\n`-j` selects bzip2 compression. List with `-t` to verify member count."
+    },
+    {
+      "id": "q11",
+      "prompt": "`mystery.tar.gz` is in the module directory. List its contents carefully — there may be hidden members. Extract and print only the hidden file's content without writing it to disk.",
+      "expectedOutput": "flag{tar_hidden_member}",
+      "solutionMarkdown": "```bash\ntar tf mystery.tar.gz\n# report.txt\n# .barnacle\ntar xOf mystery.tar.gz .barnacle\n```\n\n`tar tf` lists all members including dotfiles. `-O` (stdout) extracts directly to stdout without creating a file on disk — useful for reading a single member from an untrusted archive."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Create and extract archives; choose compression flags (`z`, `j`, `J`, `--zstd` on modern GNU `tar`).\n- Understand `tar` path semantics: trailing slash, absolute paths danger (`--absolute-names` caution).\n- Preserve or intentionally strip permissions and ownership.\n- List contents without extracting (`-t`) and extract single members.\n\n## Scope\n\n**In scope:** `tar` as the universal archive CLI. **Out of scope:** `cpio`/`pax` full mastery except as forward pointers."
+}

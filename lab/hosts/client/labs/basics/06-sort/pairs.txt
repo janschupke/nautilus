@@ -1,0 +1,3 @@
+car 30
+bus 100
+train 5

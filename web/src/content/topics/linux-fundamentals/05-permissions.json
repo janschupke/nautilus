@@ -1,0 +1,70 @@
+{
+  "id": "05-permissions",
+  "title": "Users, groups, and permissions",
+  "shortTitle": "05 — Users, groups, and permissions",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on the Linux discretionary access control model. Correct permission configuration is the first line of defence for file security on any Linux system.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What three permission categories are checked in order when a process accesses a file?",
+      "expectedOutput": "owner, group, others",
+      "solutionMarkdown": "Linux uses **discretionary access control (DAC)**. When a process opens a file, the kernel checks:\n1. Is the process UID the file owner? → apply owner bits\n2. Is the process GID (or any supplementary GID) the file group? → apply group bits\n3. Otherwise → apply other bits\n\nOnly the **first matching** category is applied — they are not combined."
+    },
+    {
+      "id": "q2",
+      "prompt": "What octal value represents the permission set rwxr-xr-x?",
+      "expectedOutput": "755",
+      "solutionMarkdown": "Convert each triplet:\n\n| Who | Perms | Octal |\n|---|---|---|\n| Owner | rwx | 4+2+1 = **7** |\n| Group | r-x | 4+0+1 = **5** |\n| Other | r-x | 4+0+1 = **5** |\n\n→ **755**. Standard for directories and executables accessible by all users. `chmod 755 file` or `chmod u=rwx,go=rx file`."
+    },
+    {
+      "id": "q3",
+      "prompt": "What special permission bit, when set on an executable, causes the process to run with the file owner's effective UID rather than the caller's UID?",
+      "expectedOutput": "setuid",
+      "solutionMarkdown": "The **setuid bit** (SUID, octal `4000`) allows privilege escalation in a controlled way. Classic example: `passwd` is owned by root with setuid set — any user can run it to change their password because it temporarily runs as root to write `/etc/shadow`.\n\n```bash\nls -l /usr/bin/passwd\n# -rwsr-xr-x  root root ... /usr/bin/passwd\n#    ^  s = setuid\n```\nSetuid on scripts is ignored by the Linux kernel (security measure)."
+    },
+    {
+      "id": "q4",
+      "prompt": "What is the octal value of the setuid bit?",
+      "expectedOutput": "4000",
+      "solutionMarkdown": "The full four-digit octal format is `SUGG` where S=special bits, UGG=owner/group/other. The setuid bit occupies the **4** position in the high digit:\n\n| Bit | Octal | Meaning |\n|---|---|---|\n| setuid | 4000 | Execute as owner |\n| setgid | 2000 | Execute as group / new files inherit group |\n| sticky | 1000 | Only owner can delete in directory |\n\nCombined: `chmod 4755 file` sets setuid + rwxr-xr-x."
+    },
+    {
+      "id": "q5",
+      "prompt": "On a shared directory like /tmp, what does setting the sticky bit (octal 1000) prevent?",
+      "expectedOutput": "users from deleting files owned by others",
+      "solutionMarkdown": "The **sticky bit** on a directory means: only the file's owner, the directory's owner, or root can delete or rename a file within it — even if other users have write permission on the directory.\n\n```bash\nls -ld /tmp\n# drwxrwxrwt  ...  /tmp\n#          ^  t = sticky bit\n```\nWithout the sticky bit, any user with write access to `/tmp` could delete other users' files."
+    },
+    {
+      "id": "q6",
+      "prompt": "What file stores hashed passwords for local user accounts, readable only by root?",
+      "expectedOutput": "/etc/shadow",
+      "solutionMarkdown": "`/etc/shadow` stores one line per user:\n```\nusername:$6$salt$hash:lastchange:min:max:warn:inactive:expire:\n```\n- `$6$` = SHA-512 hash\n- Fields encode password age, expiry, and warning periods\n\n`/etc/passwd` remains world-readable but contains only `x` in the password field. The split was introduced to prevent offline hash cracking by unprivileged users."
+    },
+    {
+      "id": "q7",
+      "prompt": "What mask value, subtracted from the default permission set, determines the permissions of newly created files and directories?",
+      "expectedOutput": "umask",
+      "solutionMarkdown": "**umask** (user file-creation mask) bits are **removed** from the default permissions:\n- Default file permissions: `0666` → `0666 & ~umask`\n- Default directory permissions: `0777` → `0777 & ~umask`\n\nWith `umask 022`:\n- Files created with `0666 & ~022 = 0644` (rw-r--r--)\n- Directories created with `0777 & ~022 = 0755` (rwxr-xr-x)\n\n```bash\numask         # view current mask\numask 027     # set new mask for session\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "What is the maximum permission set for a newly created file when the umask is 022?",
+      "expectedOutput": "644",
+      "solutionMarkdown": "Files are created with a maximum of `0666` (no execute by default). With `umask 022`:\n```\n0666 (rw-rw-rw-)\n0022 (----w--w-)  ← umask removes these bits\n────\n0644 (rw-r--r--)  ← result\n```\nThis is the standard default: owner can read/write, group and others can only read."
+    },
+    {
+      "id": "q9",
+      "prompt": "What program reads /etc/sudoers (and /etc/sudoers.d/) to grant users the ability to run commands as root or another user?",
+      "expectedOutput": "sudo",
+      "solutionMarkdown": "`sudo` (superuser do) checks the calling user against the sudoers policy before executing a command as a different user (default: root). Key sudoers syntax:\n```\n# User ALL=(ALL) ALL — full root access\njohn ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx\n```\n`visudo` is the safe editor for sudoers (validates syntax before saving). Sudoers mistakes can lock you out — always use `visudo`."
+    },
+    {
+      "id": "q10",
+      "prompt": "What numeric user ID identifies the root superuser account on every Linux system?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "**UID 0** is root. The kernel grants unconditional access to all files and system calls when the effective UID is 0 — it bypasses all DAC checks. The username `root` is conventional; renaming it does not reduce privileges.\n\nLinux **capabilities** (since kernel 2.2) allow splitting root's privileges — a process can hold `CAP_NET_BIND_SERVICE` (bind port < 1024) without needing full UID 0."
+    }
+  ],
+  "summaryMarkdown": "## Permission bit reference\n\n| Octal | Binary | Symbol | Meaning |\n|---|---|---|---|\n| 4 | 100 | r | Read |\n| 2 | 010 | w | Write |\n| 1 | 001 | x | Execute (or enter dir) |\n| 4000 | — | s/S (owner) | setuid |\n| 2000 | — | s/S (group) | setgid |\n| 1000 | — | t/T (other) | sticky |\n\n## Common permission patterns\n\n| Octal | Pattern | Use case |\n|---|---|---|\n| 600 | rw------- | Private key files |\n| 644 | rw-r--r-- | Config files, web content |\n| 700 | rwx------ | Private scripts |\n| 755 | rwxr-xr-x | System binaries, web dirs |\n| 777 | rwxrwxrwx | Avoid — world-writable |\n| 1777 | rwxrwxrwt | /tmp (sticky) |\n| 4755 | rwsr-xr-x | setuid binary (e.g. passwd) |"
+}

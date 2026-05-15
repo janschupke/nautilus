@@ -1,0 +1,76 @@
+{
+  "id": "12-xargs",
+  "title": "Parallelism (xargs, parallel)",
+  "shortTitle": "12 — Parallelism (xargs, parallel)",
+  "workdir": "/home/isopod/labs/basics/12-xargs/",
+  "intro": "Work from the module directory. Fixtures: `filelist.txt` (6 tokens, one per line), `grid.txt` (9 numbers on one line), `phrases.txt` (3 multi-word phrases), `run_job.sh` (prints `JOB:<arg>` per invocation).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "`filelist.txt` contains 6 tokens, one per line. Feed them to `echo` via `xargs` with a batch size of 2. How many times does `xargs` invoke `echo`?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nxargs -n 2 echo < filelist.txt\n```\n\nWith 6 tokens and batch size 2, `xargs` makes **3** invocations: `echo alpha beta`, `echo gamma delta`, `echo epsilon zeta`."
+    },
+    {
+      "id": "q2",
+      "prompt": "Using the same batch size of 2, what does the **second** `echo` invocation print?",
+      "expectedOutput": "gamma delta",
+      "solutionMarkdown": "```bash\nxargs -n 2 echo < filelist.txt\n```\n\nThe second batch contains **gamma** and **delta**."
+    },
+    {
+      "id": "q3",
+      "prompt": "`grid.txt` has 9 numbers on a single line (space-separated). Feed them to `echo` with a batch size of 3. How many output lines does this produce?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nxargs -n 3 echo < grid.txt\n```\n\n9 numbers ÷ 3 per batch = **3** invocations → **3** output lines."
+    },
+    {
+      "id": "q4",
+      "prompt": "Process the tokens in `filelist.txt` one at a time, prefixing each with the string `TOKEN:` and a space. What does the **third** output line look like?",
+      "expectedOutput": "TOKEN: gamma",
+      "solutionMarkdown": "```bash\nxargs -n 1 echo 'TOKEN:' < filelist.txt\n```\n\nThe third token is `gamma`, so the third line prints `TOKEN: gamma`."
+    },
+    {
+      "id": "q5",
+      "prompt": "`phrases.txt` has 3 phrases, each on its own line, some containing spaces. If you pipe the file through default `xargs` (splitting on whitespace), how many separate word-level arguments does it pass in total?",
+      "expectedOutput": "5",
+      "solutionMarkdown": "```bash\nxargs -n 1 echo < phrases.txt\n```\n\nDefault `xargs` splits on all whitespace: `hello`, `world`, `foo`, `bar`, `quux` — **5** tokens. The phrase boundaries are lost."
+    },
+    {
+      "id": "q6",
+      "prompt": "To keep multi-word phrases intact, use NUL-byte record separation (`-0`). First convert `phrases.txt` newlines to NUL bytes, then pass each NUL-delimited record as a single argument to `echo PHRASE:`. How many output lines does this produce?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ntr '\\n' '\\0' < phrases.txt | xargs -0 -n 1 echo 'PHRASE:'\n```\n\nNUL-separation preserves `hello world`, `foo bar`, and `quux` as three intact arguments — **3** output lines."
+    },
+    {
+      "id": "q7",
+      "prompt": "Make `run_job.sh` executable and process `filelist.txt` through it one token at a time. Sort the output alphabetically. What is the **4th** line of the sorted result?",
+      "expectedOutput": "JOB:epsilon",
+      "solutionMarkdown": "```bash\nchmod +x run_job.sh\nxargs -n 1 ./run_job.sh < filelist.txt | sort\n```\n\nSorted output: `JOB:alpha`, `JOB:beta`, `JOB:delta`, **`JOB:epsilon`**, `JOB:gamma`, `JOB:zeta`."
+    },
+    {
+      "id": "q8",
+      "prompt": "Use placeholder substitution (`-I{}`) to generate one output line per token from `filelist.txt` in the format `ITEM:<token>:END`. What does the line for `delta` look like?",
+      "expectedOutput": "ITEM:delta:END",
+      "solutionMarkdown": "```bash\nxargs -I{} echo 'ITEM:{}:END' < filelist.txt\n```\n\n`-I{}` substitutes the token into `{}` at every occurrence in the command template."
+    },
+    {
+      "id": "q9",
+      "prompt": "Run `run_job.sh` against `filelist.txt` with 2 parallel workers and one token per invocation, then sort the output. How many lines does the final sorted output have?",
+      "expectedOutput": "6",
+      "solutionMarkdown": "```bash\nxargs -P 2 -n 1 ./run_job.sh < filelist.txt | sort\n```\n\nAll 6 tokens are processed — one line per token — giving **6** sorted lines."
+    },
+    {
+      "id": "q10",
+      "prompt": "Run the same parallel job (2 workers, sorted output) and find the token that comes **last** alphabetically. What does its output line say?",
+      "expectedOutput": "JOB:zeta",
+      "solutionMarkdown": "```bash\nxargs -P 2 -n 1 ./run_job.sh < filelist.txt | sort | tail -n 1\n```\n\n`zeta` is the last token alphabetically — its output is `JOB:zeta`."
+    },
+    {
+      "id": "q11",
+      "prompt": "A file named `flag.txt` is hidden somewhere under `/home/isopod/labs/basics/`. Use `find` to locate it and feed the result to a reader via `xargs`. What is the file's content?",
+      "expectedOutput": "crab{xargs_fin_discovered}",
+      "solutionMarkdown": "```bash\nfind /home/isopod/labs/basics -name flag.txt | xargs cat\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Use `xargs -P` for controlled parallelism; handle failures (`-P` + exit semantics).\n- Quote safely with `-I` vs `-0` vs `bash -c`.\n- Recognize GNU `parallel` as richer fan-out (`:::`, `::::`, `--jobs`, `--eta`) with citation expectations in academic use.\n- Avoid thundering herds against **local lab** services; backoff patterns.\n\n## Scope\n\n**In scope:** process-level parallelism from shell. **Out of scope:** GPU batching; language async runtimes."
+}

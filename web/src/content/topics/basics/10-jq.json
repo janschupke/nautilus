@@ -1,0 +1,70 @@
+{
+  "id": "10-jq",
+  "title": "jq for JSON",
+  "shortTitle": "10 — jq for JSON",
+  "workdir": "/home/isopod/labs/basics/10-jq/",
+  "intro": "Work from the module directory. Fixtures: **`people.json`**, **`scores.json`**, **`tags.json`**, **`service.json`**, **`w1.json`** / **`w2.json`** / **`w3.json`**, **`wrapped.txt`**, **`left.json`**, **`right.json`**, **`products.json`**, **`nested.json`**, **`json_strings.json`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "**`people.json`** is an array of objects, each with a `name` and an `active` boolean. Print the names of people whose `active` field is `true`, one per line, in document order.",
+      "expectedOutput": "alice\ncarol",
+      "solutionMarkdown": "```bash\njq -r '.[] | select(.active==true) | .name' people.json\n```\n\n`select` filters the stream; `-r` emits raw strings (no JSON quotes)."
+    },
+    {
+      "id": "q2",
+      "prompt": "**`scores.json`** has a `values` array of three integers. Add 1 to each value and print the resulting array as a single compact JSON line.",
+      "expectedOutput": "[4,8,3]",
+      "solutionMarkdown": "```bash\njq -c '.values | map(.+1)' scores.json\n```\n\n`map` applies an expression to every element; `-c` emits compact (single-line) JSON."
+    },
+    {
+      "id": "q3",
+      "prompt": "**`tags.json`** is a JSON array at the root. How many elements does it contain?",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\njq 'length' tags.json\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "**`service.json`** is a JSON object. List its top-level key names in sorted order, one per line.",
+      "expectedOutput": "apiVersion\nroutes\ntimeouts",
+      "solutionMarkdown": "```bash\njq -r 'keys[]' service.json\n```\n\n`keys` returns a sorted array of object keys; `[]` explodes it into a stream; `-r` strips quotes."
+    },
+    {
+      "id": "q5",
+      "prompt": "**`w1.json`**, **`w2.json`**, and **`w3.json`** each hold a separate JSON document. Read all three files in one `jq` invocation and count the total number of top-level inputs.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\njq -s 'length' w1.json w2.json w3.json\n```\n\n`-s` (slurp) reads all inputs into a single array; `length` counts the elements."
+    },
+    {
+      "id": "q6",
+      "prompt": "**`wrapped.txt`** records inventory items, one per line. Each line is a JSON-encoded value. Decode each line and extract the `sku` field. Print the sku values in document order.",
+      "expectedOutput": "pen\nink\npad",
+      "solutionMarkdown": "```bash\njq -R -r 'fromjson|fromjson|.sku' wrapped.txt\n```\n\n`-R` reads raw text lines as strings; each line is a JSON string whose content is itself a JSON-encoded object — two `fromjson` calls unwrap both layers."
+    },
+    {
+      "id": "q7",
+      "prompt": "**`left.json`** and **`right.json`** each have an integer field `a`. What is the sum of the two `a` values?",
+      "expectedOutput": "15",
+      "solutionMarkdown": "```bash\njq -s '.[0].a + .[1].a' left.json right.json\n```\n\n`-s` loads both files into an array so their fields can be combined in one expression."
+    },
+    {
+      "id": "q8",
+      "prompt": "**`products.json`** has a `products` array where each item has a `name` and a `stock` count. Print the names of products that are currently in stock (stock strictly greater than 0), in document order.",
+      "expectedOutput": "clip\ntape",
+      "solutionMarkdown": "```bash\njq -r '.products[] | select(.stock>0) | .name' products.json\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "**`nested.json`** has a nested object at `.meta.flags`. How many keys does that nested object contain?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\njq '.meta.flags | keys | length' nested.json\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "**`json_strings.json`** is a JSON array where each element is a string encoding an object with a `kind` field. Decode each element, extract its `kind`, concatenate all kind values into one string, and print that string.",
+      "expectedOutput": "xyz",
+      "solutionMarkdown": "```bash\njq -rn --slurpfile rows json_strings.json '$rows[0] | map(fromjson|.kind)|join(\"\")'\n```\n\n`--slurpfile` loads the file into a variable; `map(fromjson|.kind)` decodes each string and picks the field; `join(\"\")` concatenates."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Navigate JSON with **identity**, **`.`**, **`.[]`**, indexing, and **`|`** composition.\n- Filter with **`select`**, transform with **`map`** / **`map_values`**, measure with **`length`**, introspect objects with **`keys`**.\n- Parse string-embedded JSON using **`fromjson`**; combine multiple inputs with **slurp** (**`-s`**) and **`--slurpfile`**.\n- Choose **`-r`** (raw strings), **`-c`** (compact JSON), and **`-n`** (null input) deliberately for stable CLI output.\n\n## Scope\n\n**In scope:** **`jq 1.6+`** filters, common idioms, and safe local fixtures. **Out of scope:** full **`jq`** language tutorial (def, reduce, modules), **JSON Schema**, **`gojq`**-only quirks, and **streaming** (`--stream`) except as a forward pointer.\n\n## Concept outline\n\n1. **Values and paths** — `.`, `.foo`, `.[\"x-y\"]`, `.[]`, array slices.\n2. **Operators and builtins** — `+`, `*`, `//`, `tonumber`, `tostring`, `type`.\n3. **Conditionals** — `select`, `if … then … else … end`, `and` / `or`.\n4. **Arrays and objects** — `map`, `add`, `group_by`, `to_entries`, `from_entries`, `with_entries`.\n5. **Text and I/O** — `-r`, `-c`, `-s`, `-R`, `--slurpfile`, `-n`, reading multiple files.\n6. **Interop** — piping **`curl -s`** into **`jq`**; emitting values for **`xargs`** (later modules)."
+}

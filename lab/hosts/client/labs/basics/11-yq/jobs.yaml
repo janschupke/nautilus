@@ -1,0 +1,10 @@
+jobs:
+  - id: ingest-001
+    priority: 2
+    queue: default
+  - id: export-7
+    priority: 10
+    queue: batch
+  - id: nightly
+    priority: 3
+    queue: batch

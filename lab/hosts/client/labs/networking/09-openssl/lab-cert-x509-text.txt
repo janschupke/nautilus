@@ -1,0 +1,61 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            52:12:eb:0c:ce:a5:ac:5c:c4:8c:73:bb:df:36:e3:9f:d2:49:18:5b
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco
+        Validity
+            Not Before: May 13 04:48:23 2026 GMT
+            Not After : Aug 15 04:48:23 2028 GMT
+        Subject: CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:8b:e8:77:1f:e8:e6:33:d0:71:30:3f:47:5e:3c:
+                    76:87:e1:10:5d:90:66:b5:15:4d:f2:b0:96:96:7c:
+                    5c:80:d5:73:d2:06:97:16:b5:61:df:46:eb:88:5b:
+                    2a:89:43:93:c5:fd:b4:d7:66:93:b4:1a:e6:be:9d:
+                    3d:e3:4e:ec:78:d5:c0:c1:e7:77:89:ee:16:69:bd:
+                    55:51:c7:69:77:0d:b7:cb:4f:08:b8:4b:de:59:d2:
+                    6f:f5:ed:ef:12:57:93:ce:bb:62:81:05:b7:a6:51:
+                    d2:c3:58:59:48:61:71:f6:2b:70:ab:1f:33:6d:55:
+                    f7:1f:96:d6:ec:e0:22:b6:b4:e6:a1:b0:88:c6:9f:
+                    70:d7:a0:82:c6:7a:dd:c2:0c:c4:a4:d0:0a:20:7c:
+                    3d:c1:70:10:2f:81:c5:e8:20:e1:52:fb:7e:4a:18:
+                    1e:35:2b:cd:ae:43:32:c2:12:49:31:f3:bc:73:30:
+                    39:2f:4d:f8:fe:b7:04:5c:b4:2c:85:d0:41:c0:ae:
+                    da:69:15:7f:62:63:ae:7a:f3:d3:98:e2:c6:8a:0c:
+                    55:d8:09:d2:14:ca:82:d4:d0:70:d6:8d:dd:c7:c8:
+                    28:f4:a6:e7:de:f9:52:e1:34:8e:cd:63:df:c8:5c:
+                    6c:c4:1a:fa:5b:98:d5:46:d6:88:5f:ee:a0:dd:b9:
+                    8d:9f
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                D6:F5:00:46:F3:7D:C4:01:3F:30:1B:CB:38:5C:E3:9B:C7:F1:6C:30
+            X509v3 Authority Key Identifier: 
+                D6:F5:00:46:F3:7D:C4:01:3F:30:1B:CB:38:5C:E3:9B:C7:F1:6C:30
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Subject Alternative Name: 
+                DNS:nautilus-lab.local, DNS:localhost, IP Address:127.0.0.1
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        61:63:60:4b:4d:61:fd:9d:b8:ef:96:c8:f8:21:6a:b8:87:22:
+        63:b3:52:f6:95:0d:a0:2a:44:d7:09:fb:5b:c8:5b:d4:60:f1:
+        02:85:dd:d9:06:49:13:b2:e2:57:fc:d4:23:31:5f:84:9c:dc:
+        40:15:73:0f:a9:e2:2a:b2:e8:bc:89:53:3f:cb:46:25:b0:d5:
+        da:7b:95:c1:88:d0:c2:6b:ac:21:38:72:b0:0a:eb:12:8b:0b:
+        f6:f2:70:ca:5e:5c:18:fc:58:8c:be:52:71:f1:79:ce:0c:3b:
+        ee:b0:eb:71:fa:66:90:c1:4f:37:64:dc:0c:59:57:db:cc:9b:
+        ff:c9:1e:d9:f4:bd:8a:c5:91:5a:9a:63:ef:a7:20:e7:fc:b8:
+        c2:14:12:50:4e:83:fa:46:c0:69:9e:da:91:47:5c:18:2d:d9:
+        14:98:67:46:fd:e3:70:16:70:35:f6:ef:35:e2:cb:48:19:c2:
+        75:6c:2f:71:16:2e:90:32:89:b8:ad:60:19:62:ea:52:80:e6:
+        58:ae:0c:90:91:9c:31:bb:28:b5:0c:a7:07:18:49:b4:2b:35:
+        6e:8c:13:19:1c:59:40:cd:83:a4:22:e3:38:2a:2b:d5:f8:13:
+        9f:ea:10:f7:c7:99:2e:75:16:fa:c4:a4:4b:32:47:9b:7f:b5:
+        af:2b:12:69
+sha256 Fingerprint=66:7D:89:20:8C:7A:B1:AA:02:BF:F2:4C:98:93:4E:BD:7B:38:FF:87:CF:78:92:46:22:C4:54:FA:F6:DE:5E:AD

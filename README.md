@@ -1,0 +1,141 @@
+# Nautilus
+
+Numbered, hands-on shell curriculum (modules **01–41**) plus a **Next.js lab UI** under `web/` where learners check answers against the key, read optional module summaries, and track progress in the browser.
+
+## Repository layout
+
+```text
+nautilus/
+  README.md                 # this file
+  web/                      # Next.js 16 app (React 19, Tailwind 4, Vitest)
+    src/content/            # manifest, topic JSON, module registration
+    src/app/                # routes: home, /[moduleId]/[topicId], /lab-setup, /stats
+  lab/                      # Docker LAN lab: SSH client, web/API, DB, FTP, mail, forensics, VPN
+    compose.yml             # fixed-subnet LAN definition
+    hosts/                  # per-host Dockerfiles and lab fixture files
+```
+
+Module order and sidebar groupings are defined in `web/src/content/manifest.ts`. The web app loads **41** interactive topic definitions from JSON under `web/src/content/topics/`.
+
+## Run the lab (development)
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Tests, lint, types
+
+```bash
+cd web
+npm test              # Vitest (src/**/*.test.ts)
+npm run lint
+npm run typecheck
+npm run format        # Prettier --write
+npm run check         # lint + typecheck + format:check
+```
+
+## Docker LAN lab
+
+The hands-on environment is a deterministic Docker LAN under **`lab/`**. All hosts start together:
+
+| IP | Host | Role |
+|---|---|---|
+| `10.78.8.10` | `client` | SSH entry point. Login: `isopod` / `isopod`. Lab fixtures under `/home/isopod/labs/`. |
+| `10.78.8.11` | `lan-client` | Simulates background user traffic (cron HTTP requests to webserver). |
+| `10.78.8.20` | `webserver` | PHP website and JSON API for `curl`, `wget`, discovery, and auth exercises. |
+| `10.78.8.30` | `db` | PostgreSQL — database for webserver exercises. |
+| `10.78.8.40` | `exchange-ftp` | FTP service for file-transfer exercises. |
+| `10.78.8.41` | `exchange-smtp` | Mailpit SMTP — email exercises; web UI on port 8025. |
+| `10.78.8.50` | `forensics-box` | Forensics analysis host for incident response and triage exercises. |
+| `10.78.8.2` | `vpn` | WireGuard gateway for direct `10.78.8.0/24` access from Docker Desktop hosts. |
+
+The client includes common GNU/Linux shell, networking, diagnostic, editor, man-page, and archive tools, including both modern `ip` tooling and classic `ifconfig` / `route` / `netstat` from `net-tools`.
+
+From the repository root:
+
+```bash
+cd lab
+docker compose up -d
+ssh -p 2222 isopod@127.0.0.1
+```
+
+On Linux the Docker bridge is directly reachable, so you can also `ssh isopod@10.78.8.10` without a port flag. On macOS and Windows, Docker Desktop runs containers inside a hidden VM — use the published port `2222` or activate the WireGuard VPN (`vpn` container) for direct LAN access.
+
+Use **`docker compose down -v`** from **`lab/`** to remove containers and named volumes. After the lab is up, check the default entrypoints with:
+
+```bash
+nc -z 127.0.0.1 2222
+curl -fsS http://127.0.0.1:8080/api/status.php
+```
+
+## Lab fixture files
+
+- Exercise fixture files live under **`lab/hosts/client/labs/`** and are COPY'd into `/home/isopod/labs/` at image build time.
+- Keep fixtures deterministic and safe to commit. Lab credentials are fake and documented; do not add real secrets.
+
+## Sync module summaries into the UI
+
+Module pages can show optional **`summaryMarkdown`** (from each folder’s **`summary.md`**). After editing course `summary.md` files, regenerate JSON:
+
+```bash
+cd web
+npm run sync:summaries    # scripts/sync-module-summaries.mjs
+```
+
+## Web app: registering labs and sidebar progress
+
+| Location                                     | Role                                                                                                                           |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `web/src/content/lab-modules.ts`             | **Register** interactive topics: add a loader entry pointing at your JSON (sidebar links and `getLabTopic` follow this map). |
+| `web/src/content/lab-module-question-ids.ts` | Keep in sync with `lab-modules.ts`; used for sidebar progress rings and “all correct” styling.                               |
+| `web/src/content/topics/<module>/*.json`     | Per-topic questions, expected outputs, solutions, optional `summaryMarkdown`. Prompts reference `/home/isopod/labs` paths or lab host IPs. |
+| `web/src/content/modules/*.json`             | Per-module intro text shown on the module summary page.                                                                       |
+| `web/src/ui/lab.ts`                          | Shared layout/typography class strings for the lab shell.                                                                      |
+
+## Persistence (browser)
+
+- Lab answers and check results: **`localStorage`** key **`nautilus-lab-progress-v1`** (`web/src/lib/storage.ts`).
+- Sidebar category expand/collapse: **`nautilus-sidebar-categories-v1`**.
+
+## Course content & authoring
+
+### Purpose
+
+Exercise-first shell practice: realistic CLI tasks (logs, HTTP, packets on a lab interface), with theory in each module’s **`summary.md`**, not duplicated here.
+
+### Per-module files (normative)
+
+Each **`NN-topic-slug/`** directory should include:
+
+| File            | Role                                                        |
+| --------------- | ----------------------------------------------------------- |
+| `summary.md`    | Concepts, flags, Linux vs macOS notes.                      |
+| `assignment.md` | Numbered tasks; later items may depend on earlier ones.     |
+| `solution.md`   | Explained solutions; multiple valid approaches when useful. |
+| `answers.md`    | Answers only, keyed to assignment numbering.                |
+| `lab/seed/`     | Safe-to-commit fixtures copied or mounted into lab hosts.    |
+
+### Tooling conventions (course standard)
+
+- **Shell:** **`#!/usr/bin/env bash`** in authored scripts and solutions unless a module documents an exception. Document POSIX / `dash` limits where relevant; avoid zsh-only features in course material.
+- **Beyond shell:** prefer **Python 3** (stdlib first) when Bash + `awk` / `sed` / `jq` is a poor fit. Do not introduce **Perl** or **Ruby** in new exercises unless justified in that module’s `summary.md`.
+- **Search:** treat **GNU `grep`** (including **`grep -P`** where available) and **`rg`** as primary CLI search tools. On macOS, use **`ggrep`** or **`rg`** for PCRE; stock BSD `grep` has no `-P`.
+
+### Ethics and lab scope
+
+- Prefer **localhost**, **user-controlled VMs**, or **explicitly allowed** endpoints for HTTP, scanning, or auth drills. Do not normalize probing arbitrary third-party networks.
+- Call out **corporate network / EDR** risk where a pattern could look suspicious (e.g. reverse shells, aggressive `nmap`).
+- Offensive-adjacent modules must pair exercises with **authorization**, **scope**, and defensive context.
+
+### Non-goals
+
+- Standalone “how to list files” modules (those belong as steps inside larger exercises).
+- Instructions that require **testing against third-party networks without consent**.
+
+### Agents (Next.js)
+
+The app uses **Next.js 16** with breaking changes vs older majors. When editing `web/`, read `web/AGENTS.md` and the guides under `web/node_modules/next/dist/docs/` as needed.

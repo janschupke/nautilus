@@ -1,0 +1,70 @@
+{
+  "id": "01-environment",
+  "title": "Shell environment and safe defaults",
+  "shortTitle": "01 — Shell environment and safe defaults",
+  "workdir": "/home/isopod/labs/basics/01-environment/",
+  "intro": "Work from the module directory (shown above). Use **Bash** for every snippet. Put scratch files under **`work/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "How many of Bash's three strict-mode options — `errexit`, `nounset`, and `pipefail` — are **enabled** by default in a clean, non-login, non-interactive Bash subprocess (no profile or rc files loaded)?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "Start a clean subprocess and inspect the option states:\n\n```bash\nbash --noprofile --norc -c 'set +o' | grep -E 'errexit|nounset|pipefail'\n```\n\nAll three appear with `set +o` (the `+` prefix means **off**). None are enabled, so the count is **0**.\n\nTo count programmatically:\n```bash\nbash --noprofile --norc -c 'set +o' \\\n  | grep -cE '^set -o (errexit|nounset|pipefail)$'\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Build a two-command pipeline where the **left** command exits 1 and the **right** command exits 0. With default Bash settings (no extra options), what does `$?` equal immediately after the pipeline completes?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "Without `pipefail`, pipeline status is taken from the **last** command:\n\n```bash\nbash -c 'false | true; echo $?'\n```\n\n`true` exits 0, so `$?` is **0** — the failure of `false` is silently swallowed."
+    },
+    {
+      "id": "q3",
+      "prompt": "Enable the `pipefail` option and run the same failing-then-succeeding pipeline again. What does `$?` equal now?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "With `pipefail`, the pipeline's exit status is the **rightmost non-zero** status:\n\n```bash\nbash -c 'set -o pipefail; false | true; echo $?'\n```\n\n`false` exited 1, so `$?` is now **1**."
+    },
+    {
+      "id": "q4",
+      "prompt": "The log file in the module directory records a deployment run. How many of its lines contain the word `status`?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -c 'status' sample.log\n```\n\nThree lines match: the `start`, `retry`, and `drain` events each carry a `status=…` field."
+    },
+    {
+      "id": "q5",
+      "prompt": "The log file contains a `probe` event. What is the numeric value recorded for `latency_ms` in that entry?",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\ngrep 'event=probe' sample.log | grep -oP 'latency_ms=\\K[0-9]+'\n```\n\nOr with `awk`:\n```bash\nawk -F'latency_ms=' '/event=probe/ { print int($2) }' sample.log\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "The module directory contains a script called `broken_unset.sh`. Run it with plain `bash` (no extra flags). What does it print to stdout? Include all punctuation exactly.",
+      "expectedOutput": "Hello, !",
+      "solutionMarkdown": "```bash\nbash broken_unset.sh\n```\n\nThe script contains `echo \"Hello, ${NAME}!\"`. Without `set -u`, an unset variable expands to the **empty string**, so Bash prints `Hello, !` and exits 0."
+    },
+    {
+      "id": "q7",
+      "prompt": "Run `broken_unset.sh` again, but this time enable the `nounset` option (`-u`) when invoking Bash. What **exit code** does the invocation return?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\nbash -u broken_unset.sh; echo $?\n```\n\nWith `nounset` active, referencing an unset variable is a **fatal error** — Bash prints a message to stderr and exits **1** before echoing anything."
+    },
+    {
+      "id": "q8",
+      "prompt": "The module directory also contains `grep_strict.sh`. Run it with plain `bash`. What exit code does it return?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\nbash grep_strict.sh; echo $?\n```\n\nThe script declares `set -euo pipefail` internally and runs `grep` against `lines.txt` looking for a word that is absent. `grep` returns exit code 1 (no match), which triggers `errexit` — the script aborts immediately and exits **1**."
+    },
+    {
+      "id": "q9",
+      "prompt": "Both scripts in the module directory have a strict-mode-related defect. Which one would fail **even if you run it with plain `bash` and no extra flags**? Answer with just the filename.",
+      "expectedOutput": "grep_strict.sh",
+      "solutionMarkdown": "`broken_unset.sh` has **no** strict-mode options of its own — it only fails when the caller enables `-u`. Opened with plain `bash`, it runs successfully (prints `Hello, !`).\n\n`grep_strict.sh` sets `set -euo pipefail` **inside the script**, so strict mode is always active regardless of how you invoke it. The embedded `grep` call finds no match → exits 1 → `errexit` aborts the script."
+    },
+    {
+      "id": "q10",
+      "prompt": "The deployment log in the module directory contains a `checkpoint` event. That entry embeds a flag value using the format `FLAG=value`. What is the flag?",
+      "expectedOutput": "lab-wins-01",
+      "solutionMarkdown": "```bash\ngrep 'event=checkpoint' sample.log | grep -oP 'FLAG=\\K\\S+'\n```\n\nOr with `awk`:\n```bash\nawk -F'FLAG=' '/event=checkpoint/ { print $2 }' sample.log\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Choose shell options deliberately (`set -o`, `set -e` / `errexit`, `nounset`, `pipefail`).\n- Use history expansion and `HISTCONTROL` where appropriate; know when to disable history for sensitive commands.\n- Create safe temporary files and directories (`mktemp`, `TMPDIR`).\n- Read and propagate exit statuses; use `|| true` only when intentional.\n- Distinguish login vs non-login shells and when `~/.bash_profile` vs `~/.bashrc` apply; if your macOS default login shell is not Bash, open a **Bash** session (`bash -l` or `bash`) so behavior matches course materials.\n\n## Scope\n\n**In scope:** **GNU Bash** as the scripting and exercise shell; POSIX `sh` subset called out where it differs from Bash. **Out of scope:** full shell programming patterns (see module 34); process control details beyond jobs (see module 09).\n\n## Concept outline\n\n1. **Shell identification** — `echo \"$0\"`, `$SHELL`, `ps -p $$`; when scripts run under `/bin/sh` vs `bash`.\n2. **Strictness triad** — `set -e`, `set -u`, `set -o pipefail`: failure modes, exceptions (`if`, `||`, `&&`), subshell caveats.\n3. **Other high-value options** — `noclobber`, `xtrace` for debugging, `allexport` for quick env dumps (lab only).\n4. **History** — `history`, `fc`, `ignorespace` / `ignoredups`, `histappend`; macOS default shells and paths.\n5. **Temporary resources** — `mktemp` / `mktemp -d`; cleaning traps preview (full `trap` in module 34); `TMPDIR` on macOS.\n6. **Exit codes** — `$?`, `exit` in scripts, `true` / `false` as plumbing; `set -e` with `!` pipelines.\n7. **Command resolution** — `command -v`, `type`, `which` (why `command -v` is preferred in scripts), `hash`.\n\n## Tooling and alternatives\n\n| Concern | Primary options | Alternatives / notes |\n|--------|------------------|----------------------|\n| Strict mode | `set -euo pipefail` in Bash | POSIX `sh`: no `pipefail`; emulate with explicit checks or use `bash`. |\n| Temp files | `mktemp`, `mktemp -d` | Python `tempfile` / `pathlib` when shell-only temp handling is awkward or unsafe. |\n| Shell choice | `bash` (course default) | Debian `/bin/sh` → `dash` — scripts using Bashisms need `#!/usr/bin/env bash`. |\n| Debugging | `set -x`, `PS4` | `bash --xtrace`; external `shellcheck` (module 34). |\n\n## Pitfall note (for authors and learners)\n\n`set -e` does **not** cause the shell to exit on a failing `read` in the test position of `while read …; do …; done` in Bash (see Bash manual, `errexit`). Use other patterns (e.g. `grep` with no match, or `read` outside `while` with explicit `|| true` / `|| [[ -n \"$line\" ]]`) when you need a teaching failure."
+}

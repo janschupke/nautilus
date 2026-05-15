@@ -1,0 +1,7 @@
+PID	USER	VSZ	CMD
+1001	root	1234	init
+1002	alice	9876	python-app
+1003	alice	5555	nginx-worker
+1004	www-data	2222	nginx-master
+1005	bob	999	nginx-cache
+9731	backupsvc	4096	/usr/bin/beacon --interval=60 --key=flag{ps_cmd_discovered}

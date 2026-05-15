@@ -1,0 +1,70 @@
+{
+  "id": "03-wget",
+  "title": "Downloads with wget",
+  "shortTitle": "03 — Downloads with wget",
+  "workdir": "/home/isopod/labs/networking/03-wget/",
+  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. All graded items use the authorized Docker-LAN web target **`http://lab-web/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Fetch `http://lab-web/downloads/manual.txt` to stdout without saving a file. What is the first line of the response body?",
+      "expectedOutput": "Nautilus LAN Lab Manual",
+      "solutionMarkdown": "```bash\nwget -q -O - http://lab-web/downloads/manual.txt | head -n1\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Use wget's spider mode to check `http://lab-web/downloads/manual.txt` without downloading the body — it prints headers to stderr. What is the first HTTP status code reported?",
+      "expectedOutput": "200",
+      "solutionMarkdown": "```bash\nwget -S --spider http://lab-web/downloads/manual.txt 2>&1 | awk '/HTTP\\// { print $2; exit }'\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Download `http://lab-web/downloads/manual.txt` to `work/m20-manual.txt`. How many lines does the saved file contain?",
+      "expectedOutput": "5",
+      "solutionMarkdown": "```bash\nmkdir -p work\nwget -q -O work/m20-manual.txt http://lab-web/downloads/manual.txt\nwc -l < work/m20-manual.txt\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Fetch `http://lab-web/downloads/report.php` and let wget use the server-supplied `Content-Disposition` header to determine the saved filename, writing the file into `work/m20-downloads/`. What filename did the server suggest?",
+      "expectedOutput": "lab-report-2026.txt",
+      "solutionMarkdown": "```bash\nrm -rf work/m20-downloads\nmkdir -p work/m20-downloads\nwget -q --content-disposition -P work/m20-downloads http://lab-web/downloads/report.php\nfind work/m20-downloads -maxdepth 1 -type f -printf '%f\\n' | sort\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "After question 4, print the complete body of the downloaded report file (all lines, in order).",
+      "expectedOutput": "Nautilus LAN report\nstatus=green",
+      "solutionMarkdown": "```bash\ncat work/m20-downloads/lab-report-2026.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Fetch `http://lab-web/redirect-manual.php` to stdout, following any redirect to the final destination. What is the first line of the final response body?",
+      "expectedOutput": "Nautilus LAN Lab Manual",
+      "solutionMarkdown": "```bash\nwget -q -O - http://lab-web/redirect-manual.php | head -n1\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Mirror the docs directory at `http://lab-web/docs/` into `work/m20-docs/` using recursive wget. Configure it to avoid ascending to the parent path and to strip the host and directory prefix so files land directly inside `work/m20-docs/`. List the saved file names, one per line, sorted. What is the complete list?",
+      "expectedOutput": "guide.html\nindex.html\nreference.html\nrobots.txt",
+      "solutionMarkdown": "```bash\nrm -rf work/m20-docs\nwget -q -r -np -nH --cut-dirs=1 -P work/m20-docs http://lab-web/docs/\nfind work/m20-docs -type f | sed 's|^work/m20-docs/||' | sort\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "Use wget's spider mode to probe `http://lab-web/no-such-page.txt` — a path that does not exist. What exit code does wget return for a resource that cannot be retrieved?",
+      "expectedOutput": "8",
+      "solutionMarkdown": "```bash\nwget -q --spider http://lab-web/no-such-page.txt\necho $?\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Fetch `http://lab-web/robots.txt` to stdout. What path appears after the `Disallow:` directive?",
+      "expectedOutput": "/admin/",
+      "solutionMarkdown": "```bash\nwget -q -O - http://lab-web/robots.txt | awk '$1 == \"Disallow:\" && $2 == \"/admin/\" { print $2 }'\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "The search API at `http://lab-web/api/search.php` accepts a `q` query parameter. Query it with `q=wget` and parse the JSON response. What is the value of the `.count` field?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\nwget -q -O - 'http://lab-web/api/search.php?q=wget' | jq -r .count\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Choose **`wget`** vs **`curl`** for **bulk download**, **resume**, and **recursive mirror** workflows.\n- Read HTTP status and headers through `wget -S` / `--spider`.\n- Know common mirror flags (**`-m`**, **`-np`**, **`-p`**, **`-k`**, **`-N`**) and why **`-np`** matters for directory crawls.\n- Understand **`robots.txt`** interactions and why **`-e robots=off`** is a **lab-only** switch.\n- Use the Docker LAN web host for safe live download practice.\n\n## Scope\n\n**In scope:** CLI downloads, **`-O`**, **`-P`**, recursive **mirror** patterns, status checks, **`robots.txt`** awareness, and authorized practice against **`http://lab-web/`**. **Out of scope:** authentication vaults, torrents, third-party mirrors, and **`aria2c`** multi-source tuning (mention only in **`solution.md`**).\n\n## Concept outline\n\n1. **`wget` defaults** — follows common redirects, writes **`index.html`** for directory URLs, verbose stderr progress.\n2. **Single file** — **`-O path`** vs letting **`wget`** derive a name from the URL or **`Content-Disposition`** (GNU extensions).\n3. **Mirror mode** — **`-m`** / **`--mirror`** as a shorthand bundle; depth, span hosts, and quotas (**`-l`**, **`-H`**, **`--quota`**).\n4. **Offline trees** — **`-p`** page requisites, **`-k`** convert links, **`-E`** adjust extensions (GNU).\n5. **Timestamping** — **`-N`** conditional GETs vs blind re-fetch.\n6. **`robots.txt`** — default honor; **`-e robots=off`** risks and etiquette.\n7. **`curl` overlap** — **`-f`**, **`-s`**, **`-S`**, **`-L`**, **`-o`** as the usual transliteration of a simple **`wget -O`** fetch.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|--------------|\n| Recursive static mirror | `wget -r` / `wget -m` (+ helpers) | `httrack`, `curl` + manual recursion (painful), bespoke scripts |\n| Single URL to file | `wget -O` | `curl -fsSL -o` |\n| Sync trees with delta | `rsync` (**22**) | `wget --mirror` (HTTP only), `zsync` |\n| Parallel segmented fetch | `aria2c` | `axel`, `lftp` |"
+}

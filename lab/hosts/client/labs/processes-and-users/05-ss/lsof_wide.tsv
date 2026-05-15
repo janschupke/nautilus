@@ -1,0 +1,8 @@
+COMMAND	PID	USER	FD	TYPE	NAME
+sshd	800	root	cwd	DIR	/var/empty/sshd
+sshd	800	root	txt	REG	/usr/sbin/sshd
+nginx	2001	root	cwd	DIR	/etc/nginx
+nginx	2001	root	txt	REG	/usr/sbin/nginx
+nginx	2001	root	6u	IPv4	*:443
+postgres	900	postgres	cwd	DIR	/var/lib/postgresql/14/main
+postgres	900	postgres	mem	REG	/usr/lib/x86_64-linux-gnu/libc.so.6

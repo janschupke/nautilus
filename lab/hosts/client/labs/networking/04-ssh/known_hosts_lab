@@ -1,0 +1,6 @@
+# Synthetic known_hosts lines (RFC5737 documentation addresses only).
+# Plain entry: comma-separated names, then key type, then public key blob, then comment.
+git.example.com,192.0.2.10 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiM fake-plain-key
+
+# Hashed host field (salt/hash are fake lengths for lab shape only).
+|1|nOPI8ZI7xdAU7px1k6Vges=|xgRoUrP+CDoL19oQxJZr7pDZkU= ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiMgExErCiM fake-hashed-key

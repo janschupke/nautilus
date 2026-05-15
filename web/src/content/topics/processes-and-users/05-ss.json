@@ -1,0 +1,70 @@
+{
+  "id": "05-ss",
+  "title": "System introspection",
+  "shortTitle": "05 — System introspection",
+  "workdir": "/home/isopod/labs/processes-and-users/05-ss/",
+  "intro": "Work from the module directory. Fixtures: **`ss_tcp.tsv`**, **`mounts.tsv`**, **`df_h.txt`**, **`lsof_wide.tsv`**, **`ss_netlink_note.txt`**, **`netstat_snippet.txt`**, **`lsblk_flat.tsv`**. Tab-separated files: use `awk -F $'\\t' '...'` in Bash.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In **`ss_tcp.tsv`**, count data rows (exclude the header) where `netid` is `tcp` and `state` is `LISTEN`. Print only the integer.",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $1==\"tcp\" && $2==\"LISTEN\"{c++} END{print c+0}' ss_tcp.tsv\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "In **`ss_tcp.tsv`**, find the data row whose `process` column contains `postgres`. What TCP port is it listening on? (Extract the digits after the last `:` in the `local` column.)",
+      "expectedOutput": "5432",
+      "solutionMarkdown": "Parse the `local` column for the postgres row and extract the port after the final colon."
+    },
+    {
+      "id": "q3",
+      "prompt": "In **`mounts.tsv`**, print the `fstype` for the row whose `mountpoint` is exactly `/backup`.",
+      "expectedOutput": "xfs",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' '$2==\"/backup\"{print $3}' mounts.tsv\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "In **`mounts.tsv`**, does the row for mountpoint `/tmp` have `nosuid` in its options?",
+      "expectedOutput": "yes",
+      "solutionMarkdown": "Inspect the `opts` field for the `/tmp` row."
+    },
+    {
+      "id": "q5",
+      "prompt": "In **`df_h.txt`**, print the `Avail` value for the row whose `Mounted on` is exactly `/var`.",
+      "expectedOutput": "40G",
+      "solutionMarkdown": "Parse `df -h`-style columns; the `Avail` column is the fourth field for standard output."
+    },
+    {
+      "id": "q6",
+      "prompt": "In **`df_h.txt`**, which filesystem has the largest total `Size`? What is its available space (`Avail`)?",
+      "expectedOutput": "850G",
+      "solutionMarkdown": "The `/dev/sdc1` filesystem (1.0T) is the largest; its `Avail` column shows **850G**."
+    },
+    {
+      "id": "q7",
+      "prompt": "In **`lsof_wide.tsv`**, how many data rows have `FD` exactly equal to `cwd`? Print only the integer.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $4==\"cwd\"{c++} END{print c+0}' lsof_wide.tsv\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "Read **`ss_netlink_note.txt`**. According to the note, which **kernel subsystem or protocol** does `ss` use to retrieve socket data — and which older tool does it replace?",
+      "expectedOutput": "ss uses the netlink protocol to query the kernel directly; it replaces netstat.",
+      "solutionMarkdown": "The note explains that `ss` queries socket information via **rtnetlink** over `AF_NETLINK`."
+    },
+    {
+      "id": "q9",
+      "prompt": "In **`netstat_snippet.txt`**, how many lines contain the word `LISTEN`? Print only the integer.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -c LISTEN netstat_snippet.txt\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "In **`lsblk_flat.tsv`**, print the `TYPE` for the row whose `NAME` is `sda2`.",
+      "expectedOutput": "part",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' '$1==\"sda2\"{print $2}' lsblk_flat.tsv\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Prefer **`ss`** (iproute2) over legacy **`netstat`** for TCP/UDP socket tables on modern Linux.\n- Read **`/proc/mounts`**, **`findmnt`**, and **`df -h`** output well enough to script against them cautiously.\n- Use **`lsof`** for read-only “what file descriptors does this PID have?” questions.\n- Know where `strace`, `dtrace`, and `dtruss` fit (lab, repro, approved incidents) and why ptrace-style tracing is unsafe as a casual production lever.\n\n## Scope\n\n**In scope:** parsing fixtures, conceptual trade-offs, read-only host inspection commands. **Out of scope:** real syscall traces from graded work; no requirement to attach tracers to live production PIDs."
+}

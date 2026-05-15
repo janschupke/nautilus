@@ -1,0 +1,5 @@
+# Canonical-style excerpt of manifest labels (stable for text-only drills).
+metadata:
+  labels:
+    app: payments
+    tier: backend

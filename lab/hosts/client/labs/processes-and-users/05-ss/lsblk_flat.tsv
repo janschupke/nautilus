@@ -1,0 +1,5 @@
+NAME	TYPE	SIZE
+sda	disk	500G
+sda1	part	480G
+sda2	part	19G
+sr0	rom	1024M

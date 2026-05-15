@@ -1,0 +1,70 @@
+{
+  "id": "01-find",
+  "title": "Finding files and metadata",
+  "shortTitle": "01 — Finding files and metadata",
+  "workdir": "/home/isopod/labs/filesystem/01-find/",
+  "intro": "Work from home. Use **`find`** for traversal. These exercises inspect the container's Linux filesystem: **`/etc`**, **`/var/log`**, **`/usr/local`**, **`/srv`**, and **`/var/spool`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "How many regular files exist anywhere under **`/etc/course-lab/`**? Give just the count.",
+      "expectedOutput": "10",
+      "solutionMarkdown": "```bash\nfind /etc/course-lab -type f | wc -l\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "List every file under **`/var/log/course`** whose base name is exactly `backup.log`. Give paths relative to `/var/log/course`, sorted, one per line.",
+      "expectedOutput": "backup.log",
+      "solutionMarkdown": "```bash\ncd /var/log/course && find . -type f -name 'backup.log' | sed 's|^\\./||' | sort\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "List every regular file under **`/var/log/course`** whose name contains `.log` anywhere in it, regardless of case. Give paths relative to `/var/log/course`, sorted, one per line.",
+      "expectedOutput": "app.log\narchive/app.log.1\narchive/build.log\nbackup.log",
+      "solutionMarkdown": "```bash\ncd /var/log/course && find . -type f -iname '*.log*' | sed 's|^\\./||' | sort\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "List all subdirectories of **`/srv/www/app`** at most two directory levels below the root, excluding the root itself. Give paths relative to `/srv/www/app`, sorted.",
+      "expectedOutput": "private\nprivate/cache\npublic",
+      "solutionMarkdown": "```bash\ncd /srv/www/app && find . -mindepth 1 -maxdepth 2 -type d | sed 's|^\\./||' | sort\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "List all empty regular files under **`/etc/course-lab`**. Give paths relative to `/etc/course-lab`, sorted.",
+      "expectedOutput": "empty.d/empty.conf\nempty.d/zero.log",
+      "solutionMarkdown": "```bash\ncd /etc/course-lab && find . -type f -empty | sed 's|^\\./||' | sort\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Count the `.log` files under **`/var/log/course`** but skip the entire `archive/` subdirectory tree. Give just the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\nfind /var/log/course \\( -path '/var/log/course/archive*' -prune \\) -o -type f -name '*.log*' -print | wc -l\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "What is the combined byte count of all `.log` files under **`/var/log/course`**, excluding those inside `archive/`? Give just the integer.",
+      "expectedOutput": "127",
+      "solutionMarkdown": "```bash\nfind /var/log/course \\( -path '/var/log/course/archive*' -prune \\) -o -type f -name '*.log*' -print0 | xargs -0 cat | wc -c\n```\n\nPiping through `cat` before `wc -c` gives a single total without filename labels."
+    },
+    {
+      "id": "q8",
+      "prompt": "Find all `.yaml` files anywhere under **`/etc/course-lab`** and count their lines. Report in `wc -l` format (count and filename).",
+      "expectedOutput": "2 /etc/course-lab/app.d/api.yaml",
+      "solutionMarkdown": "```bash\nfind /etc/course-lab -type f -name '*.yaml' -exec wc -l {} +\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "Print the one line inside the hidden flag file under **`/etc/course-lab`** using `find` — without typing the literal path `.cache/flag` in your command.",
+      "expectedOutput": "MODULE02_FLAG=trefoil-gate-884",
+      "solutionMarkdown": "```bash\nfind /etc/course-lab -path '*/.cache/*' -type f -print0 | xargs -0 cat\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "There is a file named **`--odd-name.conf`** under `/etc/course-lab`. Count its lines using `find` to locate it and a byte or line counter to measure it, taking care that the leading dashes don't confuse the tool.",
+      "expectedOutput": "1 /etc/course-lab/--odd-name.conf",
+      "solutionMarkdown": "```bash\nfind /etc/course-lab -name '--odd-name.conf' -print0 | xargs -0 -- wc -l\n```\n\n`xargs --` signals end of `xargs` options so the leading-dash filename isn't misinterpreted as a flag."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Compose `find` predicates for name, type, time, size, permissions, and logical operators.\n- Use `-exec`, `-ok`, `-delete` safely; prefer `-print0` with `xargs -0`.\n- Compare `find` to database-backed search where appropriate.\n- Understand capability gaps on macOS BSD `find` vs GNU `find`.\n\n## Scope\n\n**In scope:** traversal, filtering, action primitives, interaction with `xargs`. **Out of scope:** `locate`/`plocate` implementation details of `updatedb` (mention only); content search (**08**)."
+}

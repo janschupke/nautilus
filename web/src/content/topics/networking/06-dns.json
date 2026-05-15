@@ -1,0 +1,70 @@
+{
+  "id": "06-dns",
+  "title": "DNS CLI (dig, host, nslookup)",
+  "shortTitle": "06 — DNS CLI (dig, host, nslookup)",
+  "workdir": "/home/isopod/labs/networking/06-dns/",
+  "intro": "Work from the module directory. Fixtures: **`dig_cname_a.txt`**, **`dig_mx.txt`**, **`host_out.txt`**, **`nslookup_out.txt`**, **`dig_multi_rr.txt`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "From **`dig_cname_a.txt`**, print the **`;; ANSWER SECTION:`** line and every line until (not including) the **next** line starting **`;;`**.",
+      "expectedOutput": ";; ANSWER SECTION:\nwww.lab.example. 300 IN CNAME edge.lab.example.\nedge.lab.example. 60 IN A 198.51.100.7",
+      "solutionMarkdown": "Slice from **`;; ANSWER SECTION:`** through the last RR before **`;; Query`**."
+    },
+    {
+      "id": "q2",
+      "prompt": "Same span as **1**, but print **only** the **resource-record** lines (omit the **`;; ANSWER SECTION:`** header).",
+      "expectedOutput": "www.lab.example. 300 IN CNAME edge.lab.example.\nedge.lab.example. 60 IN A 198.51.100.7",
+      "solutionMarkdown": "Same block as **q1** without the section header line."
+    },
+    {
+      "id": "q3",
+      "prompt": "From **`dig_cname_a.txt`**, print **only** the **TTL** (second field) of each ANSWER RR line, **one per line**, file order.",
+      "expectedOutput": "300\n60",
+      "solutionMarkdown": "Second column on RR lines in the ANSWER section."
+    },
+    {
+      "id": "q4",
+      "prompt": "From **`dig_cname_a.txt`**, print the **record type** (field after **`IN`**) for each ANSWER RR line, one per line, file order.",
+      "expectedOutput": "CNAME\nA",
+      "solutionMarkdown": "Fourth field on standard **`dig`** RR lines."
+    },
+    {
+      "id": "q5",
+      "prompt": "From **`dig_cname_a.txt`**, for each ANSWER line whose type is **`CNAME`**, print **`owner<TAB>target`** (last field is target). Use a **literal tab** between owner and target.",
+      "expectedOutput": "www.lab.example.\tedge.lab.example.",
+      "solutionMarkdown": "Owner is column 1; CNAME rdata is the final field."
+    },
+    {
+      "id": "q6",
+      "prompt": "From **`dig_cname_a.txt`**, print the **IPv4** (last field) of every ANSWER line whose type is **`A`**, one per line.",
+      "expectedOutput": "198.51.100.7",
+      "solutionMarkdown": "Filter **`A`** rows; print the address field."
+    },
+    {
+      "id": "q7",
+      "prompt": "From **`dig_mx.txt`**, for each ANSWER **`MX`** line, print **preference** and **mail exchanger hostname** as **two fields separated by a single space**, file order.",
+      "expectedOutput": "10 mail-a.lab.example.\n20 mail-b.lab.example.",
+      "solutionMarkdown": "MX RDATA: preference then hostname."
+    },
+    {
+      "id": "q8",
+      "prompt": "From **`host_out.txt`**, print the **IPv4** at the end of every line containing **`has address `** (trailing space; not **`has IPv6 address`**), one per line, file order.",
+      "expectedOutput": "198.51.100.7\n198.51.100.99",
+      "solutionMarkdown": "```bash\ngrep 'has address ' host_out.txt | awk '{print $NF}'\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "From **`nslookup_out.txt`**, print the **IPv4** on the line that begins with **`Address:`** (second whitespace-delimited field).",
+      "expectedOutput": "198.51.100.7",
+      "solutionMarkdown": "Pick the **`Address:`** line with an IPv4 literal."
+    },
+    {
+      "id": "q10",
+      "prompt": "From **`dig_multi_rr.txt`**, collect the TTL (second field) of each ANSWER RR line; print **unique** values **sorted numerically ascending**, one per line.",
+      "expectedOutput": "60\n300",
+      "solutionMarkdown": "Unique TTLs from the ANSWER RRs, **`sort -n`**."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Read **`dig`** output: header, **`;; QUESTION SECTION:`**, **`;; ANSWER SECTION:`**, TTL, class, type, and RDATA.\n- Follow a **CNAME** chain in answer data and relate it to the final **A** (or **AAAA**) record.\n- Use **`host`** and legacy **`nslookup`** output for quick lookups when **`dig`** is not the habit.\n- Understand **TTL** as cache hint (stale vs fresh answers is resolver policy, not re-queried every second).\n\n## Scope\n\n**In scope:** CLI output shapes, parsing fixtures, common record types (**A**, **AAAA**, **CNAME**, **MX**, **NS**, **TXT** at a glance). **Out of scope:** DNSSEC chain validation, zone authoring, authoritative vs recursive server administration.\n\n## Concept outline\n\n1. **Recursive vs authoritative** — who answers your laptop query; why you see “Non-authoritative answer” from resolvers.\n2. **`dig` flags** — **`+short`**, **`+noall +answer`**, **`+trace`** (concept: iterative resolution path); server selection **`@resolver`**.\n3. **Record lines** — owner name, TTL, class (**IN**), type, RDATA (type-dependent columns).\n4. **CNAME** — alias owner points to another name; final answers often end in **A**/**AAAA**.\n5. **`host`** — terse, human-oriented; **`nslookup`** — interactive legacy; both still appear in docs and old scripts.\n\n## Tooling and alternatives\n\n| Task | Primary | Notes |\n|------|---------|--------|\n| Scripted / precise output | **`dig`** | Widely installed; stable **`;;` sections**. |\n| Quick name → address | **`host`** | Fewer columns; easy **`grep`**. |\n| Legacy / Windows habits | **`nslookup`** | Mixed formatting; fine for ad hoc use. |\n| macOS resolver DB | **`dscacheutil -q host -a name …`** | Not a substitute for learning **`dig`** output. |"
+}

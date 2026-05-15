@@ -1,0 +1,4 @@
+{
+  "id": "basics",
+  "intro": "Covers the foundational shell tools used in daily sysadmin and security work: environment management, binary inspection, text extraction, sed, awk, sorting, grep, log tailing, JSON and YAML processing, parallelism, and scripting structure. Work on the lab client host."
+}

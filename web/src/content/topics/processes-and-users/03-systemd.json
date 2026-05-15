@@ -1,0 +1,70 @@
+{
+  "id": "03-systemd",
+  "title": "Services (Linux, systemd)",
+  "shortTitle": "03 — Services (Linux, systemd)",
+  "workdir": "/home/isopod/labs/processes-and-users/03-systemd/",
+  "intro": "Work from the module directory. Fixtures: **`list_units.txt`**, **`status_ssh.txt`**, **`unit_lab.service`**, **`journal_snippet.txt`**. No live `systemctl` required.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In **`list_units.txt`**, which UNIT has its ACTIVE state equal to `failed`? Print only that unit name.",
+      "expectedOutput": "nginx.service",
+      "solutionMarkdown": "```bash\nawk 'NR>1 && $3==\"failed\"{print $1}' list_units.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "In **`status_ssh.txt`**, find the `Active:` line. Print only the word in parentheses that describes the current sub-state.",
+      "expectedOutput": "running",
+      "solutionMarkdown": "```bash\ngrep '^ *Active:' status_ssh.txt | grep -oP '\\(\\K[^)]+'\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "In **`status_ssh.txt`**, check the `Loaded:` line. Is the unit enabled to start at boot?",
+      "expectedOutput": "yes",
+      "solutionMarkdown": "The `Loaded:` line contains `; enabled;` — the unit is configured to start at boot."
+    },
+    {
+      "id": "q4",
+      "prompt": "In **`unit_lab.service`**, what is the value after `WantedBy=` in the `[Install]` section?",
+      "expectedOutput": "multi-user.target",
+      "solutionMarkdown": "```bash\ngrep WantedBy unit_lab.service | cut -d= -f2\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "In **`list_units.txt`**, how many UNIT entries have their ACTIVE field equal to `active`?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nawk 'NR>1 && $3==\"active\"{c++} END{print c+0}' list_units.txt\n```\n\nssh.service, dbus.socket, and backup.timer all show `active`."
+    },
+    {
+      "id": "q6",
+      "prompt": "In **`journal_snippet.txt`**, how many lines contain the word `ERROR`? Print only the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c ERROR journal_snippet.txt\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "From **`status_ssh.txt`**, what is the `Main PID` value?",
+      "expectedOutput": "1234",
+      "solutionMarkdown": "```bash\ngrep 'Main PID' status_ssh.txt | awk '{print $3}'\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "From **`status_ssh.txt`**, what memory amount is shown on the `Memory:` line?",
+      "expectedOutput": "2.0M",
+      "solutionMarkdown": "```bash\ngrep '^ *Memory:' status_ssh.txt | awk '{print $2}'\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "From **`journal_snippet.txt`**, what command does the cron entry run? Extract it from the `CMD` field in parentheses.",
+      "expectedOutput": "/usr/bin/true",
+      "solutionMarkdown": "```bash\ngrep 'cron' journal_snippet.txt | grep -oP 'CMD \\(\\K[^)]+'\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "From **`journal_snippet.txt`**, which process name appears in the most log entries? Give just the process name.",
+      "expectedOutput": "sshd",
+      "solutionMarkdown": "```bash\ngrep -oP '(?<=labhost )\\w+(?=\\[)' journal_snippet.txt | sort | uniq -c | sort -rn | head -1\n```\n\nsshd appears in 2 of the 4 journal lines."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Query unit state with `systemctl status`, `is-active`, `is-enabled`, `show`.\n- List units (`list-units`, `list-unit-files`) with filters; understand transient vs on-disk units.\n- Tail service logs via `journalctl -u` (cross-link **30**).\n- Edit units safely: `systemctl edit --full` vs drop-ins.\n\n## Scope\n\n**In scope:** inspection and safe enable/disable in lab. **Out of scope:** production incident response playbooks; no exercises that stop sshd on remote machines."
+}

@@ -1,0 +1,5 @@
+Nautilus LAN Lab Manual
+
+This file is intentionally small so curl and wget exercises can verify headers,
+body content, output paths, and recursive download behavior against a local
+authorized target.

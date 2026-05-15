@@ -1,0 +1,2 @@
+On Linux, `ss` (from iproute2) queries socket information via rtnetlink over AF_NETLINK, which scales better than repeatedly parsing `/proc/net/tcp` on very busy hosts.
+Legacy `netstat` often implied reading procfs tables; prefer `ss -tulpn` for modern scripts.

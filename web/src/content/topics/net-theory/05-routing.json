@@ -1,0 +1,70 @@
+{
+  "id": "05-routing",
+  "title": "IP routing fundamentals",
+  "shortTitle": "05 — IP routing fundamentals",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on how IP routing decisions are made. Understanding routing is essential for diagnosing reachability failures, reading `ip route` output, and configuring services that span multiple networks.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What CIDR notation represents the default route (the route of last resort that matches all destinations)?",
+      "expectedOutput": "0.0.0.0/0",
+      "solutionMarkdown": "**0.0.0.0/0** — matches every IPv4 destination with the shortest possible prefix. Routers use this when no more specific route exists. In `ip route` output it appears as `default via <gateway>`. The IPv6 equivalent is `::/0`."
+    },
+    {
+      "id": "q2",
+      "prompt": "When two routes overlap in the routing table, which prefix does longest-prefix matching prefer: /24 or /16?",
+      "expectedOutput": "/24",
+      "solutionMarkdown": "**Longest-prefix match always wins.** A /24 is more specific than a /16 — it narrows the destination to 256 addresses rather than 65,536. Routers always forward to the most specific matching route, regardless of administrative distance or metric."
+    },
+    {
+      "id": "q3",
+      "prompt": "What routing protocol uses a path-vector algorithm, runs over TCP port 179, and is the protocol that connects autonomous systems on the internet?",
+      "expectedOutput": "BGP",
+      "solutionMarkdown": "**BGP (Border Gateway Protocol, [RFC 4271](https://www.rfc-editor.org/rfc/rfc4271))**. Path-vector means each route advertisement carries the full sequence of AS numbers it has traversed (AS_PATH). This prevents routing loops. iBGP peers within an AS and eBGP peers connect different ASes."
+    },
+    {
+      "id": "q4",
+      "prompt": "What interior gateway routing protocol uses Dijkstra's Shortest Path First algorithm and IP protocol number 89?",
+      "expectedOutput": "OSPF",
+      "solutionMarkdown": "**OSPF (Open Shortest Path First, [RFC 2328](https://www.rfc-editor.org/rfc/rfc2328) for OSPFv2)**. Each router builds a complete link-state database (LSDB) of the network topology, then runs SPF to compute loop-free shortest paths. OSPF uses multicast (224.0.0.5/6) rather than TCP/UDP."
+    },
+    {
+      "id": "q5",
+      "prompt": "What metric does RIPv2 use to measure route cost?",
+      "expectedOutput": "hop count",
+      "solutionMarkdown": "**Hop count** — each router adds 1. A count of 16 means unreachable (infinity). This makes RIP unsuitable for networks with more than 15 hops. RIP does not consider link bandwidth, delay, or reliability."
+    },
+    {
+      "id": "q6",
+      "prompt": "What is the maximum hop count that RIPv2 considers reachable (one higher means unreachable)?",
+      "expectedOutput": "15",
+      "solutionMarkdown": "**15 hops** maximum. A metric of **16** is treated as infinity (unreachable). This hard limit prevents RIP from scaling to large networks and helps bound the count-to-infinity problem."
+    },
+    {
+      "id": "q7",
+      "prompt": "What type of NAT translates many private source addresses to a single public IP address by also translating source port numbers?",
+      "expectedOutput": "PAT",
+      "solutionMarkdown": "**PAT (Port Address Translation)**, also called NAPT or IP masquerading. The NAT device records the original private IP:port and maps it to the public IP with a unique source port. This allows thousands of private hosts to share one public IP. Connection state is required — PAT is stateful."
+    },
+    {
+      "id": "q8",
+      "prompt": "In a routing table entry, what field identifies where to forward a packet next on its path toward the destination?",
+      "expectedOutput": "next hop",
+      "solutionMarkdown": "The **next hop** (or gateway) is the IP address of the adjacent router to send the packet to. For directly connected routes the next hop is the interface itself. `ip route show` displays next hops as `via <address>`."
+    },
+    {
+      "id": "q9",
+      "prompt": "What term describes the preference value used to select between routes to the same destination learned from different routing sources (e.g. static vs OSPF vs BGP)?",
+      "expectedOutput": "administrative distance",
+      "solutionMarkdown": "**Administrative distance (AD)** — lower is more trustworthy. Typical values:\n\n| Source | AD |\n|---|---|\n| Connected | 0 |\n| Static | 1 |\n| OSPF | 110 |\n| RIP | 120 |\n| eBGP | 20 |\n| iBGP | 200 |\n\nAD is only used to break ties between routes with the same destination prefix from different protocols. Within a single protocol, the metric decides."
+    },
+    {
+      "id": "q10",
+      "prompt": "What IP protocol number is used by OSPF?",
+      "expectedOutput": "89",
+      "solutionMarkdown": "**IP protocol 89** (decimal). OSPF packets are carried directly in IP datagrams (not TCP or UDP). Other notable protocol numbers: 1 = ICMP, 6 = TCP, 17 = UDP, 50 = ESP, 51 = AH, 88 = EIGRP, 89 = OSPF, 112 = VRRP."
+    }
+  ],
+  "summaryMarkdown": "## Routing decision order\n\nWhen a router receives a packet:\n1. Look up the destination in the routing table\n2. Select the **longest prefix match**\n3. If tied prefix length: use **lowest administrative distance** (trust)\n4. If still tied: use **lowest metric** (cost within protocol)\n5. If still tied: ECMP (Equal Cost Multi-Path) — split traffic\n\n## Protocol number reference\n\n| Number | Protocol |\n|---|---|\n| 1 | ICMP |\n| 2 | IGMP |\n| 6 | TCP |\n| 17 | UDP |\n| 47 | GRE |\n| 50 | ESP (IPsec) |\n| 51 | AH (IPsec) |\n| 89 | OSPF |\n| 112 | VRRP |\n\nFull list: [IANA Protocol Numbers](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)"
+}

@@ -1,0 +1,76 @@
+{
+  "id": "05-awk",
+  "title": "awk for fields and reports",
+  "shortTitle": "05 — awk for fields and reports",
+  "workdir": "/home/isopod/labs/basics/05-awk/",
+  "intro": "Work from home. Data files are in **`data/awk/`**. Keep scratch under **`work/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "**`data/awk/queue-times.tsv`** is tab-separated with a header row and two columns: queue name and wait time in minutes. Print each data row with the columns swapped — time first, then queue name — one pair per line.",
+      "expectedOutput": "10 auth\n22 network\n5 auth\n7 network",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 { print $2, $1 }' data/awk/queue-times.tsv\n```\n\n`NR>1` skips the header; `$2` and `$1` swap the field order."
+    },
+    {
+      "id": "q2",
+      "prompt": "Sum all the wait times in `data/awk/queue-times.tsv`. What is the total?",
+      "expectedOutput": "44",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 { s += $2 } END { print s+0 }' data/awk/queue-times.tsv\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "What is the mean wait time across all data rows in `data/awk/queue-times.tsv`, to two decimal places?",
+      "expectedOutput": "11.00",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 { s += $2; n++ } END { printf \"%.2f\\n\", s/n }' data/awk/queue-times.tsv\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Group the rows of `data/awk/queue-times.tsv` by queue name and compute the total wait time per group. List the results alphabetically by queue name, one `queue total` pair per line.",
+      "expectedOutput": "auth 15\nnetwork 29",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 { t[$1] += $2 } END { for (k in t) print k, t[k] }' data/awk/queue-times.tsv | sort\n```\n\n`t[$1]` accumulates totals keyed by queue name; `sort` orders the output."
+    },
+    {
+      "id": "q5",
+      "prompt": "**`data/awk/tickets.txt`** records ticket IDs and the queue each belongs to. How many tickets belong to each queue? List `queue count` pairs sorted alphabetically.",
+      "expectedOutput": "auth 3\nnetwork 2",
+      "solutionMarkdown": "```bash\nawk '{ c[$2]++ } END { for (q in c) print q, c[q] }' data/awk/tickets.txt | sort\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "**`data/awk/syslog.log`** records system events at different severity levels. Print every line that is an ERROR entry.",
+      "expectedOutput": "May 13 ERROR postgres timeout\nMay 13 ERROR auth lockout",
+      "solutionMarkdown": "```bash\nawk '/ERROR/' data/awk/syslog.log\n```\n\nA bare pattern with no action defaults to `{ print }`."
+    },
+    {
+      "id": "q7",
+      "prompt": "**`data/awk/fields.txt`** has lines with varying numbers of space-separated tokens. Print only the lines that contain exactly five tokens.",
+      "expectedOutput": "alpha beta gamma delta epsilon\n1 2 3 4 5\nuser id source dest action",
+      "solutionMarkdown": "```bash\nawk 'NF == 5' data/awk/fields.txt\n```\n\n`NF` is the built-in field count for the current record."
+    },
+    {
+      "id": "q8",
+      "prompt": "Print each data row from `data/awk/queue-times.tsv` (skip the header) with the queue name left-aligned in 8 characters and the wait time right-aligned in 4 characters, separated by a space.",
+      "expectedOutput": "auth       10\nnetwork    22\nauth        5\nnetwork     7",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 { printf \"%-8s %4d\\n\", $1, $2 }' data/awk/queue-times.tsv\n```\n\n`%-8s` left-aligns in 8 chars; `%4d` right-aligns the integer in 4 chars."
+    },
+    {
+      "id": "q9",
+      "prompt": "**`data/awk/passwd.sample`** uses the same colon-separated field layout as `/etc/passwd`. Print each entry's login name alongside its home directory, space-separated, one pair per line.",
+      "expectedOutput": "daemon /usr/sbin\ndeploy /home/deploy\nbackupsvc /home/backupsvc",
+      "solutionMarkdown": "```bash\nawk -F ':' '{ print $1, $6 }' data/awk/passwd.sample\n```\n\n`/etc/passwd` field order: login:password:uid:gid:gecos:home:shell — home is field 6."
+    },
+    {
+      "id": "q10",
+      "prompt": "**`data/awk/queue-names.txt`** maps numeric queue IDs to display names. **`data/awk/queue-codes.txt`** maps the same IDs to short codes. For each entry in `queue-codes.txt`, print the ID, short code, and display name together on one line.",
+      "expectedOutput": "1 auth Authentication\n2 network Network",
+      "solutionMarkdown": "```bash\nawk 'FNR==NR { a[$1] = $2; next } { print $1, $2, a[$1] }' data/awk/queue-names.txt data/awk/queue-codes.txt\n```\n\n`FNR==NR` is true only while reading the first file — load the ID→name map, then look it up for each row of the second file."
+    },
+    {
+      "id": "q11",
+      "prompt": "`transfer-log.csv` in the module directory records network flows. One transfer stands out as the single largest by bytes — a possible exfiltration event. Find that row. What is its `label` field?",
+      "expectedOutput": "flag{awk_top_talker}",
+      "solutionMarkdown": "```bash\nawk -F, 'NR>1 && $4+0 > max { max=$4+0; label=$5 } END { print label }' transfer-log.csv\n```\n\nTrack the running maximum in `max`; update `label` whenever a larger value is seen. The `END` block prints the label for the peak transfer row."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Select and compute on fields with `$N`, `NF`, `NR`, `FNR`.\n- Accumulate values in associative arrays; emit in `END`.\n- Format output with `printf`; join two files with the `FNR==NR` idiom.\n\n## Scope\n\n**In scope:** `awk` one-liners and short programs for field processing. **Out of scope:** full AWK programs with multiple rules and `BEGIN`/`END` blocks beyond simple aggregation."
+}

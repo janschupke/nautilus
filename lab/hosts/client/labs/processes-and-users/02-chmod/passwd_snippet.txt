@@ -1,0 +1,2 @@
+alice:x:1000:1000:Alice:/home/alice:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin

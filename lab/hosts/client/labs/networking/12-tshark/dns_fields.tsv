@@ -1,0 +1,6 @@
+frame_num	ip_src	dns_qry_name	combo
+1	10.0.0.5	www.example.org	query,0x0100
+2	10.0.0.5	cdn.partner.io	query,0x0100
+3	8.8.8.8	www.example.org	response,0x8180
+4	8.8.8.8	cdn.partner.io	response,0x8180
+5	10.0.0.5	track.badcdn.test	query,0x0100

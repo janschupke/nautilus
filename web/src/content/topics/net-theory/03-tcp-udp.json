@@ -1,0 +1,70 @@
+{
+  "id": "03-tcp-udp",
+  "title": "TCP and UDP fundamentals",
+  "shortTitle": "03 — TCP and UDP fundamentals",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on TCP connection mechanics and UDP characteristics. Understanding these is essential for reading packet captures and diagnosing connectivity problems.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What is the correct order of messages in a TCP three-way handshake?",
+      "expectedOutput": "SYN, SYN-ACK, ACK",
+      "solutionMarkdown": "```\nClient → Server: SYN  (I want to connect, my ISN is X)\nServer → Client: SYN-ACK  (OK, my ISN is Y, I acknowledge X+1)\nClient → Server: ACK  (I acknowledge Y+1)\n```\nAfter the ACK, the connection is ESTABLISHED and data can flow."
+    },
+    {
+      "id": "q2",
+      "prompt": "Which TCP flag immediately terminates a connection without waiting for in-flight data to be acknowledged?",
+      "expectedOutput": "RST",
+      "solutionMarkdown": "**RST (Reset)** — abruptly closes the connection. The receiver must discard any unacknowledged data. Contrast with FIN, which initiates an orderly four-way close that lets each side finish sending.\n\nIn captures, an unexpected RST from a server often indicates: the port is closed, a firewall intervened, or a load balancer timed out."
+    },
+    {
+      "id": "q3",
+      "prompt": "How many bytes is a TCP header with no options?",
+      "expectedOutput": "20",
+      "solutionMarkdown": "A minimal TCP header is **20 bytes** (5 × 32-bit words). The Data Offset field in the header encodes the header length; its minimum value is 5. With options (e.g. MSS, timestamps, SACK) the header can grow to 60 bytes."
+    },
+    {
+      "id": "q4",
+      "prompt": "What TCP field, carried in every segment, ensures that old duplicate segments from a previous connection incarnation are not accepted?",
+      "expectedOutput": "sequence number",
+      "solutionMarkdown": "The **sequence number** (32-bit, chosen randomly at connection start as the ISN) uniquely identifies each byte of the data stream. Segments with sequence numbers outside the current window or below the expected value are discarded."
+    },
+    {
+      "id": "q5",
+      "prompt": "What TCP state does a server socket enter while it is waiting for an incoming connection request?",
+      "expectedOutput": "LISTEN",
+      "solutionMarkdown": "**LISTEN** — the socket has been bound to a port and the application has called `listen()`. Visible in `ss -tlnp` output. A full TCP state machine: CLOSED → LISTEN → SYN-RECEIVED → ESTABLISHED → FIN-WAIT-1 → FIN-WAIT-2 → TIME-WAIT → CLOSED."
+    },
+    {
+      "id": "q6",
+      "prompt": "How long does TCP TIME-WAIT persist, expressed in terms of MSL (Maximum Segment Lifetime)?",
+      "expectedOutput": "2 MSL",
+      "solutionMarkdown": "**2 MSL** ([RFC 793](https://www.rfc-editor.org/rfc/rfc793)). MSL is typically 30–60 seconds, making TIME-WAIT last 60–120 seconds. Purpose: ensure any delayed segments from the old connection expire before the same 4-tuple is reused. High-throughput servers use `SO_REUSEADDR` or `SO_REUSEPORT` to work around this."
+    },
+    {
+      "id": "q7",
+      "prompt": "What TCP flag instructs the receiver to deliver buffered data to the application immediately, without waiting for the buffer to fill?",
+      "expectedOutput": "PSH",
+      "solutionMarkdown": "**PSH (Push)** — used in interactive protocols (SSH, Telnet) where each keystroke must be delivered promptly. Without PSH, the kernel might hold data in the socket buffer waiting for more, adding latency."
+    },
+    {
+      "id": "q8",
+      "prompt": "What is the IANA-defined dynamic/ephemeral port range?",
+      "expectedOutput": "49152–65535",
+      "solutionMarkdown": "**49152–65535** ([RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)). Operating systems assign source ports from this range for outgoing connections. Linux defaults to 32768–60999 (`/proc/sys/net/ipv4/ip_local_port_range`). In captures, the ephemeral port identifies the client side of a connection."
+    },
+    {
+      "id": "q9",
+      "prompt": "What two TCP header flags implement Explicit Congestion Notification (ECN), allowing routers to signal congestion without dropping packets?",
+      "expectedOutput": "ECE and CWR",
+      "solutionMarkdown": "**ECE (ECN-Echo)** and **CWR (Congestion Window Reduced)** — [RFC 3168](https://www.rfc-editor.org/rfc/rfc3168). ECE is set by the receiver to echo a congestion signal from a router; CWR is set by the sender to acknowledge that it has reduced its congestion window. ECN requires both endpoints and the network path to support it."
+    },
+    {
+      "id": "q10",
+      "prompt": "What is the maximum UDP payload size when carried over standard IPv4 with no IP options?",
+      "expectedOutput": "65507",
+      "solutionMarkdown": "**65507 bytes**: IPv4 max datagram = 65535 bytes, minus 20 bytes IP header, minus 8 bytes UDP header = **65507**. In practice, path MTU (usually 1500 bytes on Ethernet) limits unfragmented payloads to 1472 bytes. Payloads larger than 8–16 KB that exceed MTU cause IP fragmentation, which is often blocked by firewalls."
+    }
+  ],
+  "summaryMarkdown": "## TCP flag reference\n\n| Flag | Hex | Meaning |\n|---|---|---|\n| FIN | 0x01 | Graceful close |\n| SYN | 0x02 | Synchronise / initiate |\n| RST | 0x04 | Reset / abort |\n| PSH | 0x08 | Push to application |\n| ACK | 0x10 | Acknowledge received data |\n| URG | 0x20 | Urgent pointer valid |\n| ECE | 0x40 | ECN-Echo |\n| CWR | 0x80 | Congestion Window Reduced |\n\n## TCP vs UDP decision guide\n\n| Need | Use |\n|---|---|\n| Ordered, reliable delivery | TCP |\n| Low-latency, loss-tolerant (gaming, VoIP, DNS) | UDP |\n| Multicast | UDP |\n| Broadcast | UDP |\n| Simple request/response (DNS, DHCP, SNMP) | UDP |"
+}

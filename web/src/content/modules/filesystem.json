@@ -1,0 +1,4 @@
+{
+  "id": "filesystem",
+  "intro": "Covers filesystem navigation and inspection: finding files by metadata, understanding the Linux directory hierarchy, comparing and patching text, creating and extracting archives, and working with compressed files. Work on the lab client host."
+}

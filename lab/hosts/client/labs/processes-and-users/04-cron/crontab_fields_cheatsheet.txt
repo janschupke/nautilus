@@ -1,0 +1,23 @@
+# Crontab field order (reference fragment for this course)
+
+# --- User crontab (`crontab -e` / per-user tables) ---
+# Five time fields, then the command to run (no username column):
+#
+#   minute  hour  day-of-month  month  day-of-week  command...
+#   (0-59) (0-23)   (1-31)     (1-12)   (0-7, *)     remainder is the shell line
+#
+# `*` means "don't care" / every value in that slot.
+# Day-of-week: `0` and `7` are commonly both Sunday (Vixie-style); check your cron docs.
+
+# --- System tables (`/etc/crontab`, `/etc/cron.d/*` on many Linux distros) ---
+# Same five fields, then a USERNAME, then the command:
+#
+#   minute  hour  dom  month  dow  user  command...
+
+# --- Special strings (when supported) ---
+# Examples seen in the wild: @reboot, @yearly, @annually, @monthly, @weekly, @daily, @midnight, @hourly
+# Support varies by cron implementation; always verify on the target OS.
+
+# --- Time zones ---
+# Traditional cron uses the machine's local wall-clock (TZ of the cron daemon environment),
+# not "floating" UTC unless the job explicitly sets TZ= inside the command line or wrapper.

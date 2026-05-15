@@ -1,0 +1,70 @@
+{
+  "id": "07-packages",
+  "title": "Package management",
+  "shortTitle": "07 — Package management",
+  "workdir": "/home/isopod/",
+  "intro": "Questions on Linux software distribution and package management. Understanding packages, repositories, and shared libraries is essential for installing software reliably and diagnosing dependency issues.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What package file format does Debian and Ubuntu use for distributing compiled software?",
+      "expectedOutput": ".deb",
+      "solutionMarkdown": "`.deb` (Debian package) files are `ar` archives containing:\n- `control.tar.gz` — metadata (package name, version, dependencies, maintainer scripts)\n- `data.tar.gz` — the actual files to install\n\nTools:\n- `dpkg` — low-level: install/remove/query single `.deb` files\n- `apt` — high-level: resolves and downloads dependencies from repositories\n- `apt-get` / `apt-cache` — older scriptable interfaces"
+    },
+    {
+      "id": "q2",
+      "prompt": "What package file format do Red Hat, CentOS, and Fedora use?",
+      "expectedOutput": ".rpm",
+      "solutionMarkdown": "`.rpm` (Red Hat Package Manager) files contain a CPIO archive plus metadata. Tools:\n\n| Tool | Level | Distro |\n|---|---|---|\n| `rpm` | Low-level (single file) | RHEL/Fedora |\n| `yum` | High-level (legacy) | RHEL 7 and earlier |\n| `dnf` | High-level (current) | RHEL 8+, Fedora |\n| `zypper` | High-level | openSUSE |\n\n`rpm -qi package` shows package info; `rpm -ql package` lists its files."
+    },
+    {
+      "id": "q3",
+      "prompt": "What high-level package tool on Debian/Ubuntu resolves dependencies, downloads packages from repositories, and handles upgrades?",
+      "expectedOutput": "apt",
+      "solutionMarkdown": "`apt` (Advanced Package Tool) wraps `dpkg` with:\n- Dependency resolution (topological sort)\n- Repository management\n- Download and signature verification\n\nEssential commands:\n```bash\napt update           # refresh package index from repos\napt upgrade          # upgrade all installed packages\napt install nginx    # install a package\napt remove nginx     # remove (keep config files)\napt purge nginx      # remove including config files\napt search nginx     # search available packages\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "What file on Debian/Ubuntu systems lists the APT software repositories — the URLs and suites that apt searches for packages?",
+      "expectedOutput": "/etc/apt/sources.list",
+      "solutionMarkdown": "`/etc/apt/sources.list` (and files in `/etc/apt/sources.list.d/`) define package sources:\n```\ndeb https://deb.debian.org/debian bookworm main contrib non-free\ndeb-src https://deb.debian.org/debian bookworm main\n```\n- `deb` — binary packages\n- `deb-src` — source packages\n- `bookworm` — release codename\n- `main contrib non-free` — components (by licence)\n\nRun `apt update` after editing to refresh the package index."
+    },
+    {
+      "id": "q5",
+      "prompt": "What dpkg command installs a local .deb file directly, without downloading dependencies from a repository?",
+      "expectedOutput": "dpkg -i",
+      "solutionMarkdown": "`dpkg -i package.deb` installs the package but fails if dependencies are missing. After a failed install, run `apt install -f` to fetch and install the missing dependencies.\n\n```bash\ndpkg -i ./myapp_1.0_amd64.deb   # install\ndpkg -r myapp                    # remove (keep config)\ndpkg -l | grep nginx             # list installed, filter\ndpkg -L nginx                    # list files from package\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "What package manager replaced yum on Red Hat Enterprise Linux 8 and Fedora?",
+      "expectedOutput": "dnf",
+      "solutionMarkdown": "**dnf** (Dandified YUM) improves on yum with:\n- Proper dependency solver (libsolv)\n- Better performance and lower memory use\n- Module streams (install different versions of a software stack)\n\n```bash\ndnf install nginx\ndnf update\ndnf remove nginx\ndnf search nginx\ndnf info nginx\n```\nOn RHEL 8+, `yum` is a symlink to `dnf`."
+    },
+    {
+      "id": "q7",
+      "prompt": "What is the file extension for Linux shared libraries, loaded at runtime by the dynamic linker?",
+      "expectedOutput": ".so",
+      "solutionMarkdown": "`.so` (shared object) files are dynamically linked libraries. They are mapped into process memory on demand. Naming convention: `libname.so.major.minor` (e.g. `libssl.so.3`).\n\nSymlinks chain the names:\n```\nlibopenssl.so → libssl.so.3 → libssl.so.3.0.8\n```\nApplications link against the unversioned name; the dynamic linker (`ld.so`) resolves the actual `.so` at runtime using the cache built by `ldconfig`."
+    },
+    {
+      "id": "q8",
+      "prompt": "What command rebuilds the dynamic linker's shared library cache after a new .so file is installed to a non-standard directory?",
+      "expectedOutput": "ldconfig",
+      "solutionMarkdown": "`ldconfig` scans directories listed in `/etc/ld.so.conf` (and `/etc/ld.so.conf.d/`) and rebuilds the cache at `/etc/ld.so.cache`. The dynamic linker reads this cache to locate `.so` files at runtime.\n\n```bash\necho /usr/local/mylib > /etc/ld.so.conf.d/mylib.conf\nldconfig            # rebuild cache\nldconfig -p | grep mylib  # verify\n```\nWithout running `ldconfig`, executables linked against a newly installed library cannot find it."
+    },
+    {
+      "id": "q9",
+      "prompt": "What cryptographic mechanism ensures that a downloaded package has not been tampered with and was published by a trusted maintainer?",
+      "expectedOutput": "package signing",
+      "solutionMarkdown": "**Package signing** uses GPG (PGP) asymmetric cryptography:\n1. The repository maintainer signs packages and the repository metadata with their private key\n2. The package manager verifies the signature using the public key stored in the trusted keyring\n\nOn Debian/Ubuntu:\n```bash\napt-key list                    # view trusted keys (deprecated)\nls /etc/apt/trusted.gpg.d/      # modern key storage\n```\nIf a signature fails, `apt` refuses to install the package — preventing supply-chain attacks."
+    },
+    {
+      "id": "q10",
+      "prompt": "What environment variable overrides the default shared library search path for the dynamic linker at runtime?",
+      "expectedOutput": "LD_LIBRARY_PATH",
+      "solutionMarkdown": "`LD_LIBRARY_PATH` is searched before the system library cache:\n```bash\nLD_LIBRARY_PATH=/opt/app/lib ./app\n```\n**Security warning**: The dynamic linker ignores `LD_LIBRARY_PATH` for setuid/setgid binaries (a privilege escalation prevention). Never set it permanently in system-wide shell profiles — it can cause unexpected library loading across all processes."
+    }
+  ],
+  "summaryMarkdown": "## Package manager quick reference\n\n| Distro family | Low-level | High-level | Format |\n|---|---|---|---|\n| Debian/Ubuntu | `dpkg` | `apt` | `.deb` |\n| RHEL/Fedora | `rpm` | `dnf` | `.rpm` |\n| openSUSE | `rpm` | `zypper` | `.rpm` |\n| Arch | `pacman` | `pacman` / `yay` | `.pkg.tar.zst` |"
+}

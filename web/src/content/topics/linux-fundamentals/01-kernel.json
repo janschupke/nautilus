@@ -1,0 +1,70 @@
+{
+  "id": "01-kernel",
+  "title": "Linux kernel and architecture",
+  "shortTitle": "01 — Linux kernel and architecture",
+  "workdir": "/home/isopod/",
+  "intro": "Knowledge-based questions on the Linux kernel and the architecture of a Linux system. No shell session needed — answers are specific terms, values, or short phrases.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What is the programming interface called that allows a user-space application to request a service from the Linux kernel, such as opening a file or creating a process?",
+      "expectedOutput": "system call",
+      "solutionMarkdown": "A **system call** (syscall) is the controlled entry point into the kernel. User programs invoke syscalls via the `syscall` CPU instruction (x86-64) or a software interrupt. The kernel runs the requested operation in privileged mode and returns the result to the caller.\n\nCommon syscalls: `read`, `write`, `open`, `fork`, `execve`, `mmap`."
+    },
+    {
+      "id": "q2",
+      "prompt": "How is the Linux kernel architecturally classified — monolithic, microkernel, or hybrid?",
+      "expectedOutput": "monolithic",
+      "solutionMarkdown": "Linux is a **monolithic** kernel: device drivers, filesystem code, and networking all run in the same kernel address space at ring 0. This gives performance advantages over microkernels (which isolate drivers in user space) at the cost of a larger trusted computing base.\n\nLinux mitigates this with **loadable kernel modules** — drivers can be compiled separately and loaded at runtime without a reboot."
+    },
+    {
+      "id": "q3",
+      "prompt": "What command displays all currently loaded kernel modules?",
+      "expectedOutput": "lsmod",
+      "solutionMarkdown": "`lsmod` reads `/proc/modules` and formats the output as a table showing module name, size, and use count. Each row's third column lists other modules that depend on it.\n\n```bash\nlsmod\n# Module          Size  Used by\n# nf_conntrack  172032  2 nf_nat\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "What command loads a kernel module along with all of its dependencies?",
+      "expectedOutput": "modprobe",
+      "solutionMarkdown": "`modprobe` reads `/lib/modules/$(uname -r)/modules.dep` to resolve dependencies and loads them in the correct order. Contrast with `insmod`, which loads a single module file and fails if dependencies are missing.\n\n```bash\nmodprobe dm-crypt   # loads dm-crypt and any required modules\nmodprobe -r dm-crypt  # unload\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "What file in the proc filesystem contains the command-line arguments passed to the Linux kernel at boot?",
+      "expectedOutput": "/proc/cmdline",
+      "solutionMarkdown": "`/proc/cmdline` exposes the kernel command line set by the bootloader (GRUB). It includes parameters like `root=`, `quiet`, `ro`, and custom options passed by the administrator. Useful for debugging unexpected kernel behaviour.\n\n```bash\ncat /proc/cmdline\n# BOOT_IMAGE=/boot/vmlinuz-6.1.0 root=UUID=... ro quiet splash\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "What virtual filesystem, mounted at /proc, exposes kernel internals and per-process information as browsable files?",
+      "expectedOutput": "procfs",
+      "solutionMarkdown": "**procfs** (`proc` filesystem) is a pseudo-filesystem that presents kernel data structures as files. No disk I/O occurs — reads return live kernel data. Key paths:\n\n| Path | Content |\n|---|---|\n| `/proc/cpuinfo` | CPU details |\n| `/proc/meminfo` | Memory stats |\n| `/proc/<PID>/` | Per-process data |\n| `/proc/net/` | Network state |"
+    },
+    {
+      "id": "q7",
+      "prompt": "What command reads and displays messages from the kernel ring buffer, useful for diagnosing hardware and driver issues?",
+      "expectedOutput": "dmesg",
+      "solutionMarkdown": "`dmesg` reads `/dev/kmsg` (or the legacy ring buffer). The ring buffer is fixed-size — oldest entries are overwritten. Typical uses:\n\n```bash\ndmesg | grep -i error\ndmesg -T          # human-readable timestamps\ndmesg --level=err,crit  # filter by severity\n```\nOn systemd systems, `journalctl -k` is the persistent alternative."
+    },
+    {
+      "id": "q8",
+      "prompt": "What Linux kernel feature allows drivers and filesystem code to be compiled as separate files and loaded or unloaded at runtime without rebooting?",
+      "expectedOutput": "loadable kernel modules",
+      "solutionMarkdown": "**Loadable kernel modules** (`.ko` files) extend the kernel at runtime. They run in kernel space with full privileges. Module signing (`CONFIG_MODULE_SIG`) can enforce that only trusted modules load — important for Secure Boot.\n\nModule files live under `/lib/modules/$(uname -r)/`."
+    },
+    {
+      "id": "q9",
+      "prompt": "In which base directory are compiled kernel module files (.ko) stored for a running kernel?",
+      "expectedOutput": "/lib/modules",
+      "solutionMarkdown": "Modules are stored under `/lib/modules/<kernel-version>/`. The full path for a module like `dm-crypt` might be:\n```\n/lib/modules/6.1.0-21-amd64/kernel/drivers/md/dm-crypt.ko\n```\n`depmod` scans this tree and builds the dependency database in `modules.dep`."
+    },
+    {
+      "id": "q10",
+      "prompt": "What are the three numeric components of a Linux kernel version string (e.g. 6.1.50)?",
+      "expectedOutput": "major, minor, patch",
+      "solutionMarkdown": "The Linux kernel version follows `major.minor.patch`:\n- **major**: incremented for large architectural changes (rare)\n- **minor**: incremented on each new feature release (every 9–10 weeks)\n- **patch**: stable update — bug and security fixes only\n\nExample: `6.1.50` — major 6, minor 1, patch 50. The minor determines the feature set; patch releases are safe to upgrade to."
+    }
+  ],
+  "summaryMarkdown": "## Key kernel interfaces\n\n| Interface | Path | Purpose |\n|---|---|---|\n| procfs | `/proc/` | Process and kernel state |\n| sysfs | `/sys/` | Device and driver config |\n| devtmpfs | `/dev/` | Device nodes |\n| cgroupfs | `/sys/fs/cgroup/` | Resource control |\n| debugfs | `/sys/kernel/debug/` | Kernel debugging |"
+}

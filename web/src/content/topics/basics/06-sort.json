@@ -1,0 +1,70 @@
+{
+  "id": "06-sort",
+  "title": "Sorting and deduplication",
+  "shortTitle": "06 — Sorting and deduplication",
+  "workdir": "/home/isopod/labs/basics/06-sort/",
+  "intro": "Work from the module directory. Use **`sort`** and **`uniq`** unless a question says otherwise. Use **Bash** when a tab delimiter is required (`$'\\t'`).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Sort `colors.txt` alphabetically (full-line, default locale). What is the first line of the output?",
+      "expectedOutput": "amber",
+      "solutionMarkdown": "```bash\nsort colors.txt\n```\n\n`amber` sorts before `blue`, `cyan`, and `magenta`."
+    },
+    {
+      "id": "q2",
+      "prompt": "`pairs.txt` lists vehicles and associated numbers, space-separated. Sort by the number from smallest to largest. What vehicle-number pair appears first?",
+      "expectedOutput": "train 5",
+      "solutionMarkdown": "```bash\nsort -k2,2n pairs.txt\n```\n\n`-k2,2n` sorts on field 2 as a numeric value. `train 5` has the smallest number."
+    },
+    {
+      "id": "q3",
+      "prompt": "Sort `pairs.txt` by the same number, but this time **largest first**. What pair appears first?",
+      "expectedOutput": "bus 100",
+      "solutionMarkdown": "```bash\nsort -k2,2nr pairs.txt\n```\n\nAdding `r` reverses the sort — `bus 100` is now first."
+    },
+    {
+      "id": "q4",
+      "prompt": "`hosts.tsv` is TSV with two columns: hostname and priority (integer). Sort by priority ascending; break ties by hostname alphabetically. List all 4 rows, tab-separated.",
+      "expectedOutput": "cache\t3\ndb1\t5\nweb1\t10\nweb2\t10",
+      "solutionMarkdown": "```bash\nsort -t $'\\t' -k2,2n -k1,1 hosts.tsv\n```\n\n`web1` and `web2` share priority 10 — the hostname tiebreak puts `web1` before `web2`."
+    },
+    {
+      "id": "q5",
+      "prompt": "`tags.txt` contains tag names, one per line, with duplicates. Count how many times each distinct tag appears. What count does `dev` have?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\nsort tags.txt | uniq -c\n```\n\n`sort` groups identical values so `uniq -c` can count them. `dev` appears **3** times."
+    },
+    {
+      "id": "q6",
+      "prompt": "Which values in `tags.txt` appear **more than once**? List them alphabetically, one per line.",
+      "expectedOutput": "dev\nprod",
+      "solutionMarkdown": "```bash\nsort tags.txt | uniq -d\n```\n\n`uniq -d` prints only lines that have a duplicate. `staging` appears only once, so it is excluded."
+    },
+    {
+      "id": "q7",
+      "prompt": "`messy_ids.txt` contains identifiers with duplicates. Print only the unique values, sorted alphabetically.",
+      "expectedOutput": "apple\nbanana\nmango\nzebra",
+      "solutionMarkdown": "```bash\nsort -u messy_ids.txt\n```\n\n`sort -u` combines sorting and deduplication in one pass."
+    },
+    {
+      "id": "q8",
+      "prompt": "`ips.txt` contains 4 IP addresses in mixed order. Sort them numerically by each octet — so `9.x` comes before `10.x`, and within the `10.0.0.*` range, `1` before `2` before `10`. List all 4 in correctly sorted order.",
+      "expectedOutput": "9.9.9.9\n10.0.0.1\n10.0.0.2\n10.0.0.10",
+      "solutionMarkdown": "```bash\nLC_ALL=C sort -t. -k1,1n -k2,2n -k3,3n -k4,4n ips.txt\n```\n\n`-t.` splits on dots; each `-k` sorts one octet numerically. `LC_ALL=C` gives stable byte ordering."
+    },
+    {
+      "id": "q9",
+      "prompt": "`sizes.txt` mixes plain numbers and human-readable sizes (`2K`, `1M`). Sort them smallest to largest. List all 5 values in order.",
+      "expectedOutput": "50\n100\n512\n2K\n1M",
+      "solutionMarkdown": "```bash\nsort -h sizes.txt\n```\n\n`-h` (human-numeric) understands unit suffixes: 50 < 100 < 512 < 2K < 1M."
+    },
+    {
+      "id": "q10",
+      "prompt": "`mentions.txt` records names, one per line, with repeats. Count occurrences of each name and rank by frequency, highest first. What name appears most frequently? Answer with just the name.",
+      "expectedOutput": "alice",
+      "solutionMarkdown": "```bash\nsort mentions.txt | uniq -c | sort -k1,1nr\n```\n\n`alice` appears **4** times, `bob` 3, `carol` and `dan` once each."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Define sort keys (`-k`), field separators (`-t`), numeric vs human-numeric (`-h`) sorts.\n- Use `sort -u` vs `sort | uniq` vs `sort | uniq -c` patterns.\n- Understand stable vs unstable sort (`-s`) and version sort (`-V`) on GNU.\n- Combine with NUL-terminated records where filenames are involved (**02**).\n\n## Scope\n\n**In scope:** `sort`, `uniq`, locale impact (`LC_ALL=C`). **Out of scope:** external sort algorithms; big-data external merge."
+}

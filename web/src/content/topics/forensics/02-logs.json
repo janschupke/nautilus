@@ -1,0 +1,57 @@
+{
+  "id": "02-logs",
+  "title": "Web server log forensics",
+  "shortTitle": "02 — Web server log forensics",
+  "workdir": "/home/isopod/labs/forensics/02-logs/",
+  "intro": "A breach has been reported against one of our web servers. The Apache access log from the incident window has been exported to `access.log`. Work through the log to reconstruct the attack timeline: identify the actor, trace what they accessed, and extract the evidence they left behind.\n\nThe log uses Apache combined log format:\n```\nIP - - [DD/Mon/YYYY:HH:MM:SS +0000] \"METHOD /path HTTP/1.1\" status bytes \"-\" \"user-agent\"\n```",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Before diving in, get a baseline: how many log entries does `access.log` contain?",
+      "expectedOutput": "310",
+      "solutionMarkdown": "```bash\nwc -l access.log\n# 310 access.log\n```\n\n310 entries across the incident window. `wc -l` counts newline characters, which equals the number of log lines for well-formed access logs.\n\nWith 310 entries to analyse by hand, you will use `grep`, `awk`, `sort`, and `uniq` to navigate the data efficiently — the same toolchain used in production SIEM-less incident response."
+    },
+    {
+      "id": "q2",
+      "prompt": "How many unique IP addresses appear in the log?",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\nawk '{print $1}' access.log | sort -u | wc -l\n# 4\n\nawk '{print $1}' access.log | sort -u\n# 10.0.0.5\n# 185.23.45.67\n# 192.168.99.201\n# 91.108.4.1\n```\n\nFour distinct IPs. Three appear to be legitimate traffic sources; one stands out by volume or behaviour. `sort -u` deduplicates before counting — the pipeline `awk '{print $1}'` extracts field 1 (the client IP) from each log line."
+    },
+    {
+      "id": "q3",
+      "prompt": "Which IP address made the most requests to the server during this window?",
+      "expectedOutput": "192.168.99.201",
+      "solutionMarkdown": "```bash\nawk '{print $1}' access.log | sort | uniq -c | sort -rn\n# 85 192.168.99.201\n# 75 10.0.0.5\n# 75 185.23.45.67\n# 75 91.108.4.1\n```\n\n`192.168.99.201` made 85 requests — significantly more than the other three IPs which all show 75 each (consistent with normal browsing patterns). This IP is the primary suspect: higher-than-normal request volume is a common indicator of automated scanning or enumeration."
+    },
+    {
+      "id": "q4",
+      "prompt": "The other IPs' traffic spans the early hours. When did the suspicious IP first appear in the log? Extract the date in `DD/Mon/YYYY` format from its first entry.",
+      "expectedOutput": "15/Mar/2024",
+      "solutionMarkdown": "```bash\ngrep 192.168.99.201 access.log | head -1\n# 192.168.99.201 - - [15/Mar/2024:02:31:00 +0000] \"GET /robots.txt HTTP/1.1\" ...\n\ngrep 192.168.99.201 access.log | head -1 | grep -oP '\\d{2}/\\w+/\\d{4}'\n# 15/Mar/2024\n```\n\nThe attacker first appeared at `02:31:00`, well after normal business hours — consistent with an automated tool or an attacker operating from a different timezone.\n\nThe legitimate traffic predates this by hours, which means the attacker started from a clean slate (no prior relationship with the server) and immediately began active enumeration."
+    },
+    {
+      "id": "q5",
+      "prompt": "How many of `192.168.99.201`'s requests received an HTTP 200 (success) response?",
+      "expectedOutput": "8",
+      "solutionMarkdown": "```bash\ngrep 192.168.99.201 access.log | awk '$9 == \"200\"' | wc -l\n# 8\n```\n\nField `$9` in Apache combined log format is the HTTP status code. Only 8 of 85 attacker requests returned 200 — the rest hit 400, 403, 404, or 500 responses. This is typical of automated scanning: most probe attempts fail until the scanner finds something that works.\n\nThose 8 successful requests are the highest-value lines to examine next."
+    },
+    {
+      "id": "q6",
+      "prompt": "One of the attacker's successful (HTTP 200) GET requests accessed an administrative path that should not be reachable from outside. What was that path?",
+      "expectedOutput": "/admin/config.php",
+      "solutionMarkdown": "```bash\ngrep 192.168.99.201 access.log | awk '$6 == \"\\\"GET\" && $9 == \"200\" {print $7}'\n# /robots.txt\n# /admin/config.php\n# /api/users\n# /api/users?id=1\n# /api/users?id=2\n# /api/users?id=3\n# /api/status\n```\n\n`/admin/config.php` stands out — a configuration file under the admin directory should never be publicly accessible. The `/api/` endpoints reveal the attacker transitioned from scanning to targeted data extraction after gaining the admin panel.\n\nA 200 response on `/admin/config.php` means the server sent back its contents — likely including database credentials, API keys, or other secrets stored in that configuration file."
+    },
+    {
+      "id": "q7",
+      "prompt": "Identify the tool the attacker used by reading the User-Agent string from any of their requests. What is the tool name (the first word in the User-Agent)?",
+      "expectedOutput": "sqlmap",
+      "solutionMarkdown": "```bash\ngrep 192.168.99.201 access.log | head -1 | awk -F'\"' '{print $6}'\n# sqlmap/1.7.8#stable (https://sqlmap.org)\n```\n\n**sqlmap** is an open-source SQL injection automation tool. Its presence in the User-Agent confirms the attacker was conducting SQL injection attempts against the `/api/users` endpoint — consistent with the injection payloads seen in questions 4 and 5 (`OR 1=1`, `'--`, `SLEEP(5)`).\n\nThe attacker made no effort to mask their tool — either through carelessness or the assumption that logs were not monitored. In production you would block this UA string at the WAF and alert on it in the SIEM."
+    },
+    {
+      "id": "q8",
+      "prompt": "One of the attacker's POST requests to `/api/upload` included a `flag` parameter visible in the request URI — it was logged by the server. What is the value of that flag parameter?",
+      "expectedOutput": "tide-runner-0x02",
+      "solutionMarkdown": "```bash\ngrep 192.168.99.201 access.log | grep POST\n# 192.168.99.201 - - [15/Mar/2024:02:34:48 +0000] \"POST /api/upload?flag=tide-runner-0x02 HTTP/1.1\" 200 128 ...\n\ngrep 192.168.99.201 access.log | grep POST | grep -oP '(?<=flag=)[^& \"]+'\n# tide-runner-0x02\n```\n\nThe attacker passed a campaign tag as a query parameter — likely as an exfiltration marker or beacon acknowledgement. This value links the upload activity directly to the same campaign tracked in topic 01 (where `hermit-anchor-0x01` appeared in the C2 key file).\n\nAlways log the full request URI including query parameters — GET parameters often carry injection payloads, session tokens, or operational tags that are critical for post-incident reconstruction."
+    }
+  ]
+}

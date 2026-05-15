@@ -1,0 +1,13 @@
+sending incremental file list
+>f+++++++++ bootstrap.bin
+>f.st...... lib/core.so
+.d..t...... lib/unchanged.so
+cd+++++++++ lib/plugins/
+>f+++++++++ lib/plugins/a.so
+.f........ lib/unchanged_meta.txt
+*deleting tmp/old_cache.dat
+*deleting tmp/deeper/obsolete.log
+>f+++++++++ README
+
+sent 0 bytes  received 0 bytes  0.00 bytes/sec
+total size is 0  speedup is 0.00 (DRY RUN)

@@ -1,0 +1,76 @@
+{
+  "id": "03-cut-tr",
+  "title": "Text extraction and reshaping",
+  "shortTitle": "03 — Text extraction and reshaping",
+  "workdir": "/home/isopod/labs/basics/03-cut-tr/",
+  "intro": "Work from home. Operational data lives under **`data/reports/`**. Keep scratch output under **`work/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "`data/reports/asset-latency.tsv` is tab-separated with columns: `host`, `role`, `latency_ms`. Extract only the `host` and `latency_ms` columns, including the header row. Preserve the tab separator between them.",
+      "expectedOutput": "host\tlatency_ms\nfw-01\t7\nvpn-01\t18\nsiem-01\t42\nweb-01\t11",
+      "solutionMarkdown": "```bash\ncut -f1,3 data/reports/asset-latency.tsv\n```\n\nThe `-f` flag selects fields; the default delimiter for `cut` is a tab, matching the file's format."
+    },
+    {
+      "id": "q2",
+      "prompt": "`data/reports/incidents.csv` is comma-delimited. Extract only the `queue` column (field 2), including the header. Print one value per line.",
+      "expectedOutput": "queue\nauth\nnetwork\nmalware",
+      "solutionMarkdown": "```bash\ncut -d, -f2 data/reports/incidents.csv\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "`data/reports/` has two matching files: `site-regions.txt` (three region names) and `site-codes.txt` (three airport codes, same order). Join them side by side with `:` as the delimiter between each pair. What is the output?",
+      "expectedOutput": "us-east:iad\neu-central:fra\nap-south:sin",
+      "solutionMarkdown": "```bash\npaste -d: data/reports/site-regions.txt data/reports/site-codes.txt\n```\n\n`paste` merges files line by line; `-d:` sets the delimiter."
+    },
+    {
+      "id": "q4",
+      "prompt": "`data/reports/services.ragged` lists three services with their ports and status, but the columns are separated by irregular amounts of whitespace. Align them into a clean table. What does the **first** data row look like after alignment?",
+      "expectedOutput": "nginx   80   running",
+      "solutionMarkdown": "```bash\ncolumn -t data/reports/services.ragged\n```\n\n`column -t` infers column widths and right-pads fields with spaces."
+    },
+    {
+      "id": "q5",
+      "prompt": "`data/reports/lowercase-note.txt` contains a short note in lowercase. Convert every character to uppercase and print the result.",
+      "expectedOutput": "MODULE FOUR DRILL",
+      "solutionMarkdown": "```bash\ntr '[:lower:]' '[:upper:]' < data/reports/lowercase-note.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "`data/reports/noisy-auth-line.txt` contains an authentication log entry with multiple consecutive spaces between fields. Squeeze every run of repeated spaces down to a single space. What does the resulting line look like?",
+      "expectedOutput": " failed password from 198.51.100.23",
+      "solutionMarkdown": "```bash\ntr -s ' ' < data/reports/noisy-auth-line.txt\n```\n\n`-s` (squeeze) collapses runs of the specified character to one occurrence."
+    },
+    {
+      "id": "q7",
+      "prompt": "`data/reports/audit-brackets.txt` records an audit event with parentheses around each value. Strip all parentheses from the line. What does it print?",
+      "expectedOutput": "user alice action login result success",
+      "solutionMarkdown": "```bash\ntr -d '()' < data/reports/audit-brackets.txt\n```\n\n`-d` (delete) removes every occurrence of the listed characters."
+    },
+    {
+      "id": "q8",
+      "prompt": "`data/reports/firewall-fixed.txt` has 2 lines, each starting with a 5-character device identifier. Extract only those first 5 characters from each line.",
+      "expectedOutput": "fw001\nvp018",
+      "solutionMarkdown": "```bash\ncut -c1-5 data/reports/firewall-fixed.txt\n```\n\n`-c` selects by character position, not field."
+    },
+    {
+      "id": "q9",
+      "prompt": "`data/reports/ops-ledger.log` has 10 lines recording operational events. If you split it into chunks of 3 lines each, how many chunk files result?",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\nsplit -l 3 data/reports/ops-ledger.log work/ops_\nls work/ops_?? | wc -l\n```\n\n10 lines ÷ 3 = 3 full chunks + 1 partial (1 line) = **4** files."
+    },
+    {
+      "id": "q10",
+      "prompt": "`data/reports/ops-ledger.log` records operations in the format `LNN action`. How many lines mention `backup` in the action?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c 'backup' data/reports/ops-ledger.log\n```\n\nLines `L09 backup start` and `L10 backup ok` both match — **2** entries."
+    },
+    {
+      "id": "q11",
+      "prompt": "A sensor alert log `sensor-alerts.tsv` is in the module directory. The intrusion entry's flag field was ROT13-encoded before logging. Extract that field and decode it. What is the decoded value?",
+      "expectedOutput": "barnacle-7749",
+      "solutionMarkdown": "```bash\ngrep intrusion sensor-alerts.tsv | cut -f4 | tr 'A-Za-z' 'N-ZA-Mn-za-m'\n```\n\n`cut -f4` extracts the encoded field; `tr 'A-Za-z' 'N-ZA-Mn-za-m'` applies the ROT13 substitution. Numbers and hyphens pass through unchanged."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Select and reorder fields with `cut` and delimiters.\n- Reshape tabular text with `paste` and `column`.\n- Translate or delete character classes with `tr`.\n- Count lines/words/bytes; split large files; tee for audit trails."
+}

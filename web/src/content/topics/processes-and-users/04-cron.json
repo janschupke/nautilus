@@ -1,0 +1,70 @@
+{
+  "id": "04-cron",
+  "title": "Scheduling: cron, crontab, launchd",
+  "shortTitle": "04 — Scheduling: cron, crontab, launchd",
+  "workdir": "/home/isopod/labs/processes-and-users/04-cron/",
+  "intro": "Work from the module directory. Fixtures: **`user_crontab.txt`**, **`system_crontab_snippet.txt`**, **`crontab_fields_cheatsheet.txt`**, **`com.example.course.nightly.plist.txt`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "In **`user_crontab.txt`**, how many distinct job lines begin with `@reboot`? Print only the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c '^@reboot' user_crontab.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "In **`user_crontab.txt`**, find the job line that runs **`backup.sh`**. What is the hour field (the second of the five time fields)?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "Parse the five cron time fields before the command path."
+    },
+    {
+      "id": "q3",
+      "prompt": "In **`user_crontab.txt`**, find the job line that runs **`analytics.py`**. What is the day-of-week field (the fifth time field) exactly as written?",
+      "expectedOutput": "1-5",
+      "solutionMarkdown": "Fifth field before the command path."
+    },
+    {
+      "id": "q4",
+      "prompt": "In **`system_crontab_snippet.txt`**, which username is listed for the line that runs **`logrotate`**?",
+      "expectedOutput": "root",
+      "solutionMarkdown": "System crontab format has a username column after the five time fields and before the command."
+    },
+    {
+      "id": "q5",
+      "prompt": "In **`system_crontab_snippet.txt`**, which username runs the **`weekly-summary`** command?",
+      "expectedOutput": "reports",
+      "solutionMarkdown": "Find the `weekly-summary` line and read the user column."
+    },
+    {
+      "id": "q6",
+      "prompt": "In **`crontab_fields_cheatsheet.txt`**, what **type of time** does traditional cron schedule against — wall-clock time or CPU time?",
+      "expectedOutput": "wall-clock",
+      "solutionMarkdown": "Cron fires against the machine's local **wall-clock** time — the daemon does not default to UTC unless the system TZ is set to UTC."
+    },
+    {
+      "id": "q7",
+      "prompt": "In **`user_crontab.txt`**, find the job line whose command contains `logger`. What is the minute field exactly as written?",
+      "expectedOutput": "*/10",
+      "solutionMarkdown": "The first of the five time fields is the minute. `*/10` means every 10 minutes."
+    },
+    {
+      "id": "q8",
+      "prompt": "In **`com.example.course.nightly.plist.txt`**, what is the string value of the `Label` key?",
+      "expectedOutput": "com.example.course.nightly",
+      "solutionMarkdown": "Find `<key>Label</key>` and read the following `<string>` element."
+    },
+    {
+      "id": "q9",
+      "prompt": "In the same plist, inside the `StartCalendarInterval` dictionary, what integer is given for the `Hour` key?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "The `Hour` key under `StartCalendarInterval` sets when the job fires."
+    },
+    {
+      "id": "q10",
+      "prompt": "In the same plist, what is the second string element inside the `ProgramArguments` array?",
+      "expectedOutput": "--yesterday",
+      "solutionMarkdown": "The first element is the executable path; the second is the first flag passed to it."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Parse user vs system crontab lines (five time fields + command vs user column before command).\n- Explain `@reboot` / `@daily`-style strings as vendor-specific conveniences.\n- Relate wall-clock scheduling to TZ and the host's locale.\n- Contrast Linux cron with macOS launchd at a read-only / architectural level.\n\n## Scope\n\n**In scope:** fixtures, theory, safe inspection patterns on personal machines. **Out of scope:** production runbook for incident response; no exercises that require loading new launchd jobs or writing to `/etc` on shared infrastructure."
+}

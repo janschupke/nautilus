@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-api
+  labels:
+    app: payments
+    tier: backend
+spec:
+  replicas: 3
+  containers:
+    - name: app
+      image: payments:1.4.0
+      ports:
+        - containerPort: 8080
+    - name: sidecar
+      image: envoy:1.28

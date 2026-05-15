@@ -1,0 +1,17 @@
+; <<>> DiG 9.18.12 <<>> lab.example MX +noall +answer
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60201
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; QUESTION SECTION:
+;lab.example.			IN	MX
+
+;; ANSWER SECTION:
+lab.example.		3600	IN	MX	10	mail-a.lab.example.
+lab.example.		3600	IN	MX	20	mail-b.lab.example.
+
+;; Query time: 2 msec
+;; SERVER: 127.0.0.1#53(127.0.0.1) (UDP)
+;; WHEN: Wed May 13 12:00:05 UTC 2026
+;; MSG SIZE  rcvd: 88

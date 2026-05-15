@@ -1,0 +1,4 @@
+{
+  "id": "forensics",
+  "intro": "Covers digital forensics investigation workflows: binary and metadata artifact analysis, web server log reconstruction to identify attackers, and live host triage to find indicators of compromise. Investigations follow a sequential narrative — each question builds on the previous answer."
+}

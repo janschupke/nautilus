@@ -1,0 +1,70 @@
+{
+  "id": "02-file-hex",
+  "title": "Inspecting unknown content",
+  "shortTitle": "02 — Inspecting unknown content",
+  "workdir": "/home/isopod/labs/basics/02-file-hex/",
+  "intro": "Work from home. The **`data/intake/`** directory holds simulated file uploads. Inspect them read-only — do not execute anything.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "The `data/intake/` directory holds several uploads. Use `file` to determine their types. How many of the files in that directory are identified as completely empty (the single-word type `empty`)?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\nfile -b data/intake/*\n```\n\nOnly `empty.upload` reports `empty` — zero bytes, nothing to identify."
+    },
+    {
+      "id": "q2",
+      "prompt": "What MIME type does the system report for `suspicious.bin`?",
+      "expectedOutput": "application/octet-stream",
+      "solutionMarkdown": "```bash\nfile --mime-type data/intake/suspicious.bin\n```\n\nBinary data with no recognised magic signature falls back to `application/octet-stream`."
+    },
+    {
+      "id": "q3",
+      "prompt": "Check `readme.txt` using `file -b` (brief mode). What single-line type description does it print?",
+      "expectedOutput": "ASCII text",
+      "solutionMarkdown": "```bash\nfile -b data/intake/readme.txt\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Examine the first 4 bytes of `suspicious.bin` with a hex dump tool. What do those 4 bytes look like as printable ASCII characters? (They form a well-known binary magic number.)",
+      "expectedOutput": ".ELF",
+      "solutionMarkdown": "```bash\nxxd -l 4 data/intake/suspicious.bin\n# or\nhexdump -C -n 4 data/intake/suspicious.bin\n```\n\nThe bytes `7f 45 4c 46` decode to `.ELF` — the ELF magic number used by Linux executables and shared libraries."
+    },
+    {
+      "id": "q5",
+      "prompt": "What is the size in bytes of `readme.txt`?",
+      "expectedOutput": "59",
+      "solutionMarkdown": "```bash\nstat -c '%s' data/intake/readme.txt\n# or\nwc -c < data/intake/readme.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "The `utf8-note.txt` file contains a `Label=` field. What is the label value — everything after the `=`?",
+      "expectedOutput": "unicode-gateway-330",
+      "solutionMarkdown": "```bash\ngrep '^Label=' data/intake/utf8-note.txt | cut -d= -f2\n# or with awk\nawk -F= '/^Label=/ { print $2 }' data/intake/utf8-note.txt\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "One file in the intake directory is disguised — its `.txt` extension does not match what `file -b` reports it to be. Which filename is it?",
+      "expectedOutput": "invoice.txt",
+      "solutionMarkdown": "```bash\nfile -b data/intake/*.txt\n```\n\n`invoice.txt` is identified as a **POSIX shell script** (it starts with `#!/bin/sh`), not plain text. Running it would execute code, which is exactly why you inspect first."
+    },
+    {
+      "id": "q8",
+      "prompt": "Do `readme.txt` and `suspicious.bin` contain the same bytes? Run a byte-level comparison and answer `yes` or `no`.",
+      "expectedOutput": "no",
+      "solutionMarkdown": "```bash\ncmp -s data/intake/readme.txt data/intake/suspicious.bin; echo $?\n```\n\n`cmp -s` exits 1 (files differ), so the answer is **no**."
+    },
+    {
+      "id": "q9",
+      "prompt": "Binary files often embed readable strings. Extract strings of at least 10 characters from `suspicious.bin`. One of them is a module flag in the format `MODULENN_FLAG=value`. What is the value part (everything after `=`)?",
+      "expectedOutput": "hex-gateway-441",
+      "solutionMarkdown": "```bash\nstrings -n 10 data/intake/suspicious.bin | grep 'FLAG='\n```\n\nThe flag line is `MODULE03_FLAG=hex-gateway-441` — extract the value with `cut -d= -f2`."
+    },
+    {
+      "id": "q10",
+      "prompt": "The `readme.txt` file records a case reference in the format `Case=PREFIX-YEAR-NUM`. What is the full value — everything after `Case=`?",
+      "expectedOutput": "INC-2026-041",
+      "solutionMarkdown": "```bash\ngrep '^Case=' data/intake/readme.txt | cut -d= -f2\n```"
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Use `file` magic and limit verbosity; know MIME vs legacy descriptions.\n- Extract printable strings with width and encoding options.\n- View hex dumps and interpret endianness at a high level.\n- Read inode metadata with `stat`.\n\n## Scope\n\n**In scope:** read-only triage tools. **Out of scope:** full forensic imaging; dynamic analysis."
+}

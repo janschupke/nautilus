@@ -1,0 +1,76 @@
+{
+  "id": "09-logs",
+  "title": "Live log tailing",
+  "shortTitle": "09 — Live log tailing",
+  "workdir": "/home/isopod/labs/basics/09-logs/",
+  "intro": "Work from the module directory. Fixtures: `app.log` (current), `app.log.1` and `app.log.2` (rotated), `archive_msg.txt.gz` (compressed), and `journalctl_sample.txt` (simulated systemd journal).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Count the total number of lines across all `app.log*` files in the module directory (current log plus all rotated copies). How many lines are there in total?",
+      "expectedOutput": "7",
+      "solutionMarkdown": "```bash\ncat app.log app.log.1 app.log.2 | wc -l\n# or\nwc -l app.log* | tail -1\n```\n\n`app.log` has 3, `app.log.1` has 3, `app.log.2` has 1 — total **7**."
+    },
+    {
+      "id": "q2",
+      "prompt": "Search all `app.log*` files for `ERROR` entries. Which rotation suffix (`.log`, `.log.1`, or `.log.2`) contains the only `ERROR` line?",
+      "expectedOutput": ".log.1",
+      "solutionMarkdown": "```bash\ngrep -l 'ERROR' app.log*\n```\n\nOnly `app.log.1` contains an `ERROR` entry — it's the rotated file from the previous run."
+    },
+    {
+      "id": "q3",
+      "prompt": "The `journalctl_sample.txt` file simulates systemd journal output. How many lines in it mention the process `nginx`?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -c 'nginx' journalctl_sample.txt\n```\n\nThree entries: `nginx.service` started, an upstream ERROR, and a slow-cache WARN."
+    },
+    {
+      "id": "q4",
+      "prompt": "Decompress `archive_msg.txt.gz` and print its content to stdout. What is the single line of text inside?",
+      "expectedOutput": "gzip-one-line-payload",
+      "solutionMarkdown": "```bash\ngunzip -c archive_msg.txt.gz\n# or: zcat archive_msg.txt.gz\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "The `journalctl_sample.txt` records a successful SSH login. What is the source IP address of the accepted connection?",
+      "expectedOutput": "198.51.100.7",
+      "solutionMarkdown": "```bash\ngrep 'Accepted' journalctl_sample.txt | grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+'\n```\n\nThe line reads: `Accepted publickey for ops from 198.51.100.7 port 22 ssh2`."
+    },
+    {
+      "id": "q6",
+      "prompt": "Count `ERROR` entries across all `app.log*` files. How many are there in total?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ngrep -r 'ERROR' app.log* | wc -l\n# or: grep -c 'ERROR' app.log* | awk -F: '{sum+=$2} END{print sum}'\n```\n\nOnly `app.log.1` has one ERROR entry."
+    },
+    {
+      "id": "q7",
+      "prompt": "The journal sample records an SSH authentication failure. What username was the attacker attempting to access?",
+      "expectedOutput": "scanner",
+      "solutionMarkdown": "```bash\ngrep 'authentication failure' journalctl_sample.txt\n```\n\nThe line ends with `invalid user scanner`."
+    },
+    {
+      "id": "q8",
+      "prompt": "What is the log message (the part after the severity level) in the very last line of `app.log.1`?",
+      "expectedOutput": "retry scheduled",
+      "solutionMarkdown": "```bash\ntail -n 1 app.log.1 | awk '{print $3, $4}'\n# or:\ntail -n 1 app.log.1\n```\n\nThe last line is `2026-05-13T13:00:16Z INFO retry scheduled` — the message is `retry scheduled`."
+    },
+    {
+      "id": "q9",
+      "prompt": "The `journalctl_sample.txt` begins with a header showing the log time range. What is the end timestamp of that range? (Format: `YYYY-MM-DD HH:MM:SS`, no timezone.)",
+      "expectedOutput": "2026-05-13 14:05:00",
+      "solutionMarkdown": "```bash\nhead -n 1 journalctl_sample.txt\n```\n\nThe header line reads: `-- Logs begin at … end at Wed 2026-05-13 14:05:00 UTC. --`"
+    },
+    {
+      "id": "q10",
+      "prompt": "One cron entry appears in the journal sample. What command does it execute? (Extract just the command path from inside the parentheses.)",
+      "expectedOutput": "/usr/bin/true",
+      "solutionMarkdown": "```bash\ngrep 'cron' journalctl_sample.txt | grep -oP 'CMD \\(\\K[^)]+'\n# or: awk with field split\n```\n\nThe cron line reads: `(root) CMD (/usr/bin/true)` — the command is `/usr/bin/true`."
+    },
+    {
+      "id": "q11",
+      "prompt": "The module directory holds several rotated log files, including at least one that is compressed. Search all of them — including compressed copies — for an entry containing `FLAG=`. What is the full flag value (everything after `FLAG=`)?",
+      "expectedOutput": "flag{log_zgrep_rotate}",
+      "solutionMarkdown": "```bash\nzgrep 'FLAG=' app.log*\n```\n\n`zgrep` transparently decompresses `.gz` files and searches them alongside plain-text logs in a single pass. The flag lives in the oldest compressed rotation `app.log.3.gz`."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Use **`tail -n`** / **`tail -f`** / **`tail -F`** deliberately: bytes vs lines, follow mode, and rotation behavior.\n- Use **`less`** as a pager and know **`+F`** (start in forward-follow mode) vs interactive navigation.\n- Read **`journalctl`** output shapes and common flags (**`-f`**, **`-b`**, **`-u`**, **`-n`**, **`--no-pager`**) on paper or fixtures before touching a live system.\n- Recognize **rotated** filename patterns (**`app.log`**, **`app.log.1`**, **`.gz`**) and where writers append after rotation.\n\n## Scope\n\n**In scope:** local fixtures, conceptual differences Linux vs macOS (no **`journalctl`** on macOS by default). **Out of scope:** shipping production **`logrotate`** configs; full ELK/Loki pipelines."
+}

@@ -1,0 +1,70 @@
+{
+  "id": "02-addressing",
+  "title": "IP addressing and special ranges",
+  "shortTitle": "02 — IP addressing and special ranges",
+  "workdir": "/home/isopod/",
+  "intro": "Knowledge-based questions on IPv4 and IPv6 special-purpose address ranges. Write addresses in canonical notation (e.g. `10.0.0.0/8`, `::1`). These ranges appear constantly in packet captures and firewall logs.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What is the IPv4 loopback address?",
+      "expectedOutput": "127.0.0.1",
+      "solutionMarkdown": "**127.0.0.1** is the standard loopback address (the entire 127.0.0.0/8 block is reserved). Traffic sent here never leaves the host's network stack."
+    },
+    {
+      "id": "q2",
+      "prompt": "What is the IPv6 loopback address?",
+      "expectedOutput": "::1",
+      "solutionMarkdown": "**::1** is the IPv6 loopback ([RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)). Equivalent to 127.0.0.1. Services binding only to `::1` are not reachable from other hosts."
+    },
+    {
+      "id": "q3",
+      "prompt": "What RFC 1918 private address range uses a /8 prefix?",
+      "expectedOutput": "10.0.0.0/8",
+      "solutionMarkdown": "**10.0.0.0/8** — 16,777,216 addresses. Commonly used in large enterprise and data-centre networks. The three [RFC 1918](https://www.rfc-editor.org/rfc/rfc1918) ranges (10/8, 172.16/12, 192.168/16) are non-routable on the public internet."
+    },
+    {
+      "id": "q4",
+      "prompt": "What RFC 1918 private address range uses a /12 prefix?",
+      "expectedOutput": "172.16.0.0/12",
+      "solutionMarkdown": "**172.16.0.0/12** covers 172.16.0.0–172.31.255.255 (1,048,576 addresses). Often used for cloud VPC default ranges (AWS uses 172.31.0.0/16 by default)."
+    },
+    {
+      "id": "q5",
+      "prompt": "What IPv4 range is automatically assigned when DHCP fails (link-local / APIPA)?",
+      "expectedOutput": "169.254.0.0/16",
+      "solutionMarkdown": "**169.254.0.0/16** ([RFC 3927](https://www.rfc-editor.org/rfc/rfc3927), APIPA). A host assigns itself an address in this range when it cannot reach a DHCP server. Seeing 169.254.x.x in logs or `ip addr` output indicates a DHCP failure."
+    },
+    {
+      "id": "q6",
+      "prompt": "What IPv6 prefix is used for link-local addresses?",
+      "expectedOutput": "fe80::/10",
+      "solutionMarkdown": "**fe80::/10** ([RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)). Every IPv6 interface automatically configures a link-local address derived from its MAC (EUI-64) or via privacy extensions. Link-local addresses are only valid on a single link and are never routed."
+    },
+    {
+      "id": "q7",
+      "prompt": "What CIDR block does RFC 6598 reserve for Carrier-Grade NAT (CGNAT)?",
+      "expectedOutput": "100.64.0.0/10",
+      "solutionMarkdown": "**100.64.0.0/10** ([RFC 6598](https://www.rfc-editor.org/rfc/rfc6598)) — the shared address space for CGNAT. ISPs use this between their CPE and CGNAT devices. If you see 100.64–100.127 addresses in captures, you are behind a CGNAT and your public IP is shared with other subscribers."
+    },
+    {
+      "id": "q8",
+      "prompt": "What is the IPv4 limited broadcast address?",
+      "expectedOutput": "255.255.255.255",
+      "solutionMarkdown": "**255.255.255.255** — delivered to all hosts on the local network segment. Routers do not forward it. DHCP Discover and BOOTP use this as the destination before the client has an address."
+    },
+    {
+      "id": "q9",
+      "prompt": "What IPv4 CIDR range is reserved for multicast groups?",
+      "expectedOutput": "224.0.0.0/4",
+      "solutionMarkdown": "**224.0.0.0/4** ([RFC 5771](https://www.rfc-editor.org/rfc/rfc5771)) covers 224.0.0.0–239.255.255.255. Notable sub-ranges: 224.0.0.0/24 (link-local multicast, e.g. OSPF hello on 224.0.0.5), 239.0.0.0/8 (administratively scoped)."
+    },
+    {
+      "id": "q10",
+      "prompt": "What IPv6 prefix identifies Unique Local Addresses (ULA), the IPv6 equivalent of RFC 1918 private ranges?",
+      "expectedOutput": "fc00::/7",
+      "solutionMarkdown": "**fc00::/7** ([RFC 4193](https://www.rfc-editor.org/rfc/rfc4193)) — covers fc00:: through fdff::. The `fd` prefix (fdxx::/48 per site) is locally assigned; `fc` is reserved for future central assignment. ULAs are not routed on the public internet."
+    }
+  ],
+  "summaryMarkdown": "## Purpose\n\nInstant recognition of these ranges prevents misreading logs and captures. A 10.x source in an internet-facing capture means NAT is involved. A 169.254.x source means a configuration failure. A fe80:: source is always link-local.\n\n## Quick-reference table\n\n| Range | RFC | Purpose |\n|---|---|---|\n| 10.0.0.0/8 | [RFC 1918](https://www.rfc-editor.org/rfc/rfc1918) | Private |\n| 100.64.0.0/10 | [RFC 6598](https://www.rfc-editor.org/rfc/rfc6598) | CGNAT shared |\n| 127.0.0.0/8 | — | Loopback |\n| 169.254.0.0/16 | [RFC 3927](https://www.rfc-editor.org/rfc/rfc3927) | Link-local / APIPA |\n| 172.16.0.0/12 | [RFC 1918](https://www.rfc-editor.org/rfc/rfc1918) | Private |\n| 192.0.2.0/24 | [RFC 5737](https://www.rfc-editor.org/rfc/rfc5737) | Documentation (TEST-NET-1) |\n| 192.168.0.0/16 | [RFC 1918](https://www.rfc-editor.org/rfc/rfc1918) | Private |\n| 198.51.100.0/24 | [RFC 5737](https://www.rfc-editor.org/rfc/rfc5737) | Documentation (TEST-NET-2) |\n| 203.0.113.0/24 | [RFC 5737](https://www.rfc-editor.org/rfc/rfc5737) | Documentation (TEST-NET-3) |\n| 224.0.0.0/4 | [RFC 5771](https://www.rfc-editor.org/rfc/rfc5771) | Multicast |\n| 240.0.0.0/4 | — | Reserved |\n| 255.255.255.255 | — | Limited broadcast |\n| ::1/128 | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) | IPv6 loopback |\n| fc00::/7 | [RFC 4193](https://www.rfc-editor.org/rfc/rfc4193) | IPv6 ULA (private) |\n| fe80::/10 | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) | IPv6 link-local |"
+}

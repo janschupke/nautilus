@@ -1,0 +1,130 @@
+name: nautilus-lab
+
+services:
+  client:
+    build:
+      context: ..
+      dockerfile: lab/hosts/client/Dockerfile
+    hostname: client
+    ports:
+      - "2222:22"
+      - "8000:80"
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.10
+
+  lan-client:
+    build:
+      context: ..
+      dockerfile: lab/hosts/lan-client/Dockerfile
+    hostname: lan-client
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.11
+
+  webserver:
+    build:
+      context: ..
+      dockerfile: lab/hosts/web/Dockerfile
+    hostname: webserver
+    environment:
+      LAB_POSTGRES_HOST: 10.78.8.30
+      LAB_POSTGRES_DB: nautiluslab
+      LAB_POSTGRES_USER: isopod
+      LAB_POSTGRES_PASSWORD: isopod
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.20
+
+  db:
+    image: postgres:16-alpine
+    hostname: db
+    environment:
+      POSTGRES_DB: nautiluslab
+      POSTGRES_USER: isopod
+      POSTGRES_PASSWORD: isopod
+    volumes:
+      - lab_db:/var/lib/postgresql/data
+      - ./hosts/db/init.sql:/docker-entrypoint-initdb.d/10-nautilus-lab.sql:ro
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.30
+
+  exchange-ftp:
+    image: delfer/alpine-ftp-server:latest
+    hostname: exchange-ftp
+    environment:
+      USERS: "isopod|isopod|/home/isopod"
+      ADDRESS: 10.78.8.40
+    volumes:
+      - ./hosts/ftp/anonymous:/ftp/anonymous:ro
+      - ./hosts/ftp/upload:/home/isopod
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.40
+
+  exchange-smtp:
+    image: axllent/mailpit:latest
+    hostname: exchange-smtp
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports:
+      - "8025:8025"
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.41
+
+  forensics-box:
+    build:
+      context: ..
+      dockerfile: lab/hosts/forensics-box/Dockerfile
+    hostname: forensics-box
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.50
+    restart: unless-stopped
+
+  vpn:
+    image: lscr.io/linuxserver/wireguard:latest
+    hostname: vpn
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: UTC
+      SERVERURL: auto
+      SERVERPORT: 51820
+      PEERS: isopod
+      PEERDNS: auto
+      INTERNAL_SUBNET: 10.13.13.0
+      ALLOWEDIPS: 10.78.8.0/24
+    ports:
+      - "51820:51820/udp"
+    sysctls:
+      net.ipv4.conf.all.src_valid_mark: 1
+      net.ipv4.ip_forward: 1
+    volumes:
+      - lab_wireguard:/config
+    networks:
+      lab_lan:
+        ipv4_address: 10.78.8.2
+
+networks:
+  lab_lan:
+    name: nautilus_lab_lan
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.78.8.0/24
+          gateway: 10.78.8.1
+
+volumes:
+  lab_db:
+  lab_wireguard:

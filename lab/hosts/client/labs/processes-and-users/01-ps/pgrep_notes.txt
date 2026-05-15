@@ -1,0 +1,4 @@
+Teaching notes (not a real man page): `pgrep` flags vary slightly by OS; for this module assume the following.
+
+- **`-x`** — Match only when the **process name** equals the pattern **exactly** (not a substring). Example: pattern `sleep` matches a process named `sleep`, not `mysleepd`.
+- **`-f`** — Match against the **full command line** (argv joined), so substrings can hit **python /path/script.py** and similar — higher blast radius; use carefully before **`pkill -f`**.

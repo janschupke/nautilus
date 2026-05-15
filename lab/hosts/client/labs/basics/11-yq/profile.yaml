@@ -1,0 +1,6 @@
+base: &base
+  retries: 3
+  timeout_ms: 5000
+production:
+  <<: *base
+  timeout_ms: 2000

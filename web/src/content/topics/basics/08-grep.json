@@ -1,0 +1,76 @@
+{
+  "id": "08-grep",
+  "title": "Advanced grep, ripgrep, and regex",
+  "shortTitle": "08 — Advanced grep, ripgrep, and regex",
+  "workdir": "/home/isopod/labs/basics/08-grep/",
+  "intro": "Work from the module directory. Fixtures: **`ips.txt`**, **`parens_literal.txt`**, **`word_port.txt`**, **`double_vowel.txt`**, **`emails_line.txt`**, **`pcre_secret.txt`**, **`wildcard_literal.txt`**, **`comments.txt`**, **`count_lab/`** (two files), and **`rg_types/`** (mixed file types).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "**`ips.txt`** mixes lines that start with a valid IPv4 dotted-quad address and lines that do not. Print only the lines that begin with an IP address.",
+      "expectedOutput": "10.0.0.1 gateway\n192.168.1.10 host",
+      "solutionMarkdown": "```bash\ngrep -E '^([0-9]{1,3}\\.){3}[0-9]{1,3}' ips.txt\n```\n\n`-E` enables extended regex; `^` anchors to line start; `{1,3}` matches 1–3 digits per octet."
+    },
+    {
+      "id": "q2",
+      "prompt": "**`parens_literal.txt`** contains one line that includes the exact character sequence `(x+y)`. Print that line.",
+      "expectedOutput": "(x+y) is the pattern",
+      "solutionMarkdown": "```bash\ngrep -F '(x+y)' parens_literal.txt\n```\n\n`-F` treats the pattern as a fixed string, so `(` and `+` are not interpreted as regex metacharacters."
+    },
+    {
+      "id": "q3",
+      "prompt": "**`word_port.txt`** has three lines, each containing the string `port` embedded differently: once as part of `report`, once as a standalone word, and once as part of `sport`. Print only the line where `port` is a complete standalone word.",
+      "expectedOutput": "open port 22",
+      "solutionMarkdown": "```bash\ngrep -w port word_port.txt\n```\n\n`-w` matches only whole words — `report` and `sport` are excluded because `port` is not bounded by non-word characters on both sides."
+    },
+    {
+      "id": "q4",
+      "prompt": "**`double_vowel.txt`** has four strings. Print the ones that contain any immediately repeated vowel — the same vowel appearing twice in a row (e.g. `ee`, `oo`).",
+      "expectedOutput": "bookkeeper\nsee",
+      "solutionMarkdown": "```bash\ngrep -E '([aeiou])\\1' double_vowel.txt\n```\n\n`([aeiou])` captures one vowel; `\\1` requires the same vowel immediately after. `bookkeeper` matches on `oo` and `ee`; `see` matches on `ee`."
+    },
+    {
+      "id": "q5",
+      "prompt": "**`emails_line.txt`** is a single sentence containing two email addresses. Extract and print each address on its own line.",
+      "expectedOutput": "alice@lab.example\nbob@corp.co.uk",
+      "solutionMarkdown": "```bash\ngrep -oE '[[:alnum:]_+.-]+@[[:alnum:].-]+\\.[[:alnum:]]+' emails_line.txt\n```\n\n`-o` prints only the matching portion, not the whole line; `-E` enables extended regex for the character classes."
+    },
+    {
+      "id": "q6",
+      "prompt": "**`pcre_secret.txt`** has lines in `key:value` format. Extract and print only the value from the line whose key is `secret` — no prefix, just the value.",
+      "expectedOutput": "VALUE123",
+      "solutionMarkdown": "```bash\nrg --pcre2 -o 'secret:\\K\\S+' pcre_secret.txt\n```\n\nOr with GNU grep:\n```bash\ngrep -Po 'secret:\\K\\S+' pcre_secret.txt\n```\n\n`\\K` (PCRE2/GNU) resets the match start after `secret:`, so only the value is printed."
+    },
+    {
+      "id": "q7",
+      "prompt": "`count_lab/` contains two files. Count how many lines in **`alpha.txt`** contain the word `ERROR`, and how many in **`beta.txt`**. Report both counts as `A,B` — alpha first, then beta — comma-separated with no spaces.",
+      "expectedOutput": "2,1",
+      "solutionMarkdown": "```bash\necho \"$(grep -c ERROR count_lab/alpha.txt),$(grep -c ERROR count_lab/beta.txt)\"\n```\n\n`grep -c` returns a count per file; combining with `echo` formats the two-number answer."
+    },
+    {
+      "id": "q8",
+      "prompt": "**`comments.txt`** has 6 lines: some start with `#`, one is blank, and the rest are content lines. How many lines do not start with `#`?",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\ngrep -vc '^#' comments.txt\n```\n\n`-v` inverts the match (lines that do NOT match); `-c` counts them. The blank line is counted because it does not start with `#`."
+    },
+    {
+      "id": "q9",
+      "prompt": "**`rg_types/`** contains both a `.log` file and a `.txt` file, and both contain the word `ERROR`. Search only the `.log` files and print the matching line's text content.",
+      "expectedOutput": "ERROR in log only",
+      "solutionMarkdown": "```bash\ngrep -rh 'ERROR' --include='*.log' rg_types/\n```\n\nOr with ripgrep:\n```bash\nrg -g '*.log' -N --no-filename 'ERROR' rg_types/\n```\n\n`--include='*.log'` (grep) or `-g '*.log'` (rg) restricts the search to log files; `-h` / `--no-filename` suppresses the filename prefix."
+    },
+    {
+      "id": "q10",
+      "prompt": "**`wildcard_literal.txt`** contains a line with the two-character sequence `*?`. Print that line.",
+      "expectedOutput": "the glob *? is special",
+      "solutionMarkdown": "```bash\ngrep -F '*?' wildcard_literal.txt\n```\n\n`*` and `?` are regex metacharacters, so `-F` (fixed-string) is required to match them literally."
+    },
+    {
+      "id": "q11",
+      "prompt": "A configuration file is hidden somewhere under `rg_types/`. It contains a `key=` assignment that holds the module flag. Search recursively and extract only the value (everything after `key=`).",
+      "expectedOutput": "flag{grep_recursive_pcre}",
+      "solutionMarkdown": "```bash\ngrep -rh 'key=' rg_types/ | grep -oP 'key=\\K\\S+'\n```\n\nOr with ripgrep:\n```bash\nrg --pcre2 -oh 'key=\\K\\S+' rg_types/\n```\n\n`-r` walks the directory tree; `-h` suppresses the filename prefix; `\\K` (PCRE) resets the match start so only the value after `key=` is printed."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Use **ripgrep** for day-to-day recursive search: smart-case defaults, **`.gitignore` / `.ignore` / `.rgignore`**, `-t` / `-T` type filters, `-g` / `--glob`, `--hidden`, `-uu` / `-uuu` when exercises need ignored paths, **`--json`** for machine-readable lines.\n- Choose **search engine**: **`rg` default** (Rust regex, fast linear-time style) vs **`rg --pcre2`** when you need PCRE2-specific syntax; pair with **GNU `grep -P`** and **`pcregrep`** on the same tasks where it teaches portability.\n- Know **stock macOS BSD `grep` has no `-P`**; use **`ggrep -P`** (Homebrew GNU grep) or **`rg`** for those workflows.\n- Compare **`grep`** vs **`rg`** vs **`sed`** vs **`awk`** vs **Python `re`** for the same extraction.\n\n## Scope\n\n**In scope:** **`grep`**, **`rg` (ripgrep)**, **`pcregrep`**, and small **Python** snippets for multiline or Unicode-heavy cases. **Out of scope:** formal regex theory; deep RE2 vs PCRE engine theory beyond “`rg` default vs `--pcre2`”.\n\n## Concept outline\n\n1. **BRE vs ERE (`grep`)** — legacy `grep` / `egrep` names; prefer explicit `-E` / `-F`.\n2. **GNU `grep -P` (PCRE)** — lookaround, `\\K`, backreferences; first-class on Linux; on macOS use **`ggrep -P`** where exercises require GNU grep.\n3. **Ripgrep as a full peer to `grep`** — not only a PCRE fallback: default recursion, column/line options (`-n`, `-H`, `-N` context), `-l` / `--files-with-matches`, `-c` / `--count`, `-o` only-matches, **stdin** and **paths** in one mental model.\n4. **`rg --pcre2`** — PCRE2 when default `rg` regex is insufficient; same need on macOS/Linux without `grep -P`.\n5. **`pcregrep`** — `-M` multiline; when you want PCRE without Python and without leaning on `grep -P` availability.\n6. **Multiline / paragraph data** — `grep -z` / **`rg --null-data`** for NUL-delimited records; **`pcregrep -M`**; **`awk`** multi-char `RS` hacks; **`python -c`** / small scripts with `re.DOTALL` / `re.MULTILINE` when logic grows past one line.\n7. **Tool choice rubric** — literal → **`grep -F`** / **`rg -F`**; repo-wide code search → **`rg`** first; columns → **`awk`**; whole-line reshape → **`sed`**; nested structure → **`jq`** / **`yq`**; heavy Unicode or maintainability → **Python**.\n\n## Tooling and alternatives\n\n| Engine / use | Primary | Alternatives |\n|--------------|---------|----------------|\n| Fast recursive search in trees | **`rg`** | **`grep -r`** (portable baseline), **`git grep`** in VCS trees, **`ugrep` (`ug`)** |\n| PCRE on Linux | **`grep -P`** | **`rg --pcre2`**, **`pcregrep`** |\n| PCRE on macOS | **`rg --pcre2`** | **`ggrep -P`** (Homebrew GNU grep), **`pcregrep`**; **not** stock BSD `-P` |\n| `rg` regex engine | default **Rust regex** | **`--pcre2`** for PCRE2; **`--engine=auto`** where documented |\n| Multiline / record | **`pcregrep -M`** | **`awk`** RS tricks; **Python `re`** |\n| Fuzzy search | N/A | **`fzf`** (interactive), **`agrep`** (approximate, rare) |"
+}

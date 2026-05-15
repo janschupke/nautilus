@@ -1,0 +1,4 @@
+{
+  "id": "networking",
+  "intro": "Covers the Linux tools used for network interaction against the Docker lab LAN: local interface and routing inspection, HTTP with curl and wget, SSH, rsync, DNS CLI tools, reachability testing, WHOIS, TLS with openssl, netcat, and packet capture and analysis with tcpdump and tshark."
+}

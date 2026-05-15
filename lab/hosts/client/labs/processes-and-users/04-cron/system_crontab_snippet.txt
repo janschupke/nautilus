@@ -1,0 +1,11 @@
+# Fragment mimicking /etc/crontab style (minute hour dom month dow USER command)
+# Synthetic — do not install on a real system from this file.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# logrotate: 02:25 daily as root
+25 2 * * * root /usr/sbin/logrotate /etc/logrotate.conf
+
+# weekly report job runs as the `reports` user, 07:00 Mondays only
+0 7 * * 1 reports /opt/reports/bin/weekly-summary

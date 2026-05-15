@@ -1,0 +1,2 @@
+the glob *? is special
+plain

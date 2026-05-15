@@ -1,0 +1,4 @@
+{
+  "id": "processes-and-users",
+  "intro": "Covers process inspection and signals, file permissions and ownership, service management with systemd, scheduled tasks, and system introspection with ss and related tools. Work on the lab client host."
+}

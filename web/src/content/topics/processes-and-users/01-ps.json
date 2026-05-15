@@ -1,0 +1,76 @@
+{
+  "id": "01-ps",
+  "title": "Process listing and signals",
+  "shortTitle": "01 — Process listing and signals",
+  "workdir": "/home/isopod/labs/processes-and-users/01-ps/",
+  "intro": "Work from the module directory. Fixtures: **`ps_show.tsv`** (tab-separated process table) and **`pgrep_notes.txt`** (flag reference).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "List all signal names available on this Linux system along with their numeric codes. What number is assigned to **`SIGTERM`**?",
+      "expectedOutput": "15",
+      "solutionMarkdown": "```bash\nkill -l\n```\n\nSIGTERM is signal 15."
+    },
+    {
+      "id": "q2",
+      "prompt": "From the same signal listing, what number is assigned to **`SIGKILL`**?",
+      "expectedOutput": "9",
+      "solutionMarkdown": "```bash\nkill -l\n```\n\nSIGKILL is signal 9."
+    },
+    {
+      "id": "q3",
+      "prompt": "Check the `kill` command's manual entry. Which named signal does it deliver when you specify only a PID with no signal argument?",
+      "expectedOutput": "SIGTERM",
+      "solutionMarkdown": "`man kill` — the default signal is SIGTERM (15)."
+    },
+    {
+      "id": "q4",
+      "prompt": "**`ps_show.tsv`** is a tab-separated process table with columns `PID`, `USER`, `VSZ`, `CMD`. Print the PID of each row whose `CMD` column contains the substring `nginx`, one per line, sorted numerically.",
+      "expectedOutput": "1003\n1004\n1005",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $4 ~ /nginx/ { print $1 }' ps_show.tsv | sort -n\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "How many data rows in **`ps_show.tsv`** (excluding the header) have `USER` exactly equal to `alice`?",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $2 == \"alice\" { n++ } END { print n+0 }' ps_show.tsv\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "Signal number 0 is special: sending it delivers nothing to the process. From the `kill` manual or signal table, what does an exit code of `0` tell you when you use signal 0 against a PID? (One concise sentence.)",
+      "expectedOutput": "It verifies the process exists and you may signal it; no signal is sent.",
+      "solutionMarkdown": "Exit `0` means the PID is signalable by you; non-zero means missing PID or permission denied."
+    },
+    {
+      "id": "q7",
+      "prompt": "Read **`pgrep_notes.txt`**. For the `-x` flag, must the process name match the search pattern exactly?",
+      "expectedOutput": "yes",
+      "solutionMarkdown": "`-x` is exact process name match — `sleep` matches a process named `sleep` but not `mysleepd`."
+    },
+    {
+      "id": "q8",
+      "prompt": "From **`pgrep_notes.txt`**, which single-letter option matches against the full command line rather than just the process name?",
+      "expectedOutput": "-f",
+      "solutionMarkdown": "`-f` matches the full argv, so substrings like `python /path/script.py` are reachable — but with higher blast radius when used with `pkill -f`."
+    },
+    {
+      "id": "q9",
+      "prompt": "From the signal listing, signal 9 has a property no other signal shares: the kernel delivers it without giving the receiving process a chance to react. What is the name of signal 9?",
+      "expectedOutput": "SIGKILL",
+      "solutionMarkdown": "`SIGKILL` (signal 9) is handled directly by the kernel and cannot be intercepted by the target process."
+    },
+    {
+      "id": "q10",
+      "prompt": "From **`ps_show.tsv`**, what is the largest VSZ value among all data rows?",
+      "expectedOutput": "9876",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $3+0 > m { m=$3+0 } END { print m }' ps_show.tsv\n```"
+    },
+    {
+      "id": "q11",
+      "prompt": "One process in `ps_show.tsv` belongs to the `backupsvc` account and runs with an embedded `--key=` argument. Find that process and extract just the key value.",
+      "expectedOutput": "flag{ps_cmd_discovered}",
+      "solutionMarkdown": "```bash\nawk -F $'\\t' 'NR>1 && $2==\"backupsvc\" { print $4 }' ps_show.tsv | grep -oP -- '--key=\\K\\S+'\n```\n\n`awk` filters by the USER column to isolate the backupsvc process; `grep -oP` with `\\K` extracts the value after `--key=`. The `--` signals end of grep options so the leading `--` in `--key` is not misread as a flag."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Read `ps` output on both BSD (macOS) and UNIX (Linux) column styles.\n- Discover PIDs with `pgrep` / `pidof` and send signals with `kill`, `pkill`, `killall` (danger awareness).\n- Use interactive `top` / `htop` for ad hoc inspection; know non-interactive alternatives (`ps`, `pidstat`).\n- Manage foreground/background jobs (`jobs`, `fg`, `bg`, `disown`).\n\n## Scope\n\n**In scope:** user-visible processes, common signals (`TERM`, `KILL`, `HUP`, `INT`). **Out of scope:** real-time scheduling policy; kernel threads deep dive."
+}

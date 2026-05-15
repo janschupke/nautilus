@@ -1,0 +1,70 @@
+{
+  "id": "01-ip-local",
+  "title": "local interfaces, routing, and ARP",
+  "shortTitle": "01 — Local interfaces, routing, and ARP",
+  "workdir": "/home/isopod/labs/networking/01-ip-local/",
+  "intro": "Before reaching outward, a practitioner reads the host's own network state: what addresses are assigned, how traffic is routed, and which neighbours have been seen on the wire. This module covers the `ip` suite (`ip addr`, `ip route`, `ip neigh`) and DHCP lease parsing.\n\nQuestions 1–5 use **live** `ip` commands — the answers reflect the actual lab host configuration and are deterministic across all lab runs. Questions 6–10 parse **`ip_neigh.txt`** and **`dhcp_lease.txt`** in the module directory.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "What IPv4 address is assigned to the `eth0` interface?",
+      "expectedOutput": "10.78.8.10",
+      "solutionMarkdown": "```bash\nip addr show eth0\n# 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 ...\n#     inet 10.78.8.10/24 brd 10.78.8.255 scope global eth0\n\nip addr show eth0 | awk '/inet / {print $2}' | cut -d/ -f1\n# 10.78.8.10\n```\n\n`ip addr show` (or `ip a`) lists all interfaces and their addresses. The `inet` keyword marks an IPv4 address in CIDR notation (`address/prefix`). Cutting at `/` isolates the address.\n\nLegacy equivalent: `ifconfig eth0 | awk '/inet / {print $2}'`"
+    },
+    {
+      "id": "q2",
+      "prompt": "What is the prefix length (in bits) of the address on `eth0`?",
+      "expectedOutput": "24",
+      "solutionMarkdown": "```bash\nip addr show eth0 | awk '/inet / {print $2}' | cut -d/ -f2\n# 24\n```\n\nA prefix of `/24` means the first 24 bits identify the network (`10.78.8.0`) and the remaining 8 bits address hosts — 254 usable addresses in this subnet. This is equivalent to the netmask `255.255.255.0`.\n\nTo see both together:\n```bash\nip addr show eth0 | grep 'inet '\n# inet 10.78.8.10/24 brd 10.78.8.255 scope global eth0\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "What is the default gateway IP address?",
+      "expectedOutput": "10.78.8.1",
+      "solutionMarkdown": "```bash\nip route show default\n# default via 10.78.8.1 dev eth0\n\nip route show default | awk '{print $3}'\n# 10.78.8.1\n```\n\nThe default route (`0.0.0.0/0`) catches all traffic not matched by a more specific route and forwards it to the gateway. Field 3 of the `ip route show default` output is always the `via` address.\n\nLegacy equivalents:\n```bash\nroute -n | awk '/^0\\.0\\.0\\.0/ {print $2}'\nnetstat -rn | awk '/^0\\.0\\.0\\.0/ {print $2}'\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "Which network interface handles the `10.78.8.0/24` subnet route?",
+      "expectedOutput": "eth0",
+      "solutionMarkdown": "```bash\nip route show\n# default via 10.78.8.1 dev eth0\n# 10.78.8.0/24 dev eth0 proto kernel scope link src 10.78.8.10\n\nip route show | awk '/10\\.78\\.8\\.0\\/24/ {print $3}'\n# eth0\n```\n\nThis is a **connected route** — automatically inserted by the kernel when an address is assigned to an interface. It tells the kernel that hosts in `10.78.8.0/24` are directly reachable through `eth0` without a gateway hop (`scope link`).\n\n`proto kernel` means the kernel created it; `src 10.78.8.10` is the preferred source address for packets leaving this way."
+    },
+    {
+      "id": "q5",
+      "prompt": "Ask the kernel which source address it would use to reach the webserver at `10.78.8.20`. What `src` address is shown?",
+      "expectedOutput": "10.78.8.10",
+      "solutionMarkdown": "```bash\nip route get 10.78.8.20\n# 10.78.8.20 dev eth0 src 10.78.8.10 uid 1000\n\nip route get 10.78.8.20 | grep -oP 'src \\K\\S+'\n# 10.78.8.10\n```\n\n`ip route get` performs a **FIB (Forwarding Information Base) lookup** — the same decision the kernel makes for each outbound packet. It shows the exact interface, next-hop (if any), and source address that would be used. Since `10.78.8.20` is on the same `/24`, traffic is sent directly (`dev eth0`) without a gateway, and the source is this host's own address."
+    },
+    {
+      "id": "q6",
+      "prompt": "The file `ip_neigh.txt` contains a snapshot of the ARP/neighbour table (the output of `ip neigh show`). How many entries are in the `REACHABLE` state?",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -c REACHABLE ip_neigh.txt\n# 3\n\ngrep REACHABLE ip_neigh.txt\n# 10.78.8.1  dev eth0 lladdr 02:42:0a:4d:00:01 REACHABLE\n# 10.78.8.11 dev eth0 lladdr 02:42:0a:4d:00:0b REACHABLE\n# 10.78.8.20 dev eth0 lladdr 02:42:0a:4d:00:14 REACHABLE\n```\n\nNeighbour states:\n\n| State | Meaning |\n|---|---|\n| `REACHABLE` | MAC confirmed reachable within the last reachable-time window |\n| `STALE` | Entry exists but reachability has not been confirmed recently |\n| `DELAY` | Awaiting confirmation; timer running |\n| `PROBE` | Actively sending ARP requests |\n| `FAILED` | ARP resolution failed — host unreachable or does not exist |"
+    },
+    {
+      "id": "q7",
+      "prompt": "One entry in `ip_neigh.txt` is in the `FAILED` state — the kernel sent ARP requests but got no reply. Which IP address failed resolution?",
+      "expectedOutput": "10.78.8.99",
+      "solutionMarkdown": "```bash\nawk '/FAILED/ {print $1}' ip_neigh.txt\n# 10.78.8.99\n\ngrep FAILED ip_neigh.txt\n# 10.78.8.99 dev eth0  FAILED\n```\n\nA `FAILED` entry means traffic was directed at `10.78.8.99` (e.g., a connection attempt or ping) but no host responded to the ARP request for that IP. The kernel keeps the entry in the table briefly so subsequent traffic to the same IP gets an immediate `FAILED` response rather than waiting for another ARP timeout.\n\nOn a live host, failed ARP entries often indicate: a misconfigured service trying to reach a non-existent host, a stale configuration, or an attacker probing addresses that do not exist."
+    },
+    {
+      "id": "q8",
+      "prompt": "What MAC (hardware) address is recorded for the webserver at `10.78.8.20` in `ip_neigh.txt`?",
+      "expectedOutput": "02:42:0a:4d:00:14",
+      "solutionMarkdown": "```bash\nawk '/10\\.78\\.8\\.20 / {print $5}' ip_neigh.txt\n# 02:42:0a:4d:00:14\n```\n\nField 5 of an `ip neigh show` line is the MAC address (`lladdr` = link-layer address). The `02:42:` prefix is characteristic of Docker-assigned virtual MACs.\n\nARP (Address Resolution Protocol) maps Layer-3 IP addresses to Layer-2 MAC addresses. The kernel maintains this cache to avoid ARP-requesting the same IP on every packet. Without it, every send to `10.78.8.20` would require an ARP broadcast before the first frame could be delivered.\n\nLegacy command: `arp -n` prints the same table in a slightly different format."
+    },
+    {
+      "id": "q9",
+      "prompt": "The file `dhcp_lease.txt` is a DHCP client lease record (the format used by `dhclient`). What DNS server IP was provided by the DHCP server?",
+      "expectedOutput": "10.78.8.1",
+      "solutionMarkdown": "```bash\nawk '/domain-name-servers/ {gsub(/;/,\"\",$3); print $3}' dhcp_lease.txt\n# 10.78.8.1\n```\n\nDHCP servers typically provide:\n- **IP address** (`fixed-address`)\n- **Subnet mask** (`option subnet-mask`)\n- **Gateway** (`option routers`)\n- **DNS servers** (`option domain-name-servers`)\n- **Lease duration** (`option dhcp-lease-time`)\n- **Domain** (`option domain-name`)\n- **Renewal timings** (`renew`, `rebind`, `expire`)\n\nIn this lab, the gateway (`10.78.8.1`) also acts as DNS resolver. `gsub(/;/,\"\")` strips the trailing semicolon that dhclient uses to terminate option values."
+    },
+    {
+      "id": "q10",
+      "prompt": "When does the DHCP lease expire? Extract just the date portion in `YYYY/MM/DD` format.",
+      "expectedOutput": "2026/05/22",
+      "solutionMarkdown": "```bash\nawk '/expire/ {print $3}' dhcp_lease.txt\n# 2026/05/22\n\ncat dhcp_lease.txt | grep 'expire'\n# expire 3 2026/05/22 02:00:00;\n```\n\nThe `expire` line marks when the DHCP server considers the lease invalid — after this point, the client must stop using the address and request a new one. The `renew` time is when the client first tries to refresh (typically 50% of the lease lifetime); `rebind` is the fallback deadline (87.5% of lifetime) if renewal fails.\n\nIn the Docker lab, IPs are statically assigned rather than DHCP-provisioned — this fixture simulates what a lease file from a real corporate network would look like."
+    }
+  ],
+  "summaryMarkdown": "## Key commands\n\n| Command | Purpose |\n|---|---|\n| `ip addr show [dev]` | List interface addresses (CIDR notation) |\n| `ip link show [dev]` | Link-layer state (MAC, MTU, flags) |\n| `ip route show` | Full routing table |\n| `ip route show default` | Default gateway only |\n| `ip route get <ip>` | FIB lookup — how would the kernel route this? |\n| `ip neigh show` | ARP/neighbour table |\n| `ip neigh show <ip>` | Single neighbour entry |\n| `arp -n` | Legacy neighbour table (net-tools) |\n| `ifconfig` | Legacy interface info (net-tools) |\n| `route -n` | Legacy routing table (net-tools) |"
+}

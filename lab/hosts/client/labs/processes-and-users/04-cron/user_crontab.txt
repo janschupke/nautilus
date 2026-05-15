@@ -1,0 +1,17 @@
+# Synthetic user crontab export (course fixture — not from a real host)
+MAILTO=alice@example.invalid
+SHELL=/bin/bash
+PATH=/home/alice/bin:/usr/local/bin:/usr/bin:/bin
+
+# Full backup: 03:00 every Sunday (local server time)
+0 3 * * 0 /home/alice/bin/backup.sh
+
+# Analytics: 09:15 Monday through Friday
+15 9 * * 1-5 /home/alice/bin/analytics.py
+
+@reboot /home/alice/bin/warm-cache.sh
+
+# Frequent heartbeat for lab demos
+*/10 * * * * /usr/bin/logger -t cron-lab "heartbeat"
+
+@reboot /home/alice/bin/metrics-agent.sh

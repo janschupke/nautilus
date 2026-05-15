@@ -1,0 +1,70 @@
+{
+  "id": "10-nc",
+  "title": "netcat / nc and socat",
+  "shortTitle": "10 — netcat / nc and socat",
+  "workdir": "/home/isopod/labs/networking/10-nc/",
+  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. Questions 1–5 parse **`nc_lab_transcript.txt`** in the module directory. Questions 6 and 10 use **live** nc against lab hosts. Questions 7–9 use **`socat_recipes.txt`** and conceptual reasoning. Use **`127.0.0.1`** or lab LAN IPs only — never aim nc or socat at external hosts.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "From **`nc_lab_transcript.txt`**, print **every** line containing **`127.0.0.1`**, file order.",
+      "expectedOutput": "# nc -l 127.0.0.1 18080\n# printf 'ping\\n' | nc 127.0.0.1 18080\n# nc -u -l 127.0.0.1 18081\n# printf 'hi\\n' | nc -u -w1 127.0.0.1 18081",
+      "solutionMarkdown": "```bash\ngrep '127.0.0.1' /home/isopod/labs/27-nc-and-socat/nc_lab_transcript.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Print **only** the **TCP** echo lab **port** (decimal) used with **`127.0.0.1`** in the **TCP** section of **`nc_lab_transcript.txt`** — digits only.",
+      "expectedOutput": "18080",
+      "solutionMarkdown": "Read the **`nc -l 127.0.0.1 …`** line under **`## TCP echo`**."
+    },
+    {
+      "id": "q3",
+      "prompt": "Print **only** the **UDP** lab **port** from the **UDP** section — digits only.",
+      "expectedOutput": "18081",
+      "solutionMarkdown": "UDP listener line under **`## UDP`**."
+    },
+    {
+      "id": "q4",
+      "prompt": "How many lines in **`nc_lab_transcript.txt`** have **`#`** as the **first** character? Print **only** the integer.",
+      "expectedOutput": "10",
+      "solutionMarkdown": "```bash\ngrep -c '^#' /home/isopod/labs/27-nc-and-socat/nc_lab_transcript.txt\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "**`true`** or **`false`** (lowercase, one word): **TCP** gives a **reliable, ordered byte stream**; **UDP** exposes **unreliable datagrams** without automatic retransmission from the transport.",
+      "expectedOutput": "true",
+      "solutionMarkdown": "TCP is reliable/ordered; UDP is best-effort datagrams."
+    },
+    {
+      "id": "q6",
+      "prompt": "Use nc with a short timeout to connect to port **80** on **`10.78.8.20`**. What exit code does nc return for a successful TCP connection?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\nnc -z -w2 10.78.8.20 80; echo $?\n```\n\nExit code `0` means the connection succeeded."
+    },
+    {
+      "id": "q7",
+      "prompt": "In **one sentence**, why is **`127.0.0.1`** safer than **`0.0.0.0`** for a classroom listener on untrusted Wi‑Fi?",
+      "expectedOutput": "Binding to 0.0.0.0 listens on every IPv4 interface, so other hosts on the LAN (or wider network if reachable) could connect; 127.0.0.1 limits connections to this machine only, which avoids accidentally exposing a classroom listener.",
+      "solutionMarkdown": "Compare interface reachability for **`0.0.0.0`** vs loopback."
+    },
+    {
+      "id": "q8",
+      "prompt": "In **one sentence**, contrast **TCP** vs **UDP** for an app that needs **in-order** delivery of a file over an imperfect network.",
+      "expectedOutput": "TCP is appropriate because it already provides retransmissions and in-order byte delivery; UDP would force you to design reliability and ordering yourself on top of datagrams.",
+      "solutionMarkdown": "Emphasize reliability and ordering built into TCP."
+    },
+    {
+      "id": "q9",
+      "prompt": "How many lines in **`socat_recipes.txt`** contain **`TCP-LISTEN`**? Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c 'TCP-LISTEN' /home/isopod/labs/27-nc-and-socat/socat_recipes.txt\n```"
+    },
+    {
+      "id": "q10",
+      "prompt": "Send an HTTP/1.0 GET request for **`/secret/`** to **`10.78.8.20`** using nc. The response HTML contains a lab marker. What is the marker string (format: `word-digits`)?",
+      "expectedOutput": "secret-4077",
+      "solutionMarkdown": "```bash\nprintf 'GET /secret/ HTTP/1.0\\r\\nHost: 10.78.8.20\\r\\n\\r\\n' | nc -w2 10.78.8.20 80\n```\n\nThe `<p>` text contains `secret-4077`."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Read **`nc`** session transcripts and identify **TCP vs UDP** ports, **`-l`**, and **`-u`** usage on **loopback** only.\n- State when **TCP** vs **UDP** is appropriate at a transport level (reliability, ordering, datagrams).\n- Recognize **`socat`** `TCP-LISTEN` / `UDP-LISTEN` snippets as documentation-level patterns (live **`socat`** optional).\n- Treat **non-loopback binds** (`0.0.0.0`) as higher exposure in classroom settings; **no scanning** or third-party targets in exercises.\n\n## Scope\n\n**In scope:** localhost and user-controlled lab IPs. **Out of scope:** C2 channels; any non-consensual remote access.\n\n## Concept outline\n\n1. **Listeners** — `nc -l -p` vs `nc -l PORT` differences; only one client unless `ncat --keep-open`.\n2. **Client** — `nc host port`, UDP `-u`, timeouts (`-w`).\n3. **Zero-I/O mode** — banner grab vs interactive session.\n4. **`socat`** — `TCP-LISTEN`, `TCPCONNECT`, `EXEC`, `SYSTEM` (danger), `OPENSSL` addresses.\n5. **TLS bridging** — `socat OPENSSL-LISTEN` with certs from **26**.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| TCP client/server | `nc` | `ncat` (`nmap` suite: SSL, broker), `socat`, `bash` `/dev/tcp` / `/dev/udp` (**bash-only**), `telnet` (**cleartext**). |\n| Swiss-army relay | `socat` | `openssl s_client` one-shot; `ssh -L` (**21**); `cloudflared`. |\n| HTTP raw | `printf \\| nc` | `curl` (**19**); `openssl s_client` for debugging handshakes (**26**). |\n| WebSocket / modern protos | N/A | `websocat`, `wscat` — not `nc`. |"
+}

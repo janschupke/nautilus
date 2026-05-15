@@ -1,0 +1,5 @@
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        49G   20G   27G  41% /
+tmpfs           3.9G  1.0M  3.9G   1% /dev/shm
+/dev/mapper/vg0-lv--var      200G  150G   40G  76% /var
+/dev/sdc1       1.0T  100G  850G  11% /backup

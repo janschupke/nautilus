@@ -1,0 +1,70 @@
+{
+  "id": "07-ping",
+  "title": "Reachability: ping, traceroute, mtr",
+  "shortTitle": "07 — Reachability: ping, traceroute, mtr",
+  "workdir": "/home/isopod/labs/networking/07-ping/",
+  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. Questions 1–4 use **live** `ping` and `traceroute` against lab hosts. Questions 5–10 parse fixture transcripts in the module directory — **`ping_summary.txt`**, **`ping_reorder.txt`**, **`traceroute_lab.txt`**, **`mtr_hops.txt`** — for richer statistical scenarios that a lossless LAN cannot reproduce.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Ping **`10.78.8.20`** with exactly 10 packets. How many packets are **transmitted** according to the statistics line?",
+      "expectedOutput": "10",
+      "solutionMarkdown": "```bash\nping -c 10 10.78.8.20\n```\n\nThe `ping statistics` footer shows `10 packets transmitted`."
+    },
+    {
+      "id": "q2",
+      "prompt": "From the same ping run, how many packets are **received**?",
+      "expectedOutput": "10",
+      "solutionMarkdown": "On a local LAN with no packet loss, all 10 probes receive replies."
+    },
+    {
+      "id": "q3",
+      "prompt": "What is the **packet loss** percentage? Print only the integer (strip the `%`).",
+      "expectedOutput": "0",
+      "solutionMarkdown": "The lab LAN is lossless — `0% packet loss`."
+    },
+    {
+      "id": "q4",
+      "prompt": "Run `traceroute` to **`10.78.8.20`**. How many hop rows appear in the output (lines whose first field is a positive integer)?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ntraceroute 10.78.8.20 | awk '$1+0>0' | wc -l\n```\n\nOn a direct-connect LAN bridge there is a single hop."
+    },
+    {
+      "id": "q5",
+      "prompt": "From **`ping_summary.txt`**, print **only** the count of lines that **begin** with **`64 bytes from`**.",
+      "expectedOutput": "8",
+      "solutionMarkdown": "```bash\ngrep -c '^64 bytes from' /home/isopod/labs/24-reachability-ping-traceroute/ping_summary.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "From **`ping_reorder.txt`**, on lines containing **`icmp_seq=`**, count **adjacent reorder** events (current seq **strictly less** than previous). Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "Walk **`icmp_seq=`** values in order; count drops vs prior."
+    },
+    {
+      "id": "q7",
+      "prompt": "From **`traceroute_lab.txt`**, count **hop rows**: lines after the first whose **first field** is a **positive decimal integer**. Print **only** the integer.",
+      "expectedOutput": "6",
+      "solutionMarkdown": "Skip header; count lines starting with a hop number."
+    },
+    {
+      "id": "q8",
+      "prompt": "From the **first line** of **`traceroute_lab.txt`**, print **only** the destination **IPv4** inside the **first** parenthesized group.",
+      "expectedOutput": "203.0.113.50",
+      "solutionMarkdown": "Parse **`traceroute to HOST (IP)`** form."
+    },
+    {
+      "id": "q9",
+      "prompt": "From **`traceroute_lab.txt`**, on hop rows where fields **2–4** are each exactly **`*`**, print **only** the hop’s first-field integer, one per matching hop, **ascending numeric** order.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "Filter timeout hops; sort hop numbers."
+    },
+    {
+      "id": "q10",
+      "prompt": "From **`mtr_hops.txt`**, on the **data** line (not **`Start:`** / **`HOST:`**) containing **`core-transit`**, print **only** that row’s **loss percentage token** as in the file (keep **`%`**).",
+      "expectedOutput": "5.0%",
+      "solutionMarkdown": "Find the row with **`core-transit`**; copy the loss column."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n\n- Read **`ping`** / **`ping6`**-style summaries: **transmitted / received / loss** and **`rtt min/avg/max/mdev`** (or OS-specific equivalents).\n- Read **`traceroute`** / **`traceroute6`**: hop index, per-probe RTTs, **`*`** unknown hops, final destination line.\n- Recognize **`mtr`**-style **Loss%** / **Last/Avg** columns as **aggregated path sampling**, not a single end-to-end RTT sample.\n- Separate **packet loss** (missing replies) from **reordering** (replies arrive out of sequence) at the level of **log interpretation**.\n\n## Scope\n\n**In scope:** CLI tools that emit human-readable reachability reports; **fixture parsing** in **`assignment.md`**. **Out of scope:** raw **ICMP** capture (**tcpdump**/BPF lives elsewhere), **BGP** policy, **QoS** queue theory.\n\n## Concept outline\n\n1. **`ping`** — ICMP echo request/reply (when permitted); **sequence numbers** and **TTL** fields in replies; **statistics** footer.\n2. **Loss** — fewer replies than probes; **`* * *`** in **`traceroute`**; **`mtr` Loss%** rising on a hop.\n3. **Reorder** — **`icmp_seq`** not monotonic in **capture order** while **no** loss; distinct from **duplication** (same seq twice) which this module does not drill.\n4. **`traceroute`** — TTL-limited probes to discover **hop addresses**; **asymmetric routes** can make return path differ; last hop may repeat until max TTL.\n5. **`mtr`** — combines **path trace** with **ongoing** loss/latency stats; useful for **intermittent** issues if run responsibly on **authorized** targets.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|--------------|\n| One-shot RTT / loss | `ping` / `ping6` | `fping` for many hosts; APIs in monitoring stacks |\n| Hop list | `traceroute` / `tracepath` | `mtr`; layer-3 path may differ from TCP path |\n| Continuous path sample | `mtr` | Dashboards; **BPF** captures for deep dives |"
+}

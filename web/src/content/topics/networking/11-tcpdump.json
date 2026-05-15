@@ -1,0 +1,70 @@
+{
+  "id": "11-tcpdump",
+  "title": "tcpdump BPF basics and text output",
+  "shortTitle": "11 — tcpdump BPF basics and text output",
+  "workdir": "/home/isopod/labs/networking/11-tcpdump/",
+  "intro": "Work from the module directory. Parse **`tcpdump_nn_sample.txt`** only.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "How many lines contain **`443`** anywhere? Print **only** the integer.",
+      "expectedOutput": "9",
+      "solutionMarkdown": "```bash\ngrep -c '443' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "How many lines contain **`UDP`**? Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c 'UDP' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "How many TCP **connection-initiation** packets (SYN, not SYN-ACK) appear in the capture? Print **only** the integer.",
+      "expectedOutput": "4",
+      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [S],' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "How many packets carry a **data-push** (PSH flag set with ACK) in the capture? Print **only** the integer.",
+      "expectedOutput": "3",
+      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [P.],' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q5",
+      "prompt": "How many **connection-reset** packets appear in the capture? Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "```bash\ngrep -c 'Flags \\[R\\]' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q6",
+      "prompt": "How many lines contain **`127.0.0.1`**? Print **only** the integer.",
+      "expectedOutput": "7",
+      "solutionMarkdown": "```bash\ngrep -c '127.0.0.1' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+    },
+    {
+      "id": "q7",
+      "prompt": "Count lines containing **`> 198.51.100.22.`** (destination begins with that prefix). Print **only** the integer.",
+      "expectedOutput": "2",
+      "solutionMarkdown": "Count **`src > 198.51.100.22.port`** printouts."
+    },
+    {
+      "id": "q8",
+      "prompt": "Consider only lines containing **`UDP`**. For each, print the **destination IPv4** (dotted quad after **`>`** and before **`.port:`**). **Sorted unique**, one per line.",
+      "expectedOutput": "192.0.2.10\n203.0.113.5",
+      "solutionMarkdown": "Parse **`… > dst.ip.port:`** on UDP rows; **`sort -u`**."
+    },
+    {
+      "id": "q9",
+      "prompt": "On lines containing **`Flags [R]`** (RST packets), print **only** the first whitespace-delimited field (timestamp), **file order**, one per line.",
+      "expectedOutput": "10:15:02.000120\n10:15:04.000100",
+      "solutionMarkdown": "Extract column 1 for RST rows."
+    },
+    {
+      "id": "q10",
+      "prompt": "On lines containing **`Flags [S],`**, print the **source endpoint** token after **`IP `** and before **` >`** (e.g. **`192.0.2.10.52414`**). **Sorted unique**, one per line.",
+      "expectedOutput": "127.0.0.1.54321\n192.0.2.10.443\n192.0.2.10.52414\n198.51.100.22.22",
+      "solutionMarkdown": "SYN-only rows; extract **`IP src > dst`** source token."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Select interface (`-i`), promiscuous vs not, and **permission** model (`sudo`, Linux capabilities `CAP_NET_RAW`).\n- Write BPF filters for host/port/protocol; limit size with `-c` / `-w` rotation basics.\n- Save pcaps for offline analysis; avoid capturing on untrusted shared Wi‑Fi (privacy note).\n\n## Scope\n\n**In scope:** lab NIC, loopback, or VM tap; BPF expression building blocks; reading **`tcpdump -nn`** one-line summaries (IP, port, TCP flags). **Graded exercises** in this directory parse **saved text** only—no `.pcap` required. **Out of scope:** enterprise SPAN/TAP placement.\n\n## Concept outline\n\n1. **Invocation** — `-n` no DNS in capture path, `-nn` also skip port names, `-v` verbosity levels.\n2. **BPF** — `host`, `net`, `port`, `tcp`, `udp`, `icmp`, `vlan`, `and`/`or`, parentheses.\n3. **Output** — line vs `-w file.pcap`; `-s 0` snaplen for full payloads; disk fill risk.\n4. **Time** — absolute timestamps `-tttt`; high precision where available.\n5. **Platform** — `tcpdump` on macOS with `pktap` / `lo0`; Linux `any` pseudo-interface caveats.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Capture | `tcpdump` | `dumpcap` (Wireshark CLI, same engine), `tshark -w` (**29**), `ngrep` (regex on payloads), `netsniff-ng` `bpfc`. |\n| Live pretty print | `tcpdump -A` | `tshark -V`, `termshark` TUI. |\n| USB / Bluetooth | N/A | `usbmon`, `hcidump` — different media. |\n| eBPF capture | N/A | `bpftool`, `tcpdump-ebpf` experiments — advanced pointer only. |"
+}

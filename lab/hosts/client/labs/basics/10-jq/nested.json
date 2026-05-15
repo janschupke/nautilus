@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "owner": "lab",
+    "flags": { "a": true, "b": false, "c": true }
+  }
+}

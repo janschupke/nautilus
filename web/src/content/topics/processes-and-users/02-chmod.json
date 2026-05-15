@@ -1,0 +1,70 @@
+{
+  "id": "02-chmod",
+  "title": "Users, groups, permissions",
+  "shortTitle": "02 — Users, groups, permissions",
+  "workdir": "/home/isopod/labs/processes-and-users/02-chmod/",
+  "intro": "Work from the module directory. Fixtures: **`ls_long.txt`** (synthetic permission listings) and **`passwd_snippet.txt`** (sample passwd entries).",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "A regular file shows mode **`rwxr-x---`**. What is the three-digit octal representation of these permissions (no special bits)?",
+      "expectedOutput": "750",
+      "solutionMarkdown": "Owner `rwx` = 7, group `r-x` = 5, other `---` = 0 → **750**."
+    },
+    {
+      "id": "q2",
+      "prompt": "Numeric `chmod 640` sets which nine permission characters (no type letter)? Give the `ls -l` style string.",
+      "expectedOutput": "rw-r-----",
+      "solutionMarkdown": "6 = `rw-`, 4 = `r--`, 0 = `---` → **`rw-r-----`**."
+    },
+    {
+      "id": "q3",
+      "prompt": "With `umask 027`, what three-digit octal mode does a new regular file typically receive? (Apply the umask to the base mode `666`.)",
+      "expectedOutput": "640",
+      "solutionMarkdown": "`0666 & ~0027` = **`0640`**."
+    },
+    {
+      "id": "q4",
+      "prompt": "In **`ls_long.txt`**, the `helper` entry shows `-rwsr-x---`. What lowercase letter occupies the user-execute position, indicating the setuid bit is set with execute permission?",
+      "expectedOutput": "s",
+      "solutionMarkdown": "`s` means setuid **with** execute set. `S` (uppercase) would mean setuid without execute."
+    },
+    {
+      "id": "q5",
+      "prompt": "In **`ls_long.txt`**, the `tmpish` entry shows `drwxrwxrwt`. What letter in the other-execute position marks the sticky bit?",
+      "expectedOutput": "t",
+      "solutionMarkdown": "`t` = sticky bit on a directory (with execute). `T` would appear without execute."
+    },
+    {
+      "id": "q6",
+      "prompt": "With `umask 077`, what three-digit octal mode does a new regular file receive from the base `666`?",
+      "expectedOutput": "600",
+      "solutionMarkdown": "`0666 & ~0077` = **`0600`**."
+    },
+    {
+      "id": "q7",
+      "prompt": "From **`passwd_snippet.txt`**, what is alice's numeric UID (the third colon-separated field)?",
+      "expectedOutput": "1000",
+      "solutionMarkdown": "```bash\nawk -F: '$1==\"alice\"{print $3}' passwd_snippet.txt\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "From **`passwd_snippet.txt`**, what is alice's login shell (the last colon-separated field)?",
+      "expectedOutput": "/bin/bash",
+      "solutionMarkdown": "```bash\nawk -F: '$1==\"alice\"{print $7}' passwd_snippet.txt\n```"
+    },
+    {
+      "id": "q9",
+      "prompt": "What three-digit octal mode corresponds to the permission string `r-xr-x---`?",
+      "expectedOutput": "550",
+      "solutionMarkdown": "`r-x` = 5, `r-x` = 5, `---` = 0 → **550**."
+    },
+    {
+      "id": "q10",
+      "prompt": "With `umask 002`, what three-digit octal mode does a new regular file receive from the base `666`?",
+      "expectedOutput": "664",
+      "solutionMarkdown": "`0666 & ~0002` = **`0664`**."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Interpret `ls -l` mode bits, setuid/setgid/sticky, and numeric `chmod`.\n- Change owner/group with `chown` / `chgrp`; understand when `sudo` is required.\n- Use `umask` for default creation masks; `id` for current user/group context.\n- High-level Linux ACL commands (`getfacl` / `setfacl`) vs POSIX-only `chmod`.\n\n## Scope\n\n**In scope:** user-visible permission model; ACLs as extension. **Out of scope:** SELinux/AppArmor contexts (mention as labels to inspect elsewhere)."
+}

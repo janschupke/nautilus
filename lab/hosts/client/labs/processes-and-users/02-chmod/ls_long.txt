@@ -1,0 +1,4 @@
+# Synthetic ls -l lines (not from a real host)
+-rwxr-x--- 1 alice devops 4096 May 13 12:00 script.sh
+-rwsr-x--- 1 root root 12345 May 13 12:00 helper
+drwxrwxrwt 3 root root 60 May 13 12:00 tmpish

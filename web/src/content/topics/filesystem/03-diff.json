@@ -1,0 +1,76 @@
+{
+  "id": "03-diff",
+  "title": "Comparing text and trees (diff / patch)",
+  "shortTitle": "03 — Comparing text and trees (diff / patch)",
+  "workdir": "/home/isopod/labs/filesystem/03-diff/",
+  "intro": "Work from the module directory. Fixtures: **`left.txt`**, **`right.txt`**, **`ws_left.txt`**, **`ws_right.txt`**, **`same_a.txt`**, **`same_b.txt`**, **`y1.txt`**, **`y2.txt`**, **`m12.patch`**, **`patchset/`**, **`tree_l/`**, **`tree_r/`**, **`tree_ln/`**, **`tree_rn/`**. Extract or modify only under **`work/`**.",
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "**`left.txt`** and **`right.txt`** differ by exactly one change. Run a unified diff between them. How many lines in the diff output start with `+` but are not file headers (not `+++`)?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ndiff -u left.txt right.txt | grep -c '^+[^+]'\n```"
+    },
+    {
+      "id": "q2",
+      "prompt": "Using the same unified diff from the previous question, how many lines start with `-` but are not headers (not `---`)?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "```bash\ndiff -u left.txt right.txt | grep -c '^-[^-]'\n```"
+    },
+    {
+      "id": "q3",
+      "prompt": "Print the range header line from that unified diff (the line starting with `@@`).",
+      "expectedOutput": "@@ -1,3 +1,3 @@",
+      "solutionMarkdown": "```bash\ndiff -u left.txt right.txt | grep '^@@'\n```"
+    },
+    {
+      "id": "q4",
+      "prompt": "The directory trees **`tree_l/`** and **`tree_r/`** are mostly identical but one file differs. Compare them recursively for differences only. Which file differs? Give its path relative to either tree root.",
+      "expectedOutput": "sub/b.txt",
+      "solutionMarkdown": "```bash\ndiff -rq tree_l tree_r\n```\n\nThe output line `Files tree_l/sub/b.txt and tree_r/sub/b.txt differ` identifies the changed file."
+    },
+    {
+      "id": "q5",
+      "prompt": "**`ws_left.txt`** and **`ws_right.txt`** appear different but only differ in whitespace. Compare them with whitespace differences ignored. What is the exit code?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\ndiff -w ws_left.txt ws_right.txt; echo $?\n```\n\n`-w` ignores all whitespace differences; exit code `0` means no meaningful difference was found."
+    },
+    {
+      "id": "q6",
+      "prompt": "**`same_a.txt`** and **`same_b.txt`** are byte-for-byte identical copies. Use a byte-comparison tool to verify this silently (suppressing output). What exit code does it return when files match?",
+      "expectedOutput": "0",
+      "solutionMarkdown": "```bash\ncmp -s same_a.txt same_b.txt; echo $?\n```\n\n`cmp -s` (silent) compares byte by byte and exits `0` if files are identical."
+    },
+    {
+      "id": "q7",
+      "prompt": "Copy **`patchset/original.txt`** to `work/original.txt`, then apply **`m12.patch`** to the copy. What is the first line of the patched file?",
+      "expectedOutput": "version 2",
+      "solutionMarkdown": "```bash\nmkdir -p work\ncp patchset/original.txt work/original.txt\n( cd work && patch -p0 < ../m12.patch )\nhead -n1 work/original.txt\n```"
+    },
+    {
+      "id": "q8",
+      "prompt": "Copy **`patchset/revised.txt`** to `work/revised.txt`, then apply **`m12.patch`** in reverse to convert it back to the original version. What is the first line of the result?",
+      "expectedOutput": "version 1",
+      "solutionMarkdown": "```bash\ncp patchset/revised.txt work/revised.txt\n( cd work && patch -R -p0 < ../m12.patch )\nhead -n1 work/revised.txt\n```\n\n`-R` reverses the patch direction."
+    },
+    {
+      "id": "q9",
+      "prompt": "The trees **`tree_ln/`** and **`tree_rn/`** are similar but one has an extra file the other lacks. Compare them recursively. Paste the exact output line diff prints about that file.",
+      "expectedOutput": "Only in tree_rn/app: extra.txt",
+      "solutionMarkdown": "```bash\ndiff -r tree_ln tree_rn\n```\n\nWhen a file exists in one tree but not the other, `diff` reports `Only in <dir>: <filename>`."
+    },
+    {
+      "id": "q10",
+      "prompt": "**`y1.txt`** contains one word and **`y2.txt`** contains a different word. Compare them side by side in a 20-character-wide display. Print the output line exactly, including the separator character.",
+      "expectedOutput": "A     |\tB",
+      "solutionMarkdown": "```bash\ndiff -y -W 20 y1.txt y2.txt\n```\n\n`-y` enables side-by-side mode; `-W 20` sets the total display width. Changed lines are marked with `|` followed by a tab before the right-hand content."
+    },
+    {
+      "id": "q11",
+      "prompt": "The directories `tree_secret_l/` and `tree_secret_r/` appear similar but one file has diverged. Use a recursive comparison to find which file differs, then read its content in the right-hand tree. What does it contain?",
+      "expectedOutput": "flag{diff_tree_diverged}",
+      "solutionMarkdown": "```bash\ndiff -rq tree_secret_l tree_secret_r\n# Files tree_secret_l/report/summary.txt and tree_secret_r/report/summary.txt differ\ncat tree_secret_r/report/summary.txt\n```\n\n`diff -rq` reports changed files without showing the diff body — efficient for locating the diverged file. Reading the right-hand version reveals the updated content."
+    }
+  ],
+  "summaryMarkdown": "## Learning outcomes\n- Generate unified diffs (`-u`) and read `+`/`-` hunks with context.\n- Compare directories recursively (`-r`, `--no-dereference` where relevant).\n- Apply patches with `patch -pN`; reverse with `-R`.\n- Use color and side-by-side options where available (GNU vs BSD).\n\n## Scope\n\n**In scope:** text and tree diffs, patch application on copies. **Out of scope:** three-way merges (`diff3`, `git merge` internals) beyond mention."
+}
