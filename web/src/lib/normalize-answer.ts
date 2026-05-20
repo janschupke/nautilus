@@ -8,7 +8,7 @@
  *
  * Does not treat NUL (`\0`) as whitespace; it is preserved.
  */
-export function normalizeAnswer(raw: string): string {
+export function normalizeAnswer(raw: string, caseInsensitive = false): string {
   const lf = raw.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const lines = lf.split("\n").map((line) => line.trim().replace(/\s+/g, " "));
   while (lines.length > 0 && lines[lines.length - 1] === "") {
@@ -17,18 +17,29 @@ export function normalizeAnswer(raw: string): string {
   while (lines.length > 0 && lines[0] === "") {
     lines.shift();
   }
-  return lines.join("\n");
+  const result = lines.join("\n");
+  return caseInsensitive ? result.toLowerCase() : result;
 }
 
-export function answersMatch(user: string, expected: string): boolean {
-  return normalizeAnswer(user) === normalizeAnswer(expected);
+export function answersMatch(
+  user: string,
+  expected: string,
+  caseInsensitive = false,
+): boolean {
+  return (
+    normalizeAnswer(user, caseInsensitive) ===
+    normalizeAnswer(expected, caseInsensitive)
+  );
 }
 
 /** Returns true when the user's answer matches any string in `accepted`. */
 export function anyAnswerMatches(
   user: string,
   accepted: readonly string[],
+  caseInsensitive = false,
 ): boolean {
-  const normalized = normalizeAnswer(user);
-  return accepted.some((a) => normalized === normalizeAnswer(a));
+  const normalized = normalizeAnswer(user, caseInsensitive);
+  return accepted.some(
+    (a) => normalized === normalizeAnswer(a, caseInsensitive),
+  );
 }

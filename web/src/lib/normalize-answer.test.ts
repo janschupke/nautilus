@@ -35,6 +35,18 @@ describe("normalizeAnswer", () => {
   });
 });
 
+describe("normalizeAnswer — caseInsensitive", () => {
+  it("lowercases when caseInsensitive is true", () => {
+    expect(normalizeAnswer("YES", true)).toBe("yes");
+    expect(normalizeAnswer("No", true)).toBe("no");
+  });
+
+  it("preserves case when caseInsensitive is false (default)", () => {
+    expect(normalizeAnswer("YES")).toBe("YES");
+    expect(normalizeAnswer("abc123Hash")).toBe("abc123Hash");
+  });
+});
+
 describe("anyAnswerMatches", () => {
   it("returns true when user answer matches any entry", () => {
     expect(anyAnswerMatches("yes", ["yes", "y"])).toBe(true);
@@ -51,6 +63,17 @@ describe("anyAnswerMatches", () => {
 
   it("returns false for empty accepted list", () => {
     expect(anyAnswerMatches("yes", [])).toBe(false);
+  });
+});
+
+describe("anyAnswerMatches — caseInsensitive", () => {
+  it("matches regardless of case when true", () => {
+    expect(anyAnswerMatches("YES", ["yes"], true)).toBe(true);
+    expect(anyAnswerMatches("No", ["NO"], true)).toBe(true);
+  });
+
+  it("does not match on different case when false (default)", () => {
+    expect(anyAnswerMatches("YES", ["yes"])).toBe(false);
   });
 });
 
@@ -77,5 +100,17 @@ describe("answersMatch", () => {
 
   it("ignores trailing blank lines on user input", () => {
     expect(answersMatch("east\nwest\n", "east\nwest")).toBe(true);
+  });
+});
+
+describe("answersMatch — caseInsensitive", () => {
+  it("matches when caseInsensitive is true", () => {
+    expect(answersMatch("YES", "yes", true)).toBe(true);
+    expect(answersMatch("No", "no", true)).toBe(true);
+  });
+
+  it("does not match on different case when false (default)", () => {
+    expect(answersMatch("YES", "yes")).toBe(false);
+    expect(answersMatch("abc123Hash", "ABC123HASH")).toBe(false);
   });
 });

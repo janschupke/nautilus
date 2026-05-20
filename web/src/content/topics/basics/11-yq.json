@@ -33,13 +33,13 @@
       "id": "q5",
       "prompt": "From **`jobs.yaml`**, how many jobs have a `priority` strictly greater than `5`?",
       "expectedOutput": "1",
-      "solutionMarkdown": "Filter **`jobs[]`** with `select(.priority > 5)` then count the results."
+      "solutionMarkdown": "```bash\nyq '[.jobs[] | select(.priority > 5)] | length' jobs.yaml\n```\n\n`select(.priority > 5)` filters to matching jobs; wrapping in `[…]` collects them into an array so `length` can count them."
     },
     {
       "id": "q6",
       "prompt": "**`inventory.yaml`** has an `items` list where each item has a `qty` field. What is the total quantity across all items?",
       "expectedOutput": "3",
-      "solutionMarkdown": "Emit quantities with `yq -r '.items[].qty' inventory.yaml` then pipe to `awk` or sum in the shell."
+      "solutionMarkdown": "```bash\nyq '[.items[].qty] | add' inventory.yaml\n```\n\nOr using shell arithmetic:\n```bash\nyq -r '.items[].qty' inventory.yaml | awk '{s+=$1} END{print s}'\n```\n\n`[.items[].qty]` collects all qty values into an array; `add` sums them. The `awk` alternative works when the values are integers."
     },
     {
       "id": "q7",
@@ -57,7 +57,7 @@
       "id": "q9",
       "prompt": "**`profile.yaml`** uses YAML merge anchors to share base configuration between environments. After merge resolution, what is the value of `production.timeout_ms`?",
       "expectedOutput": "2000",
-      "solutionMarkdown": "```bash\nyq --yaml-fix-merge-anchor-to-spec=true -r '.production.timeout_ms' profile.yaml\n```\n\nThe `production` mapping overrides `timeout_ms: 2000` on top of the merged base, so the result is `2000`."
+      "solutionMarkdown": "```bash\nyq -r '.production.timeout_ms' profile.yaml\n```\n\nyq v4 (Mike Farah) resolves YAML merge anchors (`<<:`) automatically. The `production` mapping explicitly sets `timeout_ms: 2000`, which overrides the inherited base value, so the result is `2000`."
     },
     {
       "id": "q10",

@@ -27,6 +27,7 @@
       "id": "q4",
       "prompt": "In **`mounts.tsv`**, does the row for mountpoint `/tmp` have `nosuid` in its options?",
       "expectedOutput": "yes",
+      "caseInsensitive": true,
       "solutionMarkdown": "Inspect the `opts` field for the `/tmp` row."
     },
     {

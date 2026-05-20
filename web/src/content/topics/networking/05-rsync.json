@@ -45,12 +45,14 @@
       "id": "q7",
       "prompt": "Using **`rsync_merge.txt`** (merge semantics: **`+`** / **`-`**, **`*`** does not cross **`/`**, first match wins): would **`server.log`** at the **transfer root** be included? Answer **`YES`** or **`NO`** only.",
       "expectedOutput": "YES",
+      "caseInsensitive": true,
       "solutionMarkdown": "**`+ *.log`** matches **`server.log`** before **`- *`**."
     },
     {
       "id": "q8",
       "prompt": "Same rules: would **`nested/server.log`** be included? Answer **`YES`** or **`NO`** only.",
       "expectedOutput": "NO",
+      "caseInsensitive": true,
       "solutionMarkdown": "**`*.log`** does not match across **`/`**; **`- *`** wins."
     },
     {

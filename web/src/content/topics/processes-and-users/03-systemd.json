@@ -21,6 +21,7 @@
       "id": "q3",
       "prompt": "In **`status_ssh.txt`**, check the `Loaded:` line. Is the unit enabled to start at boot?",
       "expectedOutput": "yes",
+      "caseInsensitive": true,
       "solutionMarkdown": "The `Loaded:` line contains `; enabled;` — the unit is configured to start at boot."
     },
     {

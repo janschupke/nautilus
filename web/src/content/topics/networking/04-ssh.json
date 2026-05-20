@@ -21,6 +21,7 @@
       "id": "q3",
       "prompt": "Same file: look up the mode for row **`authorized_keys_lab`**. Is that mode recommended for a server-side **`authorized_keys`** file that **`sshd`** should trust? Answer **`yes`** or **`no`** only.",
       "expectedOutput": "no",
+      "caseInsensitive": true,
       "solutionMarkdown": "World/group write on **`authorized_keys`** is risky."
     },
     {
@@ -51,6 +52,7 @@
       "id": "q8",
       "prompt": "In **`Host work`**, does **`IdentitiesOnly`** appear set to **`yes`**? Answer **`yes`** or **`no`** only.",
       "expectedOutput": "yes",
+      "caseInsensitive": true,
       "solutionMarkdown": "Check for **`IdentitiesOnly yes`** in that stanza."
     },
     {

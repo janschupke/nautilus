@@ -27,6 +27,7 @@
       "id": "q4",
       "prompt": "The directory trees **`tree_l/`** and **`tree_r/`** are mostly identical but one file differs. Compare them recursively for differences only. Which file differs? Give its path relative to either tree root.",
       "expectedOutput": "sub/b.txt",
+      "acceptedOutputs": ["./sub/b.txt"],
       "solutionMarkdown": "```bash\ndiff -rq tree_l tree_r\n```\n\nThe output line `Files tree_l/sub/b.txt and tree_r/sub/b.txt differ` identifies the changed file."
     },
     {

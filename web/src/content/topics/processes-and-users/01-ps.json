@@ -45,6 +45,7 @@
       "id": "q7",
       "prompt": "Read **`pgrep_notes.txt`**. For the `-x` flag, must the process name match the search pattern exactly?",
       "expectedOutput": "yes",
+      "caseInsensitive": true,
       "solutionMarkdown": "`-x` is exact process name match — `sleep` matches a process named `sleep` but not `mysleepd`."
     },
     {

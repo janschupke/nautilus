@@ -51,6 +51,7 @@
       "id": "q8",
       "prompt": "Do `readme.txt` and `suspicious.bin` contain the same bytes? Run a byte-level comparison and answer `yes` or `no`.",
       "expectedOutput": "no",
+      "caseInsensitive": true,
       "solutionMarkdown": "```bash\ncmp -s data/intake/readme.txt data/intake/suspicious.bin; echo $?\n```\n\n`cmp -s` exits 1 (files differ), so the answer is **no**."
     },
     {

@@ -42,7 +42,11 @@ export function useTopicProgress(topic: LabTopic) {
         question.expectedOutput,
         ...(question.acceptedOutputs ?? []),
       ];
-      const ok = anyAnswerMatches(body, accepted);
+      const ok = anyAnswerMatches(
+        body,
+        accepted,
+        question.caseInsensitive ?? false,
+      );
       setProgress((p) =>
         setQuestionResult(
           p,

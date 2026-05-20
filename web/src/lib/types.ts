@@ -10,6 +10,8 @@ export type LabQuestion = {
   solutionMarkdown: string;
   /** When set, forces line vs multiline answer control; otherwise inferred from `expectedOutput`. */
   answerFormat?: LabAnswerFormat;
+  /** When true, answer comparison ignores case. Use only for questions where casing is irrelevant (e.g. yes/no). */
+  caseInsensitive?: boolean;
 };
 
 export type LabTopic = {
