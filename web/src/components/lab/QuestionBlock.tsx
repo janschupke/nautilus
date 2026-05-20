@@ -172,7 +172,7 @@ export function QuestionBlock({
           </div>
           <details className={lab.details}>
             <summary className={lab.detailsSummary}>Solution</summary>
-            <div className="mt-4 border-t border-zinc-800 pt-4">
+            <div className={lab.questionAccordionBody}>
               <LabMarkdown
                 markdown={question.solutionMarkdown}
                 variant="solution"
@@ -189,10 +189,7 @@ export function QuestionBlock({
       >
         <div className="mt-4 flex flex-col gap-2">
           {acceptedAnswers.map((ans, i) => (
-            <pre
-              key={i}
-              className="overflow-x-auto rounded-md bg-surface px-3 py-2 font-mono text-sm text-fg"
-            >
+            <pre key={i} className={lab.codeBlock}>
               {ans}
             </pre>
           ))}

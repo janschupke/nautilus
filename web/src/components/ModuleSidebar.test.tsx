@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LAB_MODULE_QUESTION_IDS } from "@/content/lab-module-question-ids";
 import * as storage from "@/lib/storage";
+import { SIDEBAR_CATEGORIES_KEY } from "@/lib/storage";
 import type { ProgressFileV1 } from "@/lib/types";
 import { ModuleSidebar } from "./ModuleSidebar";
 
@@ -71,14 +72,14 @@ describe("ModuleSidebar", () => {
     pathnameRef.current = "/basics/05-awk";
     const spy = vi.spyOn(storage, "expandSidebarModule");
     localStorage.setItem(
-      "nautilus-sidebar-categories-v1",
+      SIDEBAR_CATEGORIES_KEY,
       JSON.stringify({ version: 1, collapsed: ["basics"] }),
     );
     render(<ModuleSidebar />);
     await waitFor(() => {
       expect(spy).toHaveBeenCalledWith("basics");
     });
-    const raw = localStorage.getItem("nautilus-sidebar-categories-v1");
+    const raw = localStorage.getItem(SIDEBAR_CATEGORIES_KEY);
     expect(raw).toBeTruthy();
     expect(JSON.parse(raw!).collapsed).not.toContain("basics");
   });

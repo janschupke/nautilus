@@ -1,14 +1,9 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  clearAllProgress,
-  clearTopicsProgress,
-  parseProgressRaw,
-  readLabProgressSnapshot,
-  subscribeLabProgress,
-} from "@/lib/storage";
+import { clearAllProgress, clearTopicsProgress } from "@/lib/storage";
+import { useLabProgressStore } from "@/hooks/use-lab-progress-store";
 import {
   summarizeLabProgress,
   summarizeModuleProgress,
@@ -19,8 +14,6 @@ import { ResetProgressModal } from "@/components/ResetProgressModal";
 import { ProgressBar } from "@/components/ProgressBar";
 import { formatModuleIndex } from "@/lib/format";
 import { lab } from "@/ui/lab";
-
-const SERVER_PROGRESS_SNAPSHOT = "{}";
 
 type StatsSummaryProps = {
   modules: readonly LabModuleProgressShape[];
@@ -99,16 +92,7 @@ function ModuleCard({
 export function StatsSummary({ modules }: StatsSummaryProps) {
   const [resetTarget, setResetTarget] = useState<ResetTarget | null>(null);
 
-  const progressJson = useSyncExternalStore(
-    subscribeLabProgress,
-    readLabProgressSnapshot,
-    () => SERVER_PROGRESS_SNAPSHOT,
-  );
-
-  const progress = useMemo(
-    () => parseProgressRaw(progressJson),
-    [progressJson],
-  );
+  const progress = useLabProgressStore();
 
   const aggregate = useMemo(
     () => summarizeLabProgress(progress, modules),

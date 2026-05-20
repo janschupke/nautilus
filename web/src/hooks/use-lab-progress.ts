@@ -10,8 +10,7 @@ import {
   setQuestionDraft,
   setQuestionResult,
 } from "@/lib/storage";
-
-const SAVE_DEBOUNCE_MS = 400;
+import { SAVE_DEBOUNCE_MS } from "@/lib/constants";
 
 export function useTopicProgress(topic: LabTopic) {
   const topicId = topic.id;

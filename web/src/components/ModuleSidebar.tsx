@@ -13,14 +13,12 @@ import {
 import {
   DEFAULT_SIDEBAR_MODULES_SNAPSHOT,
   expandSidebarModule,
-  parseProgressRaw,
   parseSidebarModulesRaw,
-  readLabProgressSnapshot,
   readSidebarModulesSnapshot,
-  subscribeLabProgress,
   subscribeSidebarModules,
   toggleSidebarModuleCollapsed,
 } from "@/lib/storage";
+import { useLabProgressStore } from "@/hooks/use-lab-progress-store";
 import { ModuleSidebarProgressRing } from "@/components/ModuleSidebarProgressRing";
 import {
   getTopicLabProgressCounts,
@@ -46,15 +44,7 @@ export function ModuleSidebar() {
     () => new Set(parseSidebarModulesRaw(modulesRaw).collapsed),
     [modulesRaw],
   );
-  const progressSnapshot = useSyncExternalStore(
-    subscribeLabProgress,
-    readLabProgressSnapshot,
-    () => "{}",
-  );
-  const progress = useMemo(
-    () => parseProgressRaw(progressSnapshot),
-    [progressSnapshot],
-  );
+  const progress = useLabProgressStore();
 
   const activeTopicId = topicRouteFromPathname(pathname)?.topicId ?? null;
   // Used only for visual active state on the module heading link itself.

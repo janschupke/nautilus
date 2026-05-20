@@ -140,6 +140,10 @@ export const lab = {
   btnDangerSm:
     "shrink-0 rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-400 hover:border-rose-900/70 hover:bg-rose-950/30 hover:text-rose-300",
 
+  /** Inline code block — monospace preformatted content (e.g. accepted answers, command output). */
+  codeBlock:
+    "overflow-x-auto rounded-md bg-surface px-3 py-2 font-mono text-sm text-fg",
+
   modalBackdrop:
     "fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 text-lg",
   modalCard:

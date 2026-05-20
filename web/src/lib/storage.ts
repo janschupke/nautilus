@@ -6,14 +6,17 @@ import type {
 } from "./types";
 
 const STORAGE_KEY = "nautilus-lab-progress-v1";
-const SIDEBAR_CATEGORIES_KEY = "nautilus-sidebar-categories-v1";
+export const SIDEBAR_CATEGORIES_KEY = "nautilus-sidebar-categories-v1";
 const TOPIC_SUMMARY_KEY = "nautilus-topic-summary-v1";
+
+const PROGRESS_VERSION = 1 as const;
+const SIDEBAR_VERSION = 1 as const;
 
 const PROGRESS_CHANGE_EVENT = "lab-progress-change";
 const SIDEBAR_CATEGORIES_CHANGE_EVENT = "sidebar-categories-change";
 
 export const DEFAULT_SIDEBAR_MODULES_SNAPSHOT = JSON.stringify({
-  version: 1,
+  version: SIDEBAR_VERSION,
   collapsed: [],
 } satisfies SidebarModulesFileV1);
 
@@ -22,13 +25,13 @@ function emptyQuestionState(): StoredTopicProgress["questions"][string] {
 }
 
 export function parseProgressRaw(raw: string | null): ProgressFileV1 {
-  if (!raw) return { version: 1, modules: {} };
+  if (!raw) return { version: PROGRESS_VERSION, modules: {} };
   try {
     const parsed: unknown = JSON.parse(raw);
     if (
       typeof parsed === "object" &&
       parsed !== null &&
-      (parsed as ProgressFileV1).version === 1 &&
+      (parsed as ProgressFileV1).version === PROGRESS_VERSION &&
       typeof (parsed as ProgressFileV1).modules === "object"
     ) {
       return parsed as ProgressFileV1;
@@ -36,12 +39,12 @@ export function parseProgressRaw(raw: string | null): ProgressFileV1 {
   } catch {
     // ignore corrupt storage
   }
-  return { version: 1, modules: {} };
+  return { version: PROGRESS_VERSION, modules: {} };
 }
 
 export function loadProgress(): ProgressFileV1 {
   if (typeof window === "undefined") {
-    return { version: 1, modules: {} };
+    return { version: PROGRESS_VERSION, modules: {} };
   }
   return parseProgressRaw(window.localStorage.getItem(STORAGE_KEY));
 }
@@ -66,7 +69,10 @@ export function clearAllProgress(): void {
 export function clearTopicProgress(moduleId: string): void {
   if (typeof window === "undefined") return;
   const state = loadProgress();
-  const next: ProgressFileV1 = { version: 1, modules: { ...state.modules } };
+  const next: ProgressFileV1 = {
+    version: PROGRESS_VERSION,
+    modules: { ...state.modules },
+  };
   delete next.modules[moduleId];
   saveProgress(next);
 }
@@ -74,7 +80,10 @@ export function clearTopicProgress(moduleId: string): void {
 export function clearTopicsProgress(moduleIds: readonly string[]): void {
   if (typeof window === "undefined") return;
   const state = loadProgress();
-  const next: ProgressFileV1 = { version: 1, modules: { ...state.modules } };
+  const next: ProgressFileV1 = {
+    version: PROGRESS_VERSION,
+    modules: { ...state.modules },
+  };
   for (const id of moduleIds) delete next.modules[id];
   saveProgress(next);
 }
@@ -119,7 +128,7 @@ export function setQuestionDraft(
   draft: string,
 ): ProgressFileV1 {
   const next: ProgressFileV1 = {
-    version: 1,
+    version: PROGRESS_VERSION,
     modules: { ...state.modules },
   };
   const prevMod = state.modules[moduleId] ?? { questions: {} };
@@ -137,33 +146,33 @@ export function parseSidebarModulesRaw(
   raw: string | null,
 ): SidebarModulesFileV1 {
   if (!raw) {
-    return { version: 1, collapsed: [] };
+    return { version: SIDEBAR_VERSION, collapsed: [] };
   }
   try {
     const parsed: unknown = JSON.parse(raw);
     if (
       typeof parsed === "object" &&
       parsed !== null &&
-      (parsed as SidebarModulesFileV1).version === 1 &&
+      (parsed as SidebarModulesFileV1).version === SIDEBAR_VERSION &&
       Array.isArray((parsed as SidebarModulesFileV1).collapsed)
     ) {
       const collapsed = (parsed as SidebarModulesFileV1).collapsed.filter(
         (id): id is string => typeof id === "string",
       );
       return {
-        version: 1,
+        version: SIDEBAR_VERSION,
         collapsed: [...new Set(collapsed)].sort(),
       };
     }
   } catch {
     // ignore corrupt storage
   }
-  return { version: 1, collapsed: [] };
+  return { version: SIDEBAR_VERSION, collapsed: [] };
 }
 
 export function loadSidebarModules(): SidebarModulesFileV1 {
   if (typeof window === "undefined") {
-    return { version: 1, collapsed: [] };
+    return { version: SIDEBAR_VERSION, collapsed: [] };
   }
   return parseSidebarModulesRaw(
     window.localStorage.getItem(SIDEBAR_CATEGORIES_KEY),
@@ -178,7 +187,7 @@ function notifySidebarModulesListeners(): void {
 export function saveSidebarModules(state: SidebarModulesFileV1): void {
   if (typeof window === "undefined") return;
   const normalized: SidebarModulesFileV1 = {
-    version: 1,
+    version: SIDEBAR_VERSION,
     collapsed: [...new Set(state.collapsed)].sort(),
   };
   window.localStorage.setItem(
@@ -196,7 +205,7 @@ export function toggleSidebarModuleCollapsed(categoryId: string): void {
   } else {
     set.add(categoryId);
   }
-  saveSidebarModules({ version: 1, collapsed: [...set].sort() });
+  saveSidebarModules({ version: SIDEBAR_VERSION, collapsed: [...set].sort() });
 }
 
 /** Ensures a category section is expanded (no-op if already expanded). */
@@ -204,7 +213,7 @@ export function expandSidebarModule(categoryId: string): void {
   const cur = loadSidebarModules();
   if (!cur.collapsed.includes(categoryId)) return;
   saveSidebarModules({
-    version: 1,
+    version: SIDEBAR_VERSION,
     collapsed: cur.collapsed.filter((id) => id !== categoryId),
   });
 }
@@ -232,7 +241,7 @@ export function setQuestionResult(
   result: Exclude<QuestionResult, "idle">,
 ): ProgressFileV1 {
   const next: ProgressFileV1 = {
-    version: 1,
+    version: PROGRESS_VERSION,
     modules: { ...state.modules },
   };
   const prevMod = state.modules[moduleId] ?? { questions: {} };

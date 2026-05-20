@@ -1,13 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
 import { topicHasInteractiveContent } from "@/content/manifest";
-import {
-  parseProgressRaw,
-  readLabProgressSnapshot,
-  subscribeLabProgress,
-} from "@/lib/storage";
+import { useLabProgressStore } from "@/hooks/use-lab-progress-store";
 import { getTopicLabProgressCounts } from "@/lib/module-completion";
 import { ModuleSidebarProgressRing } from "@/components/ModuleSidebarProgressRing";
 import { lab } from "@/ui/lab";
@@ -19,15 +14,7 @@ type ModuleTopicListProps = {
 };
 
 export function ModuleTopicList({ moduleId, topics }: ModuleTopicListProps) {
-  const progressJson = useSyncExternalStore(
-    subscribeLabProgress,
-    readLabProgressSnapshot,
-    () => "{}",
-  );
-  const progress = useMemo(
-    () => parseProgressRaw(progressJson),
-    [progressJson],
-  );
+  const progress = useLabProgressStore();
 
   return (
     <ul className="space-y-2">
