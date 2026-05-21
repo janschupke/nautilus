@@ -66,5 +66,5 @@
       "solutionMarkdown": "```bash\nfind /etc/course-lab -name '--odd-name.conf' -print0 | xargs -0 -- wc -l\n```\n\n`xargs --` signals end of `xargs` options so the leading-dash filename isn't misinterpreted as a flag."
     }
   ],
-  "summaryMarkdown": "## Learning outcomes\n- Compose `find` predicates for name, type, time, size, permissions, and logical operators.\n- Use `-exec`, `-ok`, `-delete` safely; prefer `-print0` with `xargs -0`.\n- Compare `find` to database-backed search where appropriate.\n- Understand capability gaps on macOS BSD `find` vs GNU `find`.\n\n## Scope\n\n**In scope:** traversal, filtering, action primitives, interaction with `xargs`. **Out of scope:** `locate`/`plocate` implementation details of `updatedb` (mention only); content search (**08**)."
+  "summaryMarkdown": "## Learning outcomes\n- Compose `find` predicates for name, type, time, size, permissions, and logical operators.\n- Use `-exec`, `-ok`, `-delete` safely; prefer `-print0` with `xargs -0`.\n- Compare `find` to database-backed search where appropriate.\n- Understand capability gaps on macOS BSD `find` vs GNU `find`.\n\n## Scope\n\n**In scope:** traversal, filtering, action primitives, interaction with `xargs`. **Out of scope:** `locate`/`plocate` implementation details of `updatedb` (mention only); content search (see Basics — grep topics)."
 }

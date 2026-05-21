@@ -66,5 +66,5 @@
       "solutionMarkdown": "```bash\nawk '$1 == \"proc\" { print $2; exit }' /proc/mounts\n```"
     }
   ],
-  "summaryMarkdown": "## Learning outcomes\n- Navigate standard hierarchy (FHS) mentally; know where logs, units, and caches typically live on Linux vs macOS.\n- Read Linux `/proc` and `/sys` pseudo-files for CPU, memory, cmdline, limits (high level).\n- Map macOS analogs (`log show`, `/Library/LaunchDaemons`, `sysctl`).\n\n## Scope\n\n**In scope:** orientation, safe read-only inspection. **Out of scope:** modifying `systemd` units (**16**), SIP-protected paths on macOS."
+  "summaryMarkdown": "## Learning outcomes\n- Navigate standard hierarchy (FHS) mentally; know where logs, units, and caches typically live on Linux vs macOS.\n- Read Linux `/proc` and `/sys` pseudo-files for CPU, memory, cmdline, limits (high level).\n- Map macOS analogs (`log show`, `/Library/LaunchDaemons`, `sysctl`).\n\n## Scope\n\n**In scope:** orientation, safe read-only inspection. **Out of scope:** modifying `systemd` units, SIP-protected paths on macOS."
 }

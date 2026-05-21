@@ -67,5 +67,5 @@
       "solutionMarkdown": "```bash\ngrep -oP '(?<=labhost )\\w+(?=\\[)' journal_snippet.txt | sort | uniq -c | sort -rn | head -1\n```\n\nsshd appears in 2 of the 4 journal lines."
     }
   ],
-  "summaryMarkdown": "## Learning outcomes\n- Query unit state with `systemctl status`, `is-active`, `is-enabled`, `show`.\n- List units (`list-units`, `list-unit-files`) with filters; understand transient vs on-disk units.\n- Tail service logs via `journalctl -u` (cross-link **30**).\n- Edit units safely: `systemctl edit --full` vs drop-ins.\n\n## Scope\n\n**In scope:** inspection and safe enable/disable in lab. **Out of scope:** production incident response playbooks; no exercises that stop sshd on remote machines."
+  "summaryMarkdown": "## Learning outcomes\n- Query unit state with `systemctl status`, `is-active`, `is-enabled`, `show`.\n- List units (`list-units`, `list-unit-files`) with filters; understand transient vs on-disk units.\n- Tail service logs via `journalctl -u`.\n- Edit units safely: `systemctl edit --full` vs drop-ins.\n\n## Scope\n\n**In scope:** inspection and safe enable/disable in lab. **Out of scope:** production incident response playbooks; no exercises that stop sshd on remote machines."
 }

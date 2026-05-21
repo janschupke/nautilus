@@ -66,5 +66,5 @@
       "solutionMarkdown": "```bash\nsort mentions.txt | uniq -c | sort -k1,1nr\n```\n\n`alice` appears **4** times, `bob` 3, `carol` and `dan` once each."
     }
   ],
-  "summaryMarkdown": "## Learning outcomes\n- Define sort keys (`-k`), field separators (`-t`), numeric vs human-numeric (`-h`) sorts.\n- Use `sort -u` vs `sort | uniq` vs `sort | uniq -c` patterns.\n- Understand stable vs unstable sort (`-s`) and version sort (`-V`) on GNU.\n- Combine with NUL-terminated records where filenames are involved (**02**).\n\n## Scope\n\n**In scope:** `sort`, `uniq`, locale impact (`LC_ALL=C`). **Out of scope:** external sort algorithms; big-data external merge."
+  "summaryMarkdown": "## Learning outcomes\n- Define sort keys (`-k`), field separators (`-t`), numeric vs human-numeric (`-h`) sorts.\n- Use `sort -u` vs `sort | uniq` vs `sort | uniq -c` patterns.\n- Understand stable vs unstable sort (`-s`) and version sort (`-V`) on GNU.\n- Combine with NUL-terminated records where filenames are involved.\n\n## Scope\n\n**In scope:** `sort`, `uniq`, locale impact (`LC_ALL=C`). **Out of scope:** external sort algorithms; big-data external merge."
 }
