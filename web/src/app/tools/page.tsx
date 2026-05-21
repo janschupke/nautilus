@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
+
+export const metadata: Metadata = { title: "Tools" };
 import { NavCardList, type NavCardItem } from "@/components/NavCardList";
 import { lab } from "@/ui/lab";
 

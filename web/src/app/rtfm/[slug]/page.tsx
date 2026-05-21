@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RTFM_MANIFEST, findCheatsheet } from "@/content/rtfm-manifest";
 import { loadCheatsheet } from "@/content/rtfm-loader";
@@ -10,6 +11,12 @@ export async function generateStaticParams() {
 }
 
 type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const meta = findCheatsheet(slug);
+  return { title: meta?.title };
+}
 
 export default async function CheatsheetPage({ params }: Props) {
   const { slug } = await params;

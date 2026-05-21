@@ -116,7 +116,7 @@ export function StatsSummary({ modules }: StatsSummaryProps) {
     <>
       {/* Aggregate bar */}
       <div className={lab.panel}>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <p className={lab.statsLabel}>
             {aggregate.correct} / {aggregate.totalQuestions} questions correct
             across {aggregate.moduleCount} modules

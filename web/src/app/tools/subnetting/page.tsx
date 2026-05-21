@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { SubnettingCalculator } from "./SubnettingCalculator";
+
+export const metadata: Metadata = { title: "Subnetting calculator" };
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { lab } from "@/ui/lab";

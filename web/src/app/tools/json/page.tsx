@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { JsonFormatter } from "./JsonFormatter";
+
+export const metadata: Metadata = { title: "JSON formatter" };
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { lab } from "@/ui/lab";

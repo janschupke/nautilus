@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { DHCalculator } from "./DHCalculator";
+
+export const metadata: Metadata = { title: "Diffie-Hellman calculator" };
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { lab } from "@/ui/lab";

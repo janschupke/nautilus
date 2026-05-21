@@ -48,7 +48,7 @@ describe("ModuleSidebar", () => {
   });
 
   it("renders course title and module headings as links", () => {
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     expect(screen.getByRole("link", { name: "Nautilus" })).toHaveAttribute(
       "href",
       "/",
@@ -75,7 +75,7 @@ describe("ModuleSidebar", () => {
       SIDEBAR_CATEGORIES_KEY,
       JSON.stringify({ version: 1, collapsed: ["basics"] }),
     );
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     await waitFor(() => {
       expect(spy).toHaveBeenCalledWith("basics");
     });
@@ -86,7 +86,7 @@ describe("ModuleSidebar", () => {
 
   it("links to a wired topic route", () => {
     pathnameRef.current = "/";
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     const awk = screen.getByRole("link", { name: /05 — awk for fields/i });
     expect(awk).toHaveAttribute("href", "/basics/05-awk");
   });
@@ -94,7 +94,7 @@ describe("ModuleSidebar", () => {
   it("applies emerald styling to fully correct topics", () => {
     pathnameRef.current = "/";
     storage.saveProgress(progressAllCorrect("01-find"));
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     const link = screen.getByRole("link", { name: /01 — finding files/i });
     expect(link.className).toMatch(/emerald/);
   });
@@ -102,7 +102,7 @@ describe("ModuleSidebar", () => {
   it("applies stronger active styling when the current topic is fully correct", () => {
     pathnameRef.current = "/filesystem/01-find";
     storage.saveProgress(progressAllCorrect("01-find"));
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     const link = screen.getByRole("link", { name: /01 — finding files/i });
     expect(link.className).toMatch(/ring-2/);
     expect(link.className).toMatch(/emerald/);
@@ -110,7 +110,7 @@ describe("ModuleSidebar", () => {
 
   it("does not render progress rings when no answers have been checked", () => {
     pathnameRef.current = "/";
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     expect(
       screen.queryAllByRole("img", { name: /questions correct/i }),
     ).toHaveLength(0);
@@ -138,7 +138,7 @@ describe("ModuleSidebar", () => {
       version: 1,
       modules: { [topicId]: { questions } },
     });
-    render(<ModuleSidebar />);
+    render(<ModuleSidebar isOpen={false} onClose={() => {}} />);
     expect(
       screen.getByRole("img", {
         name: new RegExp(`^1 of ${qids.length} questions correct$`),

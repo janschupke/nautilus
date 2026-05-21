@@ -32,7 +32,12 @@ import {
 } from "@/lib/module-pathname";
 import { lab } from "@/ui/lab";
 
-export function ModuleSidebar() {
+type ModuleSidebarProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
   const modulesRaw = useSyncExternalStore(
@@ -72,6 +77,11 @@ export function ModuleSidebar() {
   }, [pathname, activeTopicId, activeModulePageId]);
 
   useEffect(() => {
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  useEffect(() => {
     if (!navRef.current) return;
     const topicId = pendingScrollTopicRef.current;
     if (topicId) {
@@ -97,7 +107,9 @@ export function ModuleSidebar() {
   }, [pathname, modulesRaw]);
 
   return (
-    <aside className={lab.sidebar}>
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex w-80 shrink-0 flex-col border-r border-stroke bg-surface text-lg transition-transform duration-200 ease-in-out md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+    >
       <div className={lab.sidebarHeader}>
         <Link href="/" className={lab.sidebarHomeLink}>
           <Image
@@ -109,6 +121,23 @@ export function ModuleSidebar() {
             priority
           />
         </Link>
+      </div>
+      <div className="flex flex-col border-b border-stroke p-2 md:hidden">
+        {[
+          { href: "/", label: "Home" },
+          { href: "/lab-setup", label: "Lab setup" },
+          { href: "/stats", label: "Stats" },
+          { href: "/tools", label: "Tools" },
+          { href: "/rtfm", label: "RTFM" },
+        ].map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`${lab.navLink} ${pathname === href || (href !== "/" && pathname.startsWith(href)) ? lab.navLinkActive : ""}`}
+          >
+            <span className={lab.navModuleTitle}>{label}</span>
+          </Link>
+        ))}
       </div>
       <nav ref={navRef} className="min-h-0 flex-1 overflow-y-auto p-2">
         {MANIFEST.modules.map((mod, modIndex) => {

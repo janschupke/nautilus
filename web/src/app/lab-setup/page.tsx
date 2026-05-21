@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { CopyCodeBlock } from "@/components/CopyCodeBlock";
+
+export const metadata: Metadata = { title: "Lab setup" };
 import { LabTable } from "@/components/LabTable";
 import { PageHeader } from "@/components/PageHeader";
 import { GITHUB_REPO } from "@/lib/constants";

@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { REGISTERED_LAB_TOPIC_IDS, getLabTopic } from "@/content/lab-modules";
+
+export const metadata: Metadata = { title: "Stats" };
 import { MANIFEST } from "@/content/manifest";
 import type {
   LabModuleProgressShape,

@@ -181,7 +181,8 @@ function VlsmPlanner({ version }: { version: Version }) {
             <Plus size={15} />
           </button>
         </div>
-        <div className="space-y-2">
+        <div className="overflow-x-auto">
+        <div className="min-w-[28rem] space-y-2">
           {entries.map((e) => (
             <div
               key={e.id}
@@ -215,6 +216,7 @@ function VlsmPlanner({ version }: { version: Version }) {
               </button>
             </div>
           ))}
+        </div>
         </div>
         <p className={`mt-3 text-xs ${lab.hint}`}>
           Subnets are allocated largest-first (VLSM) within the base network.
