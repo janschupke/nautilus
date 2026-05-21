@@ -44,7 +44,13 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
         <Menu size={20} />
       </button>
       <Link href="/" className="mr-auto md:hidden">
-        <Image src={nautilusIcon} alt="Nautilus" width={32} height={32} className="opacity-80" />
+        <Image
+          src={nautilusIcon}
+          alt="Nautilus"
+          width={32}
+          height={32}
+          className="opacity-80"
+        />
       </Link>
       <div className={`${lab.topBarActions} hidden md:flex`}>
         <NavLink href="/" label="Home" active={pathname === "/"} />

@@ -182,41 +182,41 @@ function VlsmPlanner({ version }: { version: Version }) {
           </button>
         </div>
         <div className="overflow-x-auto">
-        <div className="min-w-[28rem] space-y-2">
-          {entries.map((e) => (
-            <div
-              key={e.id}
-              className="grid grid-cols-[1fr_9rem_auto] items-center gap-2"
-            >
-              <input
-                type="text"
-                value={e.name}
-                onChange={(ev) => updateEntry(e.id, "name", ev.target.value)}
-                onKeyDown={(ev) => ev.key === "Enter" && plan()}
-                placeholder="Subnet name"
-                className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
-                spellCheck={false}
-              />
-              <input
-                type="number"
-                min={1}
-                value={e.hosts}
-                onChange={(ev) => updateEntry(e.id, "hosts", ev.target.value)}
-                onKeyDown={(ev) => ev.key === "Enter" && plan()}
-                placeholder="Hosts needed"
-                className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
-              />
-              <button
-                onClick={() => removeEntry(e.id)}
-                disabled={entries.length === 1}
-                className="rounded border border-stroke-muted p-2.5 text-fg-faint hover:border-danger/60 hover:text-danger-fg disabled:opacity-30"
-                aria-label="Remove subnet"
+          <div className="min-w-[28rem] space-y-2">
+            {entries.map((e) => (
+              <div
+                key={e.id}
+                className="grid grid-cols-[1fr_9rem_auto] items-center gap-2"
               >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          ))}
-        </div>
+                <input
+                  type="text"
+                  value={e.name}
+                  onChange={(ev) => updateEntry(e.id, "name", ev.target.value)}
+                  onKeyDown={(ev) => ev.key === "Enter" && plan()}
+                  placeholder="Subnet name"
+                  className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
+                  spellCheck={false}
+                />
+                <input
+                  type="number"
+                  min={1}
+                  value={e.hosts}
+                  onChange={(ev) => updateEntry(e.id, "hosts", ev.target.value)}
+                  onKeyDown={(ev) => ev.key === "Enter" && plan()}
+                  placeholder="Hosts needed"
+                  className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
+                />
+                <button
+                  onClick={() => removeEntry(e.id)}
+                  disabled={entries.length === 1}
+                  className="rounded border border-stroke-muted p-2.5 text-fg-faint hover:border-danger/60 hover:text-danger-fg disabled:opacity-30"
+                  aria-label="Remove subnet"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
         <p className={`mt-3 text-xs ${lab.hint}`}>
           Subnets are allocated largest-first (VLSM) within the base network.
