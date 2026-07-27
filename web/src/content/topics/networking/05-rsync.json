@@ -9,7 +9,7 @@
       "id": "q1",
       "prompt": "In **`rsync_dryrun.txt`**, how many files are scheduled for **deletion** from the destination? Print **only** the integer.",
       "expectedOutput": "2",
-      "solutionMarkdown": "```bash\ngrep -c '^\\*deleting' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^\\*deleting' /home/isopod/labs/networking/05-rsync/rsync_dryrun.txt\n```"
     },
     {
       "id": "q2",
@@ -21,7 +21,7 @@
       "id": "q3",
       "prompt": "How many **regular file transfers** (not deletions or directory changes) are listed? Print **only** the integer.",
       "expectedOutput": "4",
-      "solutionMarkdown": "```bash\ngrep -c '^>f' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^>f' /home/isopod/labs/networking/05-rsync/rsync_dryrun.txt\n```"
     },
     {
       "id": "q4",
@@ -33,13 +33,13 @@
       "id": "q5",
       "prompt": "How many of the transferred files are being **created for the first time** on the destination — i.e. all transfer attributes are new? Print **only** the integer.",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\ngrep -c '^>f+++++++++ ' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^>f+++++++++ ' /home/isopod/labs/networking/05-rsync/rsync_dryrun.txt\n```"
     },
     {
       "id": "q6",
       "prompt": "How many **directory creations** appear in the dry-run output? Print **only** the integer.",
       "expectedOutput": "1",
-      "solutionMarkdown": "```bash\ngrep -c '^cd+++++++++' /home/isopod/labs/22-rsync-for-sync/rsync_dryrun.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^cd+++++++++' /home/isopod/labs/networking/05-rsync/rsync_dryrun.txt\n```"
     },
     {
       "id": "q7",

@@ -39,6 +39,8 @@ services:
     networks:
       lab_lan:
         ipv4_address: 10.78.8.20
+        aliases:
+          - lab-web
 
   db:
     image: postgres:16-alpine

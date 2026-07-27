@@ -23,7 +23,7 @@ $pages = [
 <body>
   <h1>Nautilus LAN Lab</h1>
   <p>This intentionally small PHP site is for curl, wget, API, and scoped auth exercises.</p>
-  <p>Authorized target: <strong>10.77.0.20</strong> inside the lab network.</p>
+  <p>Authorized target: <strong>lab-web (10.78.8.20)</strong> inside the lab network.</p>
   <h2>Useful paths</h2>
   <ul>
     <?php foreach ($pages as $href => $label): ?>

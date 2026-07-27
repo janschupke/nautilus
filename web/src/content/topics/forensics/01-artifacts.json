@@ -43,9 +43,9 @@
     },
     {
       "id": "q7",
-      "prompt": "The `report.tar.gz` archive was recovered alongside the other files. List its contents to get a full inventory — don't extract yet. How many files does the archive contain?",
+      "prompt": "The `report.tar.gz` archive was recovered alongside the other files. List its contents to get a full inventory — don't extract yet. How many regular file members does the archive contain?",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\ntar tf report.tar.gz\n# report/summary.txt\n# report/notes.log\n# report/.c2.key\n\ntar tf report.tar.gz | wc -l\n# 3\n```\n\n`tar tf` lists archive contents without extracting. The directory entry `report/` is not counted since `tar tf` lists only files here (note: some versions may include directory entries — verify with `grep -v '/$'` if needed).\n\nNotice the hidden file `.c2.key` — files starting with `.` are hidden from casual `ls` but included in archive listings. Always use `tar tf` before extracting to check what an unknown archive contains."
+      "solutionMarkdown": "```bash\ntar tf report.tar.gz\n# report/\n# report/summary.txt\n# report/notes.log\n# report/.c2.key\n\ntar tf report.tar.gz | grep -v '/$' | wc -l\n# 3\n```\n\n`tar tf` lists archive contents without extracting. Filtering paths that end in `/` excludes directory entries so only regular file members are counted.\n\nNotice the hidden file `.c2.key` — files starting with `.` are hidden from casual `ls` but included in archive listings. Always use `tar tf` before extracting to check what an unknown archive contains."
     },
     {
       "id": "q8",

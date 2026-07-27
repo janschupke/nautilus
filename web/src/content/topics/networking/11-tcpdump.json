@@ -9,37 +9,37 @@
       "id": "q1",
       "prompt": "How many lines contain **`443`** anywhere? Print **only** the integer.",
       "expectedOutput": "9",
-      "solutionMarkdown": "```bash\ngrep -c '443' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '443' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q2",
       "prompt": "How many lines contain **`UDP`**? Print **only** the integer.",
       "expectedOutput": "2",
-      "solutionMarkdown": "```bash\ngrep -c 'UDP' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c 'UDP' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q3",
       "prompt": "How many TCP **connection-initiation** packets (SYN, not SYN-ACK) appear in the capture? Print **only** the integer.",
       "expectedOutput": "4",
-      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [S],' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [S],' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q4",
       "prompt": "How many packets carry a **data-push** (PSH flag set with ACK) in the capture? Print **only** the integer.",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [P.],' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -F -c 'Flags [P.],' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q5",
       "prompt": "How many **connection-reset** packets appear in the capture? Print **only** the integer.",
       "expectedOutput": "2",
-      "solutionMarkdown": "```bash\ngrep -c 'Flags \\[R\\]' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c 'Flags \\[R\\]' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q6",
       "prompt": "How many lines contain **`127.0.0.1`**? Print **only** the integer.",
       "expectedOutput": "7",
-      "solutionMarkdown": "```bash\ngrep -c '127.0.0.1' /home/isopod/labs/28-tcpdump-fundamentals/tcpdump_nn_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '127.0.0.1' /home/isopod/labs/networking/11-tcpdump/tcpdump_nn_sample.txt\n```"
     },
     {
       "id": "q7",

@@ -2,7 +2,7 @@
   "id": "04-sed",
   "title": "sed for streaming edits",
   "shortTitle": "04 — sed for streaming edits",
-  "workdir": "/home/isopod/labs/basics/04-sed/",
+  "workdir": "/home/isopod/",
   "intro": "Work from **`/home/isopod/`**. Use **`/home/isopod/data/edits/`**. Do not edit source data in place; use **`work/`** copies for **`sed -i`**.",
   "questions": [
     {
@@ -63,7 +63,7 @@
       "id": "q9",
       "prompt": "Copy **`/home/isopod/data/edits/service.ini`** to **`work/service.ini`** and edit it in place so **`port=80`** becomes **`port=443`**. What does **`grep '^port=' work/service.ini`** print after the change?",
       "expectedOutput": "port=443",
-      "solutionMarkdown": "```bash\nsed -i 's/^port=80$/port=443/' work/service.ini\ngrep '^port=' work/service.ini\n```"
+      "solutionMarkdown": "```bash\ncp /home/isopod/data/edits/service.ini work/service.ini\nsed -i 's/^port=80$/port=443/' work/service.ini\ngrep '^port=' work/service.ini\n```"
     },
     {
       "id": "q10",

@@ -45,7 +45,7 @@
       "id": "q7",
       "prompt": "Compare the sizes of **`corpus.txt.gz`** and **`corpus.txt.bz2`**. Which format produced the smaller file for this corpus?",
       "expectedOutput": "gzip",
-      "solutionMarkdown": "```bash\nwc -c corpus.txt.gz corpus.txt.bz2\n```\n\n`corpus.txt.gz` is 50 bytes vs `corpus.txt.bz2` at 70 bytes — gzip wins on this highly repetitive corpus."
+      "solutionMarkdown": "```bash\nif [ \"$(wc -c < corpus.txt.gz)\" -lt \"$(wc -c < corpus.txt.bz2)\" ]; then echo gzip; else echo bzip2; fi\n```\n\n`corpus.txt.gz` is 50 bytes vs `corpus.txt.bz2` at 70 bytes — gzip wins on this highly repetitive corpus."
     },
     {
       "id": "q8",
@@ -63,7 +63,7 @@
       "id": "q10",
       "prompt": "What are the byte sizes of the two compressed fixture files in this module — **`corpus.txt.gz`** and **`corpus.txt.bz2`** — listed from smallest to largest as `S,L`?",
       "expectedOutput": "50,70",
-      "solutionMarkdown": "```bash\nwc -c corpus.txt.gz corpus.txt.bz2 | sort -n | head -2\n```\n\n`corpus.txt.gz` = 50 bytes, `corpus.txt.bz2` = 70 bytes."
+      "solutionMarkdown": "```bash\nprintf '%s,%s\\n' \"$(wc -c < corpus.txt.gz)\" \"$(wc -c < corpus.txt.bz2)\"\n```\n\n`corpus.txt.gz` = 50 bytes, `corpus.txt.bz2` = 70 bytes."
     },
     {
       "id": "q11",

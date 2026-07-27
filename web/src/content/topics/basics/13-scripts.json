@@ -25,15 +25,15 @@
     },
     {
       "id": "q4",
-      "prompt": "Copy **`sc2155_declare_assign.sh`** to `work/sc2155_fixed.sh` and fix its ShellCheck issue. Run the fixed script — it should exit non-zero with no stdout. What does it print to stdout?",
-      "expectedOutput": "",
-      "solutionMarkdown": "Split `local` from the command substitution: declare the variable on one line, assign it on the next. This lets the exit code of the command propagate correctly."
+      "prompt": "Copy **`sc2155_declare_assign.sh`** to `work/sc2155_fixed.sh` and fix its ShellCheck issue. Run the fixed script. It should produce no stdout; what exit code does it return?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "Split `local` from the command substitution: declare the variable on one line, assign it on the next. This lets the exit code of the command propagate correctly. With `set -e`, the failing command substitution stops the script before it prints anything, so the fixed script exits **1**."
     },
     {
       "id": "q5",
-      "prompt": "Copy **`sc2164_cd.sh`** to `work/sc2164_fixed.sh` and fix its ShellCheck issue. Run the fixed script — it should exit non-zero with no stdout. What does it print to stdout?",
-      "expectedOutput": "",
-      "solutionMarkdown": "Add `|| exit 1` (or `|| return 1` inside a function) after the `cd` command so the script stops if the directory does not exist."
+      "prompt": "Copy **`sc2164_cd.sh`** to `work/sc2164_fixed.sh` and fix its ShellCheck issue. Run the fixed script. It should produce no stdout; what exit code does it return?",
+      "expectedOutput": "1",
+      "solutionMarkdown": "Add `|| exit 1` (or `|| return 1` inside a function) after the `cd` command so the script stops if the directory does not exist. The guarded `cd` fails in this fixture, so the fixed script exits **1** before printing anything."
     },
     {
       "id": "q6",

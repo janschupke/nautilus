@@ -23,10 +23,8 @@ export default function HomePage() {
         <h2 className={lab.heading2}>Disclaimers</h2>
         <ul className={lab.docList}>
           <li>
-            Don&apos;t do illegal things or the shrimps will find and fight you.
-            Running some of the networking tools presented on this site against
-            public infrastructure without consent might get you in trouble. 🦐
-            🚔
+            Use common sense and do not run these commands against
+            infrastructure you do not own or have permission to test.
           </li>
           <li>
             This site has been vibe hacked together for my own practice as a

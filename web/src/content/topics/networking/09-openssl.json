@@ -8,8 +8,8 @@
     {
       "id": "q1",
       "prompt": "From **`lab-cert-x509-text.txt`**, print the **Subject** line (the certificate subject, not the public key info section).",
-      "expectedOutput": "Subject: CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco",
-      "solutionMarkdown": "```bash\ngrep '^        Subject: CN=' /home/isopod/labs/26-tls-with-openssl/lab-cert-x509-text.txt\n```"
+      "expectedOutput": "Subject: CN=shell-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco",
+      "solutionMarkdown": "```bash\ngrep '^        Subject: CN=' /home/isopod/labs/networking/09-openssl/lab-cert-x509-text.txt\n```"
     },
     {
       "id": "q2",
@@ -27,12 +27,15 @@
       "id": "q4",
       "prompt": "From **`lab-cert-x509-text.txt`**, print the **SHA-256 fingerprint** line.",
       "expectedOutput": "sha256 Fingerprint=66:7D:89:20:8C:7A:B1:AA:02:BF:F2:4C:98:93:4E:BD:7B:38:FF:87:CF:78:92:46:22:C4:54:FA:F6:DE:5E:AD",
-      "solutionMarkdown": "```bash\ngrep '^sha256 Fingerprint=' /home/isopod/labs/26-tls-with-openssl/lab-cert-x509-text.txt\n```"
+      "solutionMarkdown": "```bash\ngrep '^sha256 Fingerprint=' /home/isopod/labs/networking/09-openssl/lab-cert-x509-text.txt\n```"
     },
     {
       "id": "q5",
       "prompt": "Use `openssl x509` to extract the subject field from **`lab.cert.pem`** in machine-readable form, suppressing the certificate output. What does stdout show?",
-      "expectedOutput": "subject=CN=nautilus-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco",
+      "expectedOutput": "subject=CN = shell-lab.local, O = Shell TLS Lab, C = US, ST = CA, L = San Francisco",
+      "acceptedOutputs": [
+        "subject=CN=shell-lab.local, O=Shell TLS Lab, C=US, ST=CA, L=San Francisco"
+      ],
       "solutionMarkdown": "```bash\nopenssl x509 -in lab.cert.pem -noout -subject\n```"
     },
     {

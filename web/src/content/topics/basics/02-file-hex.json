@@ -2,14 +2,14 @@
   "id": "02-file-hex",
   "title": "Inspecting unknown content",
   "shortTitle": "02 — Inspecting unknown content",
-  "workdir": "/home/isopod/labs/basics/02-file-hex/",
+  "workdir": "/home/isopod/",
   "intro": "Work from home. The **`data/intake/`** directory holds simulated file uploads. Inspect them read-only — do not execute anything.",
   "questions": [
     {
       "id": "q1",
       "prompt": "The `data/intake/` directory holds several uploads. Use `file` to determine their types. How many of the files in that directory are identified as completely empty (the single-word type `empty`)?",
       "expectedOutput": "1",
-      "solutionMarkdown": "```bash\nfile -b data/intake/*\n```\n\nOnly `empty.upload` reports `empty` — zero bytes, nothing to identify."
+      "solutionMarkdown": "```bash\nfile -b data/intake/* | grep -xc empty\n```\n\nOnly `empty.upload` reports `empty` — zero bytes, nothing to identify."
     },
     {
       "id": "q2",
@@ -45,14 +45,14 @@
       "id": "q7",
       "prompt": "One file in the intake directory is disguised — its `.txt` extension does not match what `file -b` reports it to be. Which filename is it?",
       "expectedOutput": "invoice.txt",
-      "solutionMarkdown": "```bash\nfile -b data/intake/*.txt\n```\n\n`invoice.txt` is identified as a **POSIX shell script** (it starts with `#!/bin/sh`), not plain text. Running it would execute code, which is exactly why you inspect first."
+      "solutionMarkdown": "```bash\nfile data/intake/*.txt | awk -F: '/shell script/ { print $1 }' | xargs -n1 basename\n```\n\n`invoice.txt` is identified as a **POSIX shell script** (it starts with `#!/bin/sh`), not plain text. Running it would execute code, which is exactly why you inspect first."
     },
     {
       "id": "q8",
       "prompt": "Do `readme.txt` and `suspicious.bin` contain the same bytes? Run a byte-level comparison and answer `yes` or `no`.",
       "expectedOutput": "no",
       "caseInsensitive": true,
-      "solutionMarkdown": "```bash\ncmp -s data/intake/readme.txt data/intake/suspicious.bin; echo $?\n```\n\n`cmp -s` exits 1 (files differ), so the answer is **no**."
+      "solutionMarkdown": "```bash\ncmp -s data/intake/readme.txt data/intake/suspicious.bin && echo yes || echo no\n```\n\n`cmp -s` exits 1 because the files differ, so the answer is **no**."
     },
     {
       "id": "q9",

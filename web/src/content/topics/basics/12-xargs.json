@@ -9,7 +9,7 @@
       "id": "q1",
       "prompt": "`filelist.txt` contains 6 tokens, one per line. Feed them to `echo` via `xargs` with a batch size of 2. How many times does `xargs` invoke `echo`?",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\nxargs -n 2 echo < filelist.txt\n```\n\nWith 6 tokens and batch size 2, `xargs` makes **3** invocations: `echo alpha beta`, `echo gamma delta`, `echo epsilon zeta`."
+      "solutionMarkdown": "```bash\nxargs -n 2 echo < filelist.txt | wc -l\n```\n\nWith 6 tokens and batch size 2, `xargs` makes **3** invocations: `echo alpha beta`, `echo gamma delta`, `echo epsilon zeta`."
     },
     {
       "id": "q2",
@@ -21,7 +21,7 @@
       "id": "q3",
       "prompt": "`grid.txt` has 9 numbers on a single line (space-separated). Feed them to `echo` with a batch size of 3. How many output lines does this produce?",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\nxargs -n 3 echo < grid.txt\n```\n\n9 numbers ÷ 3 per batch = **3** invocations → **3** output lines."
+      "solutionMarkdown": "```bash\nxargs -n 3 echo < grid.txt | wc -l\n```\n\n9 numbers divided into batches of 3 produces **3** output lines."
     },
     {
       "id": "q4",
@@ -33,13 +33,13 @@
       "id": "q5",
       "prompt": "`phrases.txt` has 3 phrases, each on its own line, some containing spaces. If you pipe the file through default `xargs` (splitting on whitespace), how many separate word-level arguments does it pass in total?",
       "expectedOutput": "5",
-      "solutionMarkdown": "```bash\nxargs -n 1 echo < phrases.txt\n```\n\nDefault `xargs` splits on all whitespace: `hello`, `world`, `foo`, `bar`, `quux` — **5** tokens. The phrase boundaries are lost."
+      "solutionMarkdown": "```bash\nxargs -n 1 echo < phrases.txt | wc -l\n```\n\nDefault `xargs` splits on all whitespace: `hello`, `world`, `foo`, `bar`, `quux` — **5** tokens. The phrase boundaries are lost."
     },
     {
       "id": "q6",
       "prompt": "To keep multi-word phrases intact, use NUL-byte record separation (`-0`). First convert `phrases.txt` newlines to NUL bytes, then pass each NUL-delimited record as a single argument to `echo PHRASE:`. How many output lines does this produce?",
       "expectedOutput": "3",
-      "solutionMarkdown": "```bash\ntr '\\n' '\\0' < phrases.txt | xargs -0 -n 1 echo 'PHRASE:'\n```\n\nNUL-separation preserves `hello world`, `foo bar`, and `quux` as three intact arguments — **3** output lines."
+      "solutionMarkdown": "```bash\ntr '\\n' '\\0' < phrases.txt | xargs -0 -n 1 echo 'PHRASE:' | wc -l\n```\n\nNUL-separation preserves `hello world`, `foo bar`, and `quux` as three intact arguments — **3** output lines."
     },
     {
       "id": "q7",
@@ -57,7 +57,7 @@
       "id": "q9",
       "prompt": "Run `run_job.sh` against `filelist.txt` with 2 parallel workers and one token per invocation, then sort the output. How many lines does the final sorted output have?",
       "expectedOutput": "6",
-      "solutionMarkdown": "```bash\nxargs -P 2 -n 1 ./run_job.sh < filelist.txt | sort\n```\n\nAll 6 tokens are processed — one line per token — giving **6** sorted lines."
+      "solutionMarkdown": "```bash\nxargs -P 2 -n 1 ./run_job.sh < filelist.txt | sort | wc -l\n```\n\nAll 6 tokens are processed — one line per token — giving **6** sorted lines."
     },
     {
       "id": "q10",

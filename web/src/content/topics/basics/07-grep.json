@@ -2,7 +2,7 @@
   "id": "07-grep",
   "title": "Search basics (grep and ripgrep)",
   "shortTitle": "07 — Search basics (grep and ripgrep)",
-  "workdir": "/home/isopod/labs/basics/07-grep/",
+  "workdir": "/home/isopod/",
   "intro": "Work from home. You'll be searching across real system directories: **`/var/log`**, **`/etc`**, and **`/usr/local/share`**. Use **`grep`** for questions 1–8 unless noted.",
   "questions": [
     {

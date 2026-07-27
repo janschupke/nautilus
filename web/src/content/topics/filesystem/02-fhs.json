@@ -2,7 +2,7 @@
   "id": "02-fhs",
   "title": "Filesystem literacy",
   "shortTitle": "02 — Filesystem literacy",
-  "workdir": "/home/isopod/labs/filesystem/02-fhs/",
+  "workdir": "/home/isopod/",
   "intro": "Work from home. Answers use the container's Linux filesystem. Use **`grep`**, **`awk`**, **`cut`**, **`sort`**, **`wc`**, or **`sed`** on paths such as **`/etc`**, **`/var/log`**, **`/proc`**, and **`/usr/local`**.",
   "questions": [
     {

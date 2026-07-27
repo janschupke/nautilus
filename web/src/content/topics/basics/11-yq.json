@@ -45,7 +45,7 @@
       "id": "q7",
       "prompt": "**`stacked.yaml`** contains two YAML documents separated by `---`. What is the `kind` of each document? List them in order, one per line.",
       "expectedOutput": "ConfigMap\nService",
-      "solutionMarkdown": "```bash\nyq -r '.kind' stacked.yaml\n```\n\n`yq` iterates all documents in the file when you use `.kind` without a document index filter."
+      "solutionMarkdown": "```bash\nyq -r --no-doc '.kind' stacked.yaml\n```\n\n`yq` iterates all documents in the file when you use `.kind` without a document index filter. `--no-doc` suppresses `---` document separators in the output."
     },
     {
       "id": "q8",

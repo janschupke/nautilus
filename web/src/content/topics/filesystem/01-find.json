@@ -2,7 +2,7 @@
   "id": "01-find",
   "title": "Finding files and metadata",
   "shortTitle": "01 — Finding files and metadata",
-  "workdir": "/home/isopod/labs/filesystem/01-find/",
+  "workdir": "/home/isopod/",
   "intro": "Work from home. Use **`find`** for traversal. These exercises inspect the container's Linux filesystem: **`/etc`**, **`/var/log`**, **`/usr/local`**, **`/srv`**, and **`/var/spool`**.",
   "questions": [
     {

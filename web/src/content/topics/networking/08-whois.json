@@ -9,7 +9,7 @@
       "id": "q1",
       "prompt": "Print every line from **`whois_sample.txt`** that identifies the **registrar** of the domain.",
       "expectedOutput": "Registrar: EXAMPLE REGISTRAR LLC",
-      "solutionMarkdown": "```bash\ngrep 'Registrar:' /home/isopod/labs/25-whois-registration-data/whois_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep 'Registrar:' /home/isopod/labs/networking/08-whois/whois_sample.txt\n```"
     },
     {
       "id": "q2",
@@ -21,13 +21,13 @@
       "id": "q3",
       "prompt": "How many field values have been withheld for **privacy** in this record? Print **only** the integer.",
       "expectedOutput": "1",
-      "solutionMarkdown": "```bash\ngrep -c 'REDACTED' /home/isopod/labs/25-whois-registration-data/whois_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c 'REDACTED' /home/isopod/labs/networking/08-whois/whois_sample.txt\n```"
     },
     {
       "id": "q4",
       "prompt": "Print all **nameserver** entries from the record (full lines, file order).",
       "expectedOutput": "Name Server: NS2.LAB-DNS.EXAMPLE.TEST\nName Server: NS1.LAB-DNS.EXAMPLE.TEST\nName Server: NS2.LAB-DNS.EXAMPLE.TEST",
-      "solutionMarkdown": "```bash\ngrep 'Name Server:' /home/isopod/labs/25-whois-registration-data/whois_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep 'Name Server:' /home/isopod/labs/networking/08-whois/whois_sample.txt\n```"
     },
     {
       "id": "q5",
@@ -39,7 +39,7 @@
       "id": "q6",
       "prompt": "Find and print the domain **status** line indicating the domain is locked against transfers.",
       "expectedOutput": "Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-      "solutionMarkdown": "```bash\ngrep 'clientTransferProhibited' /home/isopod/labs/25-whois-registration-data/whois_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep 'clientTransferProhibited' /home/isopod/labs/networking/08-whois/whois_sample.txt\n```"
     },
     {
       "id": "q7",
@@ -51,7 +51,7 @@
       "id": "q8",
       "prompt": "Print the line that specifies the **IP address range** of the network block covered by this record.",
       "expectedOutput": "inetnum: 198.51.100.0 - 198.51.100.255",
-      "solutionMarkdown": "```bash\ngrep '^inetnum:' /home/isopod/labs/25-whois-registration-data/whois_sample.txt\n```"
+      "solutionMarkdown": "```bash\ngrep '^inetnum:' /home/isopod/labs/networking/08-whois/whois_sample.txt\n```"
     },
     {
       "id": "q9",
@@ -66,5 +66,5 @@
       "solutionMarkdown": "Read **`org-name:`** in the organisation block."
     }
   ],
-  "summaryMarkdown": "## Learning outcomes\n\n- Query domain vs IP WHOIS with correct server selection (`whois -h` where supported) when you have authorization and a throttled workflow.\n- Parse common fields (registrar, abuse contact, inetnum, name servers, org identity) from **saved** text with `grep` / `sed` / `sort` / `awk`, without automating bulk scraping irresponsibly.\n- Understand RDAP as modern JSON alternative to port-43 WHOIS.\n\n## Scope\n\n**In scope:** manual/slow CLI usage, parsing saved outputs in `/home/isopod/labs/25-whois-registration-data/`. **Out of scope:** bulk IP ownership databases (`Team Cymru`, MaxMind) beyond pointers.\n\n## Concept outline\n\n1. **`whois` client** — recursion to registrar servers; thin vs thick registry models (concept).\n2. **IP allocations** — inetnum, netname, abuse-mailbox field importance.\n3. **Rate limiting** — why scripts sleep; some RIRs block aggressive clients.\n4. **Privacy/redaction** — GDPR-style WHOIS redaction impact on investigations.\n5. **RDAP** — `curl` JSON from RDAP bootstrap; `jwhois` legacy.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Port 43 WHOIS | `whois` | `jwhois`, `rwlookup` wrappers; web UI in browser (out of CLI scope). |\n| RDAP | `curl` + `jq` | `rdap` CLI tools if packaged; `whois` some builds speak RDAP hybrid. |\n| ASN / BGP view | N/A | `whois -h whois.radb.net`, `bgpq4` for IRR filters; `asnmap` style tools — advanced sidebar. |\n| Geolocation | N/A | `geoiplookup` (MaxMind legacy), online APIs — consent/rate. |"
+  "summaryMarkdown": "## Learning outcomes\n\n- Query domain vs IP WHOIS with correct server selection (`whois -h` where supported) when you have authorization and a throttled workflow.\n- Parse common fields (registrar, abuse contact, inetnum, name servers, org identity) from **saved** text with `grep` / `sed` / `sort` / `awk`, without automating bulk scraping irresponsibly.\n- Understand RDAP as modern JSON alternative to port-43 WHOIS.\n\n## Scope\n\n**In scope:** manual/slow CLI usage, parsing saved outputs in `/home/isopod/labs/networking/08-whois/`. **Out of scope:** bulk IP ownership databases (`Team Cymru`, MaxMind) beyond pointers.\n\n## Concept outline\n\n1. **`whois` client** — recursion to registrar servers; thin vs thick registry models (concept).\n2. **IP allocations** — inetnum, netname, abuse-mailbox field importance.\n3. **Rate limiting** — why scripts sleep; some RIRs block aggressive clients.\n4. **Privacy/redaction** — GDPR-style WHOIS redaction impact on investigations.\n5. **RDAP** — `curl` JSON from RDAP bootstrap; `jwhois` legacy.\n\n## Tooling and alternatives\n\n| Task | Primary | Alternatives |\n|------|---------|----------------|\n| Port 43 WHOIS | `whois` | `jwhois`, `rwlookup` wrappers; web UI in browser (out of CLI scope). |\n| RDAP | `curl` + `jq` | `rdap` CLI tools if packaged; `whois` some builds speak RDAP hybrid. |\n| ASN / BGP view | N/A | `whois -h whois.radb.net`, `bgpq4` for IRR filters; `asnmap` style tools — advanced sidebar. |\n| Geolocation | N/A | `geoiplookup` (MaxMind legacy), online APIs — consent/rate. |"
 }

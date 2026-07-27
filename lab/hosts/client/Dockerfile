@@ -34,6 +34,7 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes \
     iputils-ping \
     iputils-tracepath \
     jq \
+    kmod \
     less \
     lftp \
     locales \
@@ -49,10 +50,12 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes \
     openssh-server \
     openssl \
     parallel \
+    patch \
     postgresql-client \
     procps \
     psmisc \
     pv \
+    python3 \
     readline-common \
     ripgrep \
     rsync \
@@ -106,6 +109,18 @@ RUN set -eux; \
     curl -fsSL "https://github.com/ffuf/ffuf/releases/download/v2.1.0/ffuf_2.1.0_${FFUF_ARCH}.tar.gz" \
       | tar -xzC /usr/local/bin ffuf; \
     chmod +x /usr/local/bin/ffuf
+
+# Install Mike Farah yq v4 (Debian's `yq` package is a different Python wrapper)
+RUN set -eux; \
+    ARCH=$(dpkg --print-architecture); \
+    case "$ARCH" in \
+      amd64) YQ_ARCH=amd64 ;; \
+      arm64) YQ_ARCH=arm64 ;; \
+      *) echo "Unsupported arch: $ARCH" && exit 1 ;; \
+    esac; \
+    curl -fsSL "https://github.com/mikefarah/yq/releases/download/v4.44.6/yq_linux_${YQ_ARCH}" \
+      -o /usr/local/bin/yq; \
+    chmod +x /usr/local/bin/yq
 
 # Copy setup and entrypoint scripts
 COPY lab/scripts/setup-labs.sh /usr/local/bin/setup-labs.sh

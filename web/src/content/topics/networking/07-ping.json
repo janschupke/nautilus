@@ -3,7 +3,7 @@
   "title": "Reachability: ping, traceroute, mtr",
   "shortTitle": "07 — Reachability: ping, traceroute, mtr",
   "workdir": "/home/isopod/labs/networking/07-ping/",
-  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. Questions 1–4 use **live** `ping` and `traceroute` against lab hosts. Questions 5–10 parse fixture transcripts in the module directory — **`ping_summary.txt`**, **`ping_reorder.txt`**, **`traceroute_lab.txt`**, **`mtr_hops.txt`** — for richer statistical scenarios that a lossless LAN cannot reproduce.",
+  "intro": "Work from the module directory on **`lab-client`**. Questions 1–4 use **live** `ping` and `traceroute` against lab hosts. Questions 5–10 parse fixture transcripts — **`ping_summary.txt`**, **`ping_reorder.txt`**, **`traceroute_lab.txt`**, **`mtr_hops.txt`** — for richer statistical scenarios that a lossless LAN cannot reproduce.",
   "questions": [
     {
       "id": "q1",
@@ -33,7 +33,7 @@
       "id": "q5",
       "prompt": "From **`ping_summary.txt`**, print **only** the count of lines that **begin** with **`64 bytes from`**.",
       "expectedOutput": "8",
-      "solutionMarkdown": "```bash\ngrep -c '^64 bytes from' /home/isopod/labs/24-reachability-ping-traceroute/ping_summary.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^64 bytes from' /home/isopod/labs/networking/07-ping/ping_summary.txt\n```"
     },
     {
       "id": "q6",

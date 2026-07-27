@@ -3,13 +3,13 @@
   "title": "netcat / nc and socat",
   "shortTitle": "10 — netcat / nc and socat",
   "workdir": "/home/isopod/labs/networking/10-nc/",
-  "intro": "Work from **`/home/isopod/`** on **`lab-client`**. Questions 1–5 parse **`nc_lab_transcript.txt`** in the module directory. Questions 6 and 10 use **live** nc against lab hosts. Questions 7–9 use **`socat_recipes.txt`** and conceptual reasoning. Use **`127.0.0.1`** or lab LAN IPs only — never aim nc or socat at external hosts.",
+  "intro": "Work from the module directory on **`lab-client`**. Questions 1–5 parse **`nc_lab_transcript.txt`**. Questions 6 and 10 use **live** nc against lab hosts. Questions 7–9 use **`socat_recipes.txt`** and conceptual reasoning. Use **`127.0.0.1`** or lab LAN IPs only — never aim nc or socat at external hosts.",
   "questions": [
     {
       "id": "q1",
       "prompt": "From **`nc_lab_transcript.txt`**, print **every** line containing **`127.0.0.1`**, file order.",
       "expectedOutput": "# nc -l 127.0.0.1 18080\n# printf 'ping\\n' | nc 127.0.0.1 18080\n# nc -u -l 127.0.0.1 18081\n# printf 'hi\\n' | nc -u -w1 127.0.0.1 18081",
-      "solutionMarkdown": "```bash\ngrep '127.0.0.1' /home/isopod/labs/27-nc-and-socat/nc_lab_transcript.txt\n```"
+      "solutionMarkdown": "```bash\ngrep '127.0.0.1' /home/isopod/labs/networking/10-nc/nc_lab_transcript.txt\n```"
     },
     {
       "id": "q2",
@@ -27,7 +27,7 @@
       "id": "q4",
       "prompt": "How many lines in **`nc_lab_transcript.txt`** have **`#`** as the **first** character? Print **only** the integer.",
       "expectedOutput": "10",
-      "solutionMarkdown": "```bash\ngrep -c '^#' /home/isopod/labs/27-nc-and-socat/nc_lab_transcript.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c '^#' /home/isopod/labs/networking/10-nc/nc_lab_transcript.txt\n```"
     },
     {
       "id": "q5",
@@ -57,7 +57,7 @@
       "id": "q9",
       "prompt": "How many lines in **`socat_recipes.txt`** contain **`TCP-LISTEN`**? Print **only** the integer.",
       "expectedOutput": "2",
-      "solutionMarkdown": "```bash\ngrep -c 'TCP-LISTEN' /home/isopod/labs/27-nc-and-socat/socat_recipes.txt\n```"
+      "solutionMarkdown": "```bash\ngrep -c 'TCP-LISTEN' /home/isopod/labs/networking/10-nc/socat_recipes.txt\n```"
     },
     {
       "id": "q10",

@@ -2,7 +2,7 @@
   "id": "03-wget",
   "title": "Downloads with wget",
   "shortTitle": "03 — Downloads with wget",
-  "workdir": "/home/isopod/labs/networking/03-wget/",
+  "workdir": "/home/isopod/",
   "intro": "Work from **`/home/isopod/`** on **`lab-client`**. All graded items use the authorized Docker-LAN web target **`http://lab-web/`**.",
   "questions": [
     {

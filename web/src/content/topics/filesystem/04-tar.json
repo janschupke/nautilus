@@ -61,9 +61,9 @@
     },
     {
       "id": "q10",
-      "prompt": "Create a bzip2-compressed archive **`work/compressed.tar.bz2`** using the source files in **`m13_tree/`**. How many members does the resulting archive contain?",
+      "prompt": "Create a bzip2-compressed archive **`work/compressed.tar.bz2`** using the source files in **`m13_tree/`**. How many regular file members does the resulting archive contain?",
       "expectedOutput": "2",
-      "solutionMarkdown": "```bash\ntar -cjf work/compressed.tar.bz2 -C m13_tree .\ntar -tjf work/compressed.tar.bz2 | wc -l\n```\n\n`-j` selects bzip2 compression. List with `-t` to verify member count."
+      "solutionMarkdown": "```bash\ntar -cjf work/compressed.tar.bz2 -C m13_tree .\ntar -tjf work/compressed.tar.bz2 | grep -v '/$' | wc -l\n```\n\n`-j` selects bzip2 compression. List with `-t`; filtering paths ending in `/` counts only regular file members."
     },
     {
       "id": "q11",

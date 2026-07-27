@@ -2,7 +2,7 @@
   "id": "05-awk",
   "title": "awk for fields and reports",
   "shortTitle": "05 — awk for fields and reports",
-  "workdir": "/home/isopod/labs/basics/05-awk/",
+  "workdir": "/home/isopod/",
   "intro": "Work from home. Data files are in **`data/awk/`**. Keep scratch under **`work/`**.",
   "questions": [
     {
@@ -67,9 +67,9 @@
     },
     {
       "id": "q11",
-      "prompt": "`transfer-log.csv` in the module directory records network flows. One transfer stands out as the single largest by bytes — a possible exfiltration event. Find that row. What is its `label` field?",
+      "prompt": "`/home/isopod/labs/basics/05-awk/transfer-log.csv` records network flows. One transfer stands out as the single largest by bytes — a possible exfiltration event. Find that row. What is its `label` field?",
       "expectedOutput": "flag{awk_top_talker}",
-      "solutionMarkdown": "```bash\nawk -F, 'NR>1 && $4+0 > max { max=$4+0; label=$5 } END { print label }' transfer-log.csv\n```\n\nTrack the running maximum in `max`; update `label` whenever a larger value is seen. The `END` block prints the label for the peak transfer row."
+      "solutionMarkdown": "```bash\nawk -F, 'NR>1 && $4+0 > max { max=$4+0; label=$5 } END { print label }' /home/isopod/labs/basics/05-awk/transfer-log.csv\n```\n\nTrack the running maximum in `max`; update `label` whenever a larger value is seen. The `END` block prints the label for the peak transfer row."
     }
   ],
   "summaryMarkdown": "## Learning outcomes\n- Select and compute on fields with `$N`, `NF`, `NR`, `FNR`.\n- Accumulate values in associative arrays; emit in `END`.\n- Format output with `printf`; join two files with the `FNR==NR` idiom.\n\n## Scope\n\n**In scope:** `awk` one-liners and short programs for field processing. **Out of scope:** full AWK programs with multiple rules and `BEGIN`/`END` blocks beyond simple aggregation."
