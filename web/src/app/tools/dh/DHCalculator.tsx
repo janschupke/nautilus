@@ -66,14 +66,19 @@ function Field({
   onChange: (v: string) => void;
   onSubmit: () => void;
 }) {
+  const id = `dh-${meta.key}`;
+
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <label className={lab.fieldLabel}>{meta.label}</label>
+        <label className={lab.fieldLabel} htmlFor={id}>
+          {meta.label}
+        </label>
         {derived && <span className="text-xs text-accent-fg">derived</span>}
       </div>
       <p className={`text-xs ${lab.hint} mb-1`}>{meta.hint}</p>
       <input
+        id={id}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -81,7 +86,7 @@ function Field({
         placeholder="integer"
         spellCheck={false}
         autoComplete="off"
-        className={`${lab.answerLineInput} ${lab.fieldBorder} font-mono text-sm ${
+        className={`${lab.answerLineInput} ${lab.fieldBorder} ${
           derived ? "text-accent-fg" : ""
         }`}
       />
@@ -142,12 +147,13 @@ export function DHCalculator() {
     <div className="space-y-4">
       {/* Controls */}
       <div className={`${lab.panel} flex flex-wrap items-center gap-3`}>
-        <button onClick={calculate} className={lab.btnPrimary}>
+        <button type="button" onClick={calculate} className={lab.btnPrimary}>
           Calculate
         </button>
         <span className={`text-sm ${lab.hint}`}>Examples:</span>
         {EXAMPLES.map((ex) => (
           <button
+            type="button"
             key={ex.label}
             onClick={() => loadExample(ex)}
             className={lab.btnGhost}
@@ -156,6 +162,7 @@ export function DHCalculator() {
           </button>
         ))}
         <button
+          type="button"
           onClick={reset}
           className={`${lab.btnGhost} ml-auto text-fg-muted`}
         >

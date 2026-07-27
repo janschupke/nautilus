@@ -98,10 +98,8 @@ export function QuestionBlock({
           id={panelId}
           role="region"
           aria-labelledby={headingId}
-          className={
-            isExpanded ? lab.questionAccordionBody : "h-0 overflow-hidden"
-          }
-          onFocus={!isExpanded ? onToggle : undefined}
+          hidden={!isExpanded}
+          className={isExpanded ? lab.questionAccordionBody : undefined}
         >
           <div>
             <LabMarkdown markdown={question.prompt} variant="prompt" />

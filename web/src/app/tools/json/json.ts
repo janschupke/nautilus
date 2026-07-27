@@ -1,19 +1,259 @@
 export type ParseResult =
   | { ok: true; value: unknown }
-  | { ok: false; message: string; line: number | null; col: number | null };
+  | {
+      ok: false;
+      message: string;
+      line: number | null;
+      col: number | null;
+      position: number | null;
+      length: number;
+    };
+
+function locationFromPosition(
+  raw: string,
+  position: number,
+): { line: number; col: number } {
+  let line = 1;
+  let col = 1;
+
+  for (let i = 0; i < Math.min(position, raw.length); i++) {
+    if (raw[i] === "\n") {
+      line += 1;
+      col = 1;
+    } else {
+      col += 1;
+    }
+  }
+
+  return { line, col };
+}
+
+function positionFromLocation(
+  raw: string,
+  line: number | null,
+  col: number | null,
+): number | null {
+  if (line === null || col === null || line < 1 || col < 1) return null;
+
+  let currentLine = 1;
+  let position = 0;
+
+  while (position < raw.length && currentLine < line) {
+    if (raw[position] === "\n") currentLine += 1;
+    position += 1;
+  }
+
+  return Math.min(raw.length, position + col - 1);
+}
+
+function issueAt(
+  raw: string,
+  position: number,
+  message: string,
+  length = 1,
+): Extract<ParseResult, { ok: false }> {
+  const clampedPosition = Math.max(0, Math.min(position, raw.length));
+  const { line, col } = locationFromPosition(raw, clampedPosition);
+  return { ok: false, message, line, col, position: clampedPosition, length };
+}
+
+function syntaxLocation(
+  raw: string,
+  message: string,
+): Pick<Extract<ParseResult, { ok: false }>, "line" | "col" | "position"> {
+  const positionMatch = message.match(/position\s+(\d+)/i);
+  const lineColumnMatch = message.match(/line\s+(\d+)\s+column\s+(\d+)/i);
+
+  const parsedPosition = positionMatch ? parseInt(positionMatch[1]!, 10) : null;
+  const parsedLine = lineColumnMatch ? parseInt(lineColumnMatch[1]!, 10) : null;
+  const parsedCol = lineColumnMatch ? parseInt(lineColumnMatch[2]!, 10) : null;
+
+  if (parsedPosition !== null && Number.isFinite(parsedPosition)) {
+    const { line, col } = locationFromPosition(raw, parsedPosition);
+    return { line, col, position: parsedPosition };
+  }
+
+  const position = positionFromLocation(raw, parsedLine, parsedCol);
+  return { line: parsedLine, col: parsedCol, position };
+}
+
+function findTrailingComma(raw: string): number | null {
+  let inStr = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+
+    if (inStr) {
+      if (c === "\\") {
+        i += 1;
+        continue;
+      }
+      if (c === '"') inStr = false;
+      continue;
+    }
+
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+
+    if (c !== ",") continue;
+
+    let next = i + 1;
+    while (/\s/.test(raw[next] ?? "")) next += 1;
+    if (raw[next] === "}" || raw[next] === "]") return i;
+  }
+
+  return null;
+}
+
+function findComment(raw: string): number | null {
+  let inStr = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+
+    if (inStr) {
+      if (c === "\\") {
+        i += 1;
+        continue;
+      }
+      if (c === '"') inStr = false;
+      continue;
+    }
+
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+
+    if (c === "/" && (raw[i + 1] === "/" || raw[i + 1] === "*")) return i;
+  }
+
+  return null;
+}
+
+function findSingleQuote(raw: string): number | null {
+  let inStr = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+
+    if (inStr) {
+      if (c === "\\") {
+        i += 1;
+        continue;
+      }
+      if (c === '"') inStr = false;
+      continue;
+    }
+
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+
+    if (c === "'") return i;
+  }
+
+  return null;
+}
+
+function findBareObjectKey(raw: string): number | null {
+  let inStr = false;
+
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+
+    if (inStr) {
+      if (c === "\\") {
+        i += 1;
+        continue;
+      }
+      if (c === '"') inStr = false;
+      continue;
+    }
+
+    if (c === '"') {
+      inStr = true;
+      continue;
+    }
+
+    if (c !== "{" && c !== ",") continue;
+
+    let keyStart = i + 1;
+    while (/\s/.test(raw[keyStart] ?? "")) keyStart += 1;
+    if (!/[A-Za-z_$]/.test(raw[keyStart] ?? "")) continue;
+
+    let keyEnd = keyStart + 1;
+    while (/[A-Za-z0-9_$]/.test(raw[keyEnd] ?? "")) keyEnd += 1;
+
+    let colon = keyEnd;
+    while (/\s/.test(raw[colon] ?? "")) colon += 1;
+    if (raw[colon] === ":") return keyStart;
+  }
+
+  return null;
+}
+
+function classifySyntaxError(
+  raw: string,
+  message: string,
+): Extract<ParseResult, { ok: false }> {
+  if (!raw.trim()) {
+    return {
+      ok: false,
+      message:
+        "JSON input is empty. Paste a JSON value before running this tool.",
+      line: null,
+      col: null,
+      position: null,
+      length: 0,
+    };
+  }
+
+  const trailingComma = findTrailingComma(raw);
+  if (trailingComma !== null) {
+    return issueAt(
+      raw,
+      trailingComma,
+      "Trailing commas are invalid in JSON. Remove the comma before the closing brace or bracket.",
+    );
+  }
+
+  const comment = findComment(raw);
+  if (comment !== null) {
+    return issueAt(raw, comment, "Comments are not valid in JSON.");
+  }
+
+  const singleQuote = findSingleQuote(raw);
+  if (singleQuote !== null) {
+    return issueAt(
+      raw,
+      singleQuote,
+      "JSON strings and object keys must use double quotes.",
+    );
+  }
+
+  const bareKey = findBareObjectKey(raw);
+  if (bareKey !== null) {
+    return issueAt(
+      raw,
+      bareKey,
+      "Object property names must be double-quoted in JSON.",
+    );
+  }
+
+  const { line, col, position } = syntaxLocation(raw, message);
+  return { ok: false, message, line, col, position, length: 1 };
+}
 
 export function parseJSON(raw: string): ParseResult {
   try {
     return { ok: true, value: JSON.parse(raw) };
   } catch (e) {
     const msg = e instanceof SyntaxError ? e.message : String(e);
-    const m = msg.match(/at line (\d+) column (\d+)/);
-    return {
-      ok: false,
-      message: msg,
-      line: m ? parseInt(m[1], 10) : null,
-      col: m ? parseInt(m[2], 10) : null,
-    };
+    return classifySyntaxError(raw, msg);
   }
 }
 

@@ -39,15 +39,15 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
         type="button"
         aria-label="Toggle menu"
         onClick={onMenuToggle}
-        className="rounded-md p-2 text-fg-faint hover:bg-surface-raised hover:text-fg-soft md:hidden"
+        className={`${lab.iconButton} md:hidden`}
       >
         <Menu size={20} />
       </button>
-      <Link href="/" className="mr-auto md:hidden">
+      <Link href="/" className="ml-3 mr-auto md:hidden">
         <Image
           src={nautilusIcon}
           alt="Nautilus"
-          width={32}
+          width={46}
           height={32}
           className="opacity-80"
         />

@@ -1,9 +1,85 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import { Check, Copy } from "lucide-react";
 import { parseJSON, countLines, countKeys, type ParseResult } from "./json";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { lab } from "@/ui/lab";
+
+type ParseIssue = Extract<ParseResult, { ok: false }>;
+
+function highlightedParts(input: string, issue: ParseIssue) {
+  if (issue.position === null) return null;
+
+  const start = Math.max(0, Math.min(issue.position, input.length));
+  const end = Math.max(start + 1, Math.min(start + issue.length, input.length));
+
+  return {
+    before: input.slice(0, start),
+    target: input.slice(start, end) || " ",
+    after: input.slice(end),
+  };
+}
+
+function JsonInput({
+  input,
+  issue,
+  onChange,
+}: {
+  input: string;
+  issue: ParseIssue | null;
+  onChange: (value: string) => void;
+}) {
+  const overlayRef = useRef<HTMLPreElement>(null);
+  const parts = issue ? highlightedParts(input, issue) : null;
+  const hasHighlight = Boolean(parts && input);
+
+  return (
+    <div className="relative">
+      {parts && input ? (
+        <pre
+          ref={overlayRef}
+          aria-hidden="true"
+          className={`${lab.textareaBase} pointer-events-none absolute inset-x-0 bottom-0 top-0 z-0 resize-none overflow-hidden whitespace-pre-wrap break-words border border-transparent bg-surface text-fg`}
+          data-testid="json-input-highlight"
+        >
+          <span>{parts.before}</span>
+          <span
+            className="rounded-sm bg-danger-surface/35 underline decoration-danger-fg decoration-wavy decoration-2 underline-offset-4"
+            data-testid="json-error-underline"
+          >
+            {parts.target}
+          </span>
+          <span>{parts.after}</span>
+        </pre>
+      ) : null}
+      <textarea
+        id="json-input"
+        value={input}
+        onChange={(e) => onChange(e.target.value)}
+        onScroll={(e) => {
+          if (!overlayRef.current) return;
+          overlayRef.current.scrollTop = e.currentTarget.scrollTop;
+          overlayRef.current.scrollLeft = e.currentTarget.scrollLeft;
+        }}
+        aria-invalid={issue ? true : undefined}
+        aria-describedby={issue ? "json-error-message" : undefined}
+        placeholder={'{\n  "key": "value"\n}'}
+        rows={20}
+        className={`${lab.textareaBase} relative z-10 resize-y ${lab.fieldBorder} ${
+          issue
+            ? "border-danger focus:border-danger focus:ring-rose-900/40"
+            : ""
+        } ${
+          hasHighlight
+            ? "bg-transparent text-transparent caret-fg selection:bg-emerald-700/45"
+            : ""
+        }`}
+        spellCheck={false}
+      />
+    </div>
+  );
+}
 
 export function JsonFormatter() {
   const [input, setInput] = useState("");
@@ -14,7 +90,6 @@ export function JsonFormatter() {
 
   const run = useCallback(
     (transform: (v: unknown) => string) => {
-      if (!input.trim()) return;
       const parsed = parseJSON(input);
       setResult(parsed);
       setOutput(parsed.ok ? transform(parsed.value) : "");
@@ -29,6 +104,12 @@ export function JsonFormatter() {
 
   const minify = useCallback(() => run((v) => JSON.stringify(v)), [run]);
 
+  const validate = useCallback(() => {
+    const parsed = parseJSON(input);
+    setResult(parsed);
+    if (!parsed.ok) setOutput("");
+  }, [input]);
+
   const clear = useCallback(() => {
     setInput("");
     setOutput("");
@@ -40,6 +121,7 @@ export function JsonFormatter() {
   }, [output, copy]);
 
   const parsedValue = result?.ok ? result.value : null;
+  const issue = result && !result.ok ? result : null;
   const isArray = Array.isArray(parsedValue);
   const isObject =
     parsedValue !== null && typeof parsedValue === "object" && !isArray;
@@ -48,11 +130,14 @@ export function JsonFormatter() {
     <div className="space-y-4">
       {/* Controls */}
       <div className={`${lab.panel} flex flex-wrap items-center gap-3`}>
-        <button onClick={prettify} className={lab.btnPrimary}>
+        <button type="button" onClick={prettify} className={lab.btnPrimary}>
           Prettify
         </button>
-        <button onClick={minify} className={lab.btnGhost}>
+        <button type="button" onClick={minify} className={lab.btnGhost}>
           Minify
+        </button>
+        <button type="button" onClick={validate} className={lab.btnGhost}>
+          Validate
         </button>
 
         <div className="flex items-center gap-2 ml-2">
@@ -60,8 +145,10 @@ export function JsonFormatter() {
           {[2, 4].map((n) => (
             <button
               key={n}
+              type="button"
               onClick={() => setIndentSize(n)}
-              className={`${lab.btnGhostSm} px-3 py-1.5 text-sm ${indentSize === n ? lab.btnGhostActive : ""}`}
+              aria-pressed={indentSize === n}
+              className={`${lab.btnGhostSm} ${indentSize === n ? lab.btnGhostActive : ""}`}
             >
               {n}
             </button>
@@ -69,6 +156,7 @@ export function JsonFormatter() {
         </div>
 
         <button
+          type="button"
           onClick={clear}
           className={`${lab.btnGhost} ml-auto text-fg-muted`}
         >
@@ -102,7 +190,9 @@ export function JsonFormatter() {
       {/* Error */}
       {result && !result.ok && (
         <div className={lab.errorBanner}>
-          <p className={lab.errorBannerText}>{result.message}</p>
+          <p id="json-error-message" className={lab.errorBannerText}>
+            {result.message}
+          </p>
         </div>
       )}
 
@@ -112,18 +202,14 @@ export function JsonFormatter() {
           <label className={lab.fieldLabel} htmlFor="json-input">
             Input
           </label>
-          <textarea
-            id="json-input"
-            value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
+          <JsonInput
+            input={input}
+            issue={issue}
+            onChange={(value) => {
+              setInput(value);
               setResult(null);
               setOutput("");
             }}
-            placeholder={'{\n  "key": "value"\n}'}
-            rows={20}
-            className={`${lab.textareaBase} resize-y ${lab.fieldBorder}`}
-            spellCheck={false}
           />
           <p className={lab.hint}>{countLines(input)} lines</p>
         </div>
@@ -135,10 +221,13 @@ export function JsonFormatter() {
             </label>
             {output && (
               <button
+                type="button"
                 onClick={copyOutput}
-                className={`${lab.btnGhostSm} px-3 py-1 text-sm`}
+                className={lab.iconButtonSm}
+                aria-label={copied ? "Copied output" : "Copy output"}
+                title={copied ? "Copied output" : "Copy output"}
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             )}
           </div>

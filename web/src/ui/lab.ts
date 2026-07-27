@@ -11,6 +11,12 @@
  */
 import type { QuestionResult } from "@/lib/types";
 
+const controlButtonBase =
+  "inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-md text-base leading-none outline-none focus-visible:ring-2 focus-visible:ring-accent-stroke/80";
+
+const lineInputBase =
+  "h-11 w-full rounded-md bg-surface px-3 font-mono text-base leading-normal text-fg placeholder:text-fg-disabled focus:outline-none focus:ring-2";
+
 export const lab = {
   shell: "bg-decoration flex h-screen overflow-hidden text-fg",
   main: "min-h-0 flex-1 overflow-y-auto p-6 text-lg leading-relaxed lg:p-10",
@@ -18,7 +24,7 @@ export const lab = {
 
   sidebar:
     "flex w-80 shrink-0 flex-col border-r border-stroke bg-surface text-lg",
-  sidebarHeader: "border-b border-stroke pr-4 pt-1",
+  sidebarHeader: "border-b border-stroke px-4 pt-1",
   sidebarHomeLink:
     "flex min-w-0 items-center gap-3 rounded-md outline-none hover:text-accent-fg focus-visible:ring-2 focus-visible:ring-accent-stroke/80",
   sidebarLogo: "w-full object-contain opacity-80",
@@ -90,25 +96,28 @@ export const lab = {
   fieldBorder:
     "border border-stroke-muted focus:border-accent focus:ring-2 focus:ring-emerald-700/50",
 
+  /** Generic single-line input without built-in margin; use inside control rows. */
+  controlInput: lineInputBase,
+
   /** Single-line stdout / token answers; border/focus from `labLineInputClasses(result)`. */
-  answerLineInput:
-    "mt-1 w-full rounded-md bg-surface px-3 py-2.5 font-mono text-base leading-normal text-fg placeholder:text-fg-disabled focus:outline-none focus:ring-2",
+  answerLineInput: `mt-1 ${lineInputBase}`,
 
   details: "mt-4 rounded-lg border border-stroke bg-surface/60 p-4 text-lg",
   detailsSummary:
     "cursor-pointer select-none text-lg font-medium text-fg-soft hover:text-fg",
 
-  btnPrimary:
-    "rounded-md bg-emerald-700 px-4 py-2.5 text-base font-medium text-white hover:bg-emerald-600 disabled:pointer-events-none disabled:cursor-wait disabled:opacity-55 disabled:hover:bg-emerald-700",
+  btnPrimary: `${controlButtonBase} bg-emerald-700 px-4 font-medium text-white hover:bg-emerald-600 disabled:pointer-events-none disabled:cursor-wait disabled:opacity-55 disabled:hover:bg-emerald-700`,
   /** Applied on top of btnGhost / btnGhostSm when the button represents the active page. */
   btnGhostActive: "bg-accent-surface/50 ring-1 ring-accent-stroke/80",
 
-  btnGhost:
-    "rounded-md border border-stroke-muted px-4 py-2.5 text-base text-zinc-200 hover:bg-surface-raised disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent",
-  btnGhostSm:
-    "rounded-md border border-zinc-600 px-4 py-2.5 text-base font-medium text-zinc-200 hover:bg-surface-raised disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent",
-  btnDanger:
-    "rounded-md bg-danger px-4 py-2.5 text-base font-semibold text-rose-100 ring-1 ring-danger hover:bg-danger-surface hover:text-danger-fg disabled:pointer-events-none disabled:cursor-wait disabled:opacity-55 disabled:hover:bg-danger disabled:hover:text-rose-100",
+  btnGhost: `${controlButtonBase} border border-stroke-muted px-4 text-zinc-200 hover:bg-surface-raised disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent`,
+  btnGhostSm: `${controlButtonBase} border border-zinc-600 px-4 font-medium text-zinc-200 hover:bg-surface-raised disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent`,
+  btnDanger: `${controlButtonBase} bg-danger px-4 font-semibold text-rose-100 ring-1 ring-danger hover:bg-danger-surface hover:text-danger-fg disabled:pointer-events-none disabled:cursor-wait disabled:opacity-55 disabled:hover:bg-danger disabled:hover:text-rose-100`,
+
+  iconButton:
+    "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-stroke-muted text-fg-faint outline-none hover:bg-surface-raised hover:text-fg focus-visible:ring-2 focus-visible:ring-accent-stroke/80 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-30",
+  iconButtonSm:
+    "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-fg-faint outline-none transition-colors hover:bg-surface-raised hover:text-fg focus-visible:ring-2 focus-visible:ring-accent-stroke/80 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-35",
 
   badgeOk:
     "shrink-0 rounded-full bg-accent-surface px-3 py-1 text-sm font-medium text-emerald-300 ring-1 ring-accent-stroke",

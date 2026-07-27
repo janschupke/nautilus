@@ -18,6 +18,12 @@ function hasExplicitPort(args) {
   );
 }
 
+function hasExplicitBundler(args) {
+  return args.some(
+    (arg) => arg === "--webpack" || arg === "--turbo" || arg === "--turbopack",
+  );
+}
+
 function canListen(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -39,15 +45,33 @@ async function findFreePort(startPort) {
   throw new Error(`No free port found from ${startPort} to ${startPort + 99}`);
 }
 
-const requestedPort = Number.parseInt(process.env.PORT ?? "3000", 10);
+const envPort = process.env.PORT;
+const requestedPort = Number.parseInt(
+  command === "dev" ? "3000" : (envPort ?? "3000"),
+  10,
+);
 const startPort = Number.isFinite(requestedPort) ? requestedPort : 3000;
 const nextArgs = [command, ...passthroughArgs];
-const env = { ...process.env };
+const childEnv = { ...process.env };
+
+if (command === "dev") {
+  delete process.env.PORT;
+  delete childEnv.PORT;
+}
+
+if (command === "dev" && envPort && !hasExplicitPort(passthroughArgs)) {
+  console.warn(
+    "Ignoring PORT for npm run dev so Fast Refresh stays reliable. Use `npm run dev -- --port <port>` for a fixed dev port.",
+  );
+}
+
+if (command === "dev" && !hasExplicitBundler(passthroughArgs)) {
+  nextArgs.push("--webpack");
+}
 
 if (!hasExplicitPort(passthroughArgs)) {
   const port = await findFreePort(startPort);
   nextArgs.push("--port", String(port));
-  env.PORT = String(port);
 
   if (port !== startPort) {
     console.log(`Port ${startPort} is busy; using ${port}.`);
@@ -56,7 +80,7 @@ if (!hasExplicitPort(passthroughArgs)) {
 
 const child = spawn("next", nextArgs, {
   stdio: "inherit",
-  env,
+  env: childEnv,
   shell: process.platform === "win32",
 });
 

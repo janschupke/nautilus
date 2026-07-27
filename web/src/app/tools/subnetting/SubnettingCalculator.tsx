@@ -39,7 +39,8 @@ function TabBar<T extends string>({
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`${lab.btnGhostSm} px-3 py-1.5 text-sm ${
+          aria-pressed={value === o.value}
+          className={`${lab.btnGhostSm} ${
             value === o.value ? lab.btnGhostActive : ""
           }`}
         >
@@ -78,11 +79,11 @@ function InfoPanel({ version }: { version: Version }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && calc()}
             placeholder={placeholder}
-            className={`${lab.answerLineInput} flex-1 ${lab.fieldBorder}`}
+            className={`${lab.controlInput} flex-1 ${lab.fieldBorder}`}
             spellCheck={false}
             autoComplete="off"
           />
-          <button onClick={calc} className={lab.btnPrimary}>
+          <button type="button" onClick={calc} className={lab.btnPrimary}>
             Calculate
           </button>
         </div>
@@ -158,11 +159,11 @@ function VlsmPlanner({ version }: { version: Version }) {
             onChange={(e) => setBase(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && plan()}
             placeholder={placeholder}
-            className={`${lab.answerLineInput} flex-1 ${lab.fieldBorder}`}
+            className={`${lab.controlInput} flex-1 ${lab.fieldBorder}`}
             spellCheck={false}
             autoComplete="off"
           />
-          <button onClick={plan} className={lab.btnPrimary}>
+          <button type="button" onClick={plan} className={lab.btnPrimary}>
             Plan
           </button>
         </div>
@@ -174,9 +175,10 @@ function VlsmPlanner({ version }: { version: Version }) {
         <div className="flex items-center justify-between mb-3">
           <h3 className={lab.heading3}>Subnets</h3>
           <button
+            type="button"
             onClick={addEntry}
             aria-label="Add subnet"
-            className="rounded border border-stroke-muted p-2.5 text-fg-faint hover:bg-surface-raised hover:text-fg"
+            className={lab.iconButton}
           >
             <Plus size={15} />
           </button>
@@ -194,7 +196,7 @@ function VlsmPlanner({ version }: { version: Version }) {
                   onChange={(ev) => updateEntry(e.id, "name", ev.target.value)}
                   onKeyDown={(ev) => ev.key === "Enter" && plan()}
                   placeholder="Subnet name"
-                  className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
+                  className={`${lab.controlInput} ${lab.fieldBorder}`}
                   spellCheck={false}
                 />
                 <input
@@ -204,12 +206,13 @@ function VlsmPlanner({ version }: { version: Version }) {
                   onChange={(ev) => updateEntry(e.id, "hosts", ev.target.value)}
                   onKeyDown={(ev) => ev.key === "Enter" && plan()}
                   placeholder="Hosts needed"
-                  className={`${lab.answerLineInput} ${lab.fieldBorder} text-sm`}
+                  className={`${lab.controlInput} ${lab.fieldBorder}`}
                 />
                 <button
+                  type="button"
                   onClick={() => removeEntry(e.id)}
                   disabled={entries.length === 1}
-                  className="rounded border border-stroke-muted p-2.5 text-fg-faint hover:border-danger/60 hover:text-danger-fg disabled:opacity-30"
+                  className={`${lab.iconButton} hover:border-danger/60 hover:text-danger-fg`}
                   aria-label="Remove subnet"
                 >
                   <Trash2 size={15} />

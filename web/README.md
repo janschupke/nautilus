@@ -6,7 +6,9 @@ The interactive lab UI lives in this directory. **Setup, Docker, course layout, 
 
 ```bash
 npm install
-npm run dev       # starts at PORT or 3000, then uses the next free port if needed
+npm run dev                # webpack dev server; starts at 3000, then uses next free port
+npm run dev -- --port 4000 # fixed dev port
+npm run dev -- --turbo     # optional Turbopack experiment
 npm run build
 npm test
 npm run test:e2e

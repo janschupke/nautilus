@@ -34,7 +34,7 @@ test.describe("lab answer acceptance", () => {
       await page.addInitScript(() => {
         window.localStorage.clear();
       });
-      await page.goto(`/${moduleId}/${topic.id}`);
+      await page.goto(`/${moduleId}/${topic.id}`, { waitUntil: "networkidle" });
       await expect(
         page.getByRole("heading", { name: topic.shortTitle }),
       ).toBeVisible();

@@ -27,9 +27,16 @@ npm run dev
 
 Open the local URL printed by Next.js.
 
-The dev script starts at `PORT` or `3000` and automatically moves to the next
-free port if that port is occupied, for example `http://localhost:3001` when
-another local service already owns port 3000.
+The dev script starts at `3000` and automatically moves to the next free port if
+that port is occupied, for example `http://localhost:3001` when another local
+service already owns port 3000. For a fixed dev port, use:
+
+```bash
+npm run dev -- --port 4000
+```
+
+Development uses webpack by default for reliable Fast Refresh. To opt into
+Turbopack for a local experiment, pass `--turbo`.
 
 ### Tests, lint, types
 

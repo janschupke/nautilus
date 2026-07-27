@@ -26,8 +26,43 @@ describe("parseJSON", () => {
     expect(parseJSON("{bad}").ok).toBe(false);
   });
 
+  it("returns a clear message for empty input", () => {
+    const r = parseJSON("");
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.message).toMatch(/empty/i);
+      expect(r.position).toBeNull();
+    }
+  });
+
   it("returns ok:false for unquoted key", () => {
     expect(parseJSON("{key:1}").ok).toBe(false);
+  });
+
+  it("explains unquoted object keys", () => {
+    const r = parseJSON("{key:1}");
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.message).toBe(
+        "Object property names must be double-quoted in JSON.",
+      );
+      expect(r.line).toBe(1);
+      expect(r.col).toBe(2);
+    }
+  });
+
+  it("explains trailing commas and points at the comma", () => {
+    const r = parseJSON('{\n"a": 1,\n}');
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.message).toBe(
+        "Trailing commas are invalid in JSON. Remove the comma before the closing brace or bracket.",
+      );
+      expect(r.line).toBe(2);
+      expect(r.col).toBe(7);
+      expect(r.position).toBe(8);
+      expect(r.length).toBe(1);
+    }
   });
 
   it("includes an error message on failure", () => {
