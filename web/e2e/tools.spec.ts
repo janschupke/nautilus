@@ -43,8 +43,9 @@ test.describe("tools pages", () => {
         page.getByRole("button", { name: "Prettify" }),
         page.getByRole("button", { name: "Minify" }),
         page.getByRole("button", { name: "Validate" }),
-        page.getByRole("button", { name: "2" }),
-        page.getByRole("button", { name: "4" }),
+        // Exact: sidebar module carets are named "Collapse 02 — …".
+        page.getByRole("button", { name: "2", exact: true }),
+        page.getByRole("button", { name: "4", exact: true }),
         page.getByRole("button", { name: "Clear" }),
       ],
       44,

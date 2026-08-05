@@ -116,6 +116,47 @@ describe("useHotkeys", () => {
     });
   });
 
+  describe("suppression by widget role", () => {
+    let el: HTMLElement | null = null;
+
+    afterEach(() => {
+      el?.remove();
+      el = null;
+    });
+
+    for (const role of ["textbox", "searchbox", "combobox", "spinbutton"]) {
+      it(`ignores keys typed into a role="${role}" widget`, () => {
+        el = document.createElement("div");
+        el.setAttribute("role", role);
+        el.tabIndex = 0;
+        document.body.appendChild(el);
+        el.focus();
+        const action = vi.fn();
+        renderHook(() => useHotkeys([{ key: "a", action }]));
+        el.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "a", bubbles: true }),
+        );
+        expect(action).not.toHaveBeenCalled();
+      });
+    }
+  });
+
+  it("ignores keys while a modal dialog is open", () => {
+    // Otherwise a shortcut navigates the router out from under the dialog.
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    document.body.appendChild(dialog);
+    try {
+      const action = vi.fn();
+      renderHook(() => useHotkeys([{ key: "a", action }]));
+      fireKey("a");
+      expect(action).not.toHaveBeenCalled();
+    } finally {
+      dialog.remove();
+    }
+  });
+
   it("removes the listener on unmount", () => {
     const action = vi.fn();
     const { unmount } = renderHook(() => useHotkeys([{ key: "a", action }]));

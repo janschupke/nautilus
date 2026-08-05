@@ -84,6 +84,64 @@ describe("QuestionBlock", () => {
     expect(screen.getByText("Incorrect")).toBeInTheDocument();
   });
 
+  it("announces the check result through a live region", () => {
+    // The badge sits inside the accordion trigger, whose contents assistive
+    // tech treats as presentational — the result needs its own region.
+    const { rerender } = render(
+      <QuestionBlock
+        topicId="m1"
+        index={2}
+        question={sampleQuestion}
+        draft="x"
+        result="idle"
+        isExpanded
+        onToggle={vi.fn()}
+        onDraftChange={vi.fn()}
+        onCheck={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+    rerender(
+      <QuestionBlock
+        topicId="m1"
+        index={2}
+        question={sampleQuestion}
+        draft="x"
+        result="correct"
+        isExpanded
+        onToggle={vi.fn()}
+        onDraftChange={vi.fn()}
+        onCheck={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Question 3 answer is correct.",
+    );
+    // The visible badge stays the single node matching the bare word.
+    expect(screen.getByText("Correct")).toBeInTheDocument();
+  });
+
+  it("marks the answer field invalid after a failed check", () => {
+    render(
+      <QuestionBlock
+        topicId="m1"
+        index={0}
+        question={sampleQuestion}
+        draft="y"
+        result="incorrect"
+        isExpanded
+        onToggle={vi.fn()}
+        onDraftChange={vi.fn()}
+        onCheck={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText(/^Your answer/)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
   it("calls onDraftChange when typing in the textarea", async () => {
     const user = userEvent.setup();
     const onDraftChange = vi.fn();

@@ -31,7 +31,7 @@ import {
   topicRouteFromPathname,
 } from "@/lib/module-pathname";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
-import { scrollBehavior } from "@/lib/motion";
+import { scrollIntoViewNearest } from "@/lib/motion";
 import { lab } from "@/ui/lab";
 
 /** Target of the top bar hamburger's `aria-controls`. */
@@ -111,25 +111,26 @@ export function ModuleSidebar({
   }, [isDrawerOpen, onClose]);
 
   useEffect(() => {
-    if (!navRef.current) return;
+    const nav = navRef.current;
+    if (!nav) return;
     const topicId = pendingScrollTopicRef.current;
     if (topicId) {
-      const el = navRef.current.querySelector<HTMLElement>(
+      const el = nav.querySelector<HTMLElement>(
         `[data-sidebar-topic="${CSS.escape(topicId)}"]`,
       );
       if (el) {
-        el.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
+        scrollIntoViewNearest(nav, el);
         pendingScrollTopicRef.current = null;
       }
       return;
     }
     const moduleId = pendingScrollModuleRef.current;
     if (moduleId) {
-      const el = navRef.current.querySelector<HTMLElement>(
+      const el = nav.querySelector<HTMLElement>(
         `[data-sidebar-module="${CSS.escape(moduleId)}"]`,
       );
       if (el) {
-        el.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
+        scrollIntoViewNearest(nav, el);
         pendingScrollModuleRef.current = null;
       }
     }

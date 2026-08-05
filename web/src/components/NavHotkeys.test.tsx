@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MANIFEST } from "@/content/manifest";
+import { setHotkeysEnabled } from "@/lib/storage";
 import { NavHotkeys } from "./NavHotkeys";
 
 // ── Derived constants ───────────────────────────────────────────────────────
@@ -63,6 +64,7 @@ describe("NavHotkeys", () => {
   beforeEach(() => {
     mockPush.mockClear();
     pathnameRef.current = "/";
+    localStorage.clear();
   });
 
   // ── Letter shortcuts ──────────────────────────────────────────────────────
@@ -178,6 +180,24 @@ describe("NavHotkeys", () => {
       setup(FIRST.href);
       fireKey("-");
       expect(mockPush).toHaveBeenCalledWith(LAST.href);
+    });
+  });
+  describe("when the user switches shortcuts off", () => {
+    it("stops navigating on a single keypress", () => {
+      // WCAG 2.1.4 — unmodified character shortcuts must be turn-off-able.
+      setHotkeysEnabled(false);
+      setup("/");
+      fireKey("t");
+      fireKey("j");
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("resumes once they are switched back on", () => {
+      setHotkeysEnabled(false);
+      setHotkeysEnabled(true);
+      setup("/");
+      fireKey("t");
+      expect(mockPush).toHaveBeenCalledWith("/tools");
     });
   });
 });

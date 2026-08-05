@@ -27,4 +27,7 @@ if (typeof Element !== "undefined") {
   Element.prototype.scrollIntoView = function scrollIntoView() {
     /* jsdom */
   };
+  Element.prototype.scrollTo = function scrollTo() {
+    /* jsdom */
+  };
 }

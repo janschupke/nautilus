@@ -41,6 +41,46 @@ describe("CopyCodeBlock", () => {
     expect(mockWriteText).toHaveBeenCalledOnce();
   });
 
+  it("keeps the live region outside the copied element", async () => {
+    // The block copies its own innerText, so a status region rendered inside
+    // the <pre> would put "Copied code to clipboard" on the user's clipboard.
+    // (jsdom has no innerText, so assert the structure rather than the call.)
+    const { container } = render(<CopyCodeBlock>copy me</CopyCodeBlock>);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Copy code" }));
+    });
+    const pre = container.querySelector("pre")!;
+    expect(screen.getByRole("status")).toHaveTextContent(/copied/i);
+    expect(pre.contains(screen.getByRole("status"))).toBe(false);
+    expect(pre.textContent).toBe("copy me");
+  });
+
+  it("announces the copy through a live region", async () => {
+    render(<CopyCodeBlock>code</CopyCodeBlock>);
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Copy code" }));
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Copied code to clipboard",
+    );
+  });
+
+  it("names the button and scroll region after the block's contents", () => {
+    render(<CopyCodeBlock name="docker compose command">up -d</CopyCodeBlock>);
+    expect(
+      screen.getByRole("button", { name: "Copy docker compose command" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: "docker compose command" }),
+    ).toBeInTheDocument();
+  });
+
+  it("makes the scrollable block keyboard focusable", () => {
+    const { container } = render(<CopyCodeBlock>code</CopyCodeBlock>);
+    expect(container.querySelector("pre")).toHaveAttribute("tabindex", "0");
+  });
+
   it("changes button label to Copied after click", async () => {
     render(<CopyCodeBlock>code</CopyCodeBlock>);
     await act(async () => {

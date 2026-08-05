@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { ProgressFileV1 } from "./types";
-import { parseProgressRaw, parseSidebarModulesRaw } from "./storage";
+import {
+  loadHotkeys,
+  parseHotkeysRaw,
+  parseProgressRaw,
+  parseSidebarModulesRaw,
+  readHotkeysSnapshot,
+  setHotkeysEnabled,
+} from "./storage";
 
 describe("parseProgressRaw", () => {
   it("returns empty progress for null or empty string", () => {
@@ -78,5 +85,35 @@ describe("parseSidebarModulesRaw", () => {
         JSON.stringify({ version: 1, collapsed: ["basics"] }),
       ),
     ).toEqual({ version: 1, collapsed: ["basics"] });
+  });
+});
+
+describe("parseHotkeysRaw", () => {
+  it("defaults to enabled when nothing is stored", () => {
+    // Shortcuts ship on; only an explicit opt-out disables them.
+    expect(parseHotkeysRaw(null)).toEqual({ version: 1, enabled: true });
+    expect(parseHotkeysRaw("")).toEqual({ version: 1, enabled: true });
+  });
+
+  it("defaults to enabled for corrupt or mis-versioned payloads", () => {
+    expect(parseHotkeysRaw("{not json")).toEqual({ version: 1, enabled: true });
+    expect(
+      parseHotkeysRaw(JSON.stringify({ version: 2, enabled: false })),
+    ).toEqual({ version: 1, enabled: true });
+    expect(
+      parseHotkeysRaw(JSON.stringify({ version: 1, enabled: "no" })),
+    ).toEqual({ version: 1, enabled: true });
+  });
+
+  it("round-trips an explicit opt-out", () => {
+    setHotkeysEnabled(false);
+    expect(loadHotkeys()).toEqual({ version: 1, enabled: false });
+    expect(parseHotkeysRaw(readHotkeysSnapshot())).toEqual({
+      version: 1,
+      enabled: false,
+    });
+
+    setHotkeysEnabled(true);
+    expect(loadHotkeys()).toEqual({ version: 1, enabled: true });
   });
 });
