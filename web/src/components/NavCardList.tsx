@@ -20,9 +20,10 @@ export function NavCardList({ items, mono = false }: NavCardListProps) {
       {items.map((item) => (
         <li key={item.href}>
           <Link href={item.href} className={`${lab.panel} ${lab.panelLink}`}>
-            <p className={`${lab.heading3}${mono ? " font-mono" : ""}`}>
+            {/* A real heading, so the card list is navigable by heading. */}
+            <h2 className={`${lab.heading3}${mono ? " font-mono" : ""}`}>
               {item.title}
-            </p>
+            </h2>
             <p className={`mt-1 ${lab.muted}`}>{item.description}</p>
           </Link>
         </li>

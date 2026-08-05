@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Check, Copy } from "lucide-react";
 import { parseJSON, countLines, countKeys, type ParseResult } from "./json";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { LiveStatus } from "@/components/LiveStatus";
 import { lab } from "@/ui/lab";
 
 type ParseIssue = Extract<ParseResult, { ok: false }>;
@@ -68,7 +69,7 @@ function JsonInput({
         rows={20}
         className={`${lab.textareaBase} relative z-10 resize-y ${lab.fieldBorder} ${
           issue
-            ? "border-danger focus:border-danger focus:ring-rose-900/40"
+            ? "border-danger-stroke focus:border-focus focus:ring-focus"
             : ""
         } ${
           hasHighlight
@@ -140,8 +141,16 @@ export function JsonFormatter() {
           Validate
         </button>
 
-        <div className="flex items-center gap-2 ml-2">
-          <span className={`${lab.hint} text-sm`}>Indent</span>
+        {/* Grouped rather than individually labelled: the visible "2"/"4" is
+            the accessible name, and the group supplies the context. */}
+        <div
+          role="group"
+          aria-label="Indent size"
+          className="flex items-center gap-2 ml-2"
+        >
+          <span className={`${lab.hint} text-sm`} aria-hidden="true">
+            Indent
+          </span>
           {[2, 4].map((n) => (
             <button
               key={n}
@@ -164,37 +173,42 @@ export function JsonFormatter() {
         </button>
       </div>
 
-      {/* Status */}
-      {result && (
-        <div className="flex items-center gap-3">
-          {result.ok ? (
-            <span className={lab.badgeOk}>Valid JSON</span>
-          ) : (
-            <span className={lab.badgeBad}>Invalid JSON</span>
-          )}
-          {result.ok && parsedValue !== null && (
-            <span className={lab.hint}>
-              {isArray && `Array · ${countKeys(parsedValue)} items`}
-              {isObject && `Object · ${countKeys(parsedValue)} keys`}
-              {!isArray && !isObject && typeof parsedValue}
-            </span>
-          )}
-          {!result.ok && result.line !== null && (
-            <span className={lab.hint}>
-              line {result.line}, col {result.col}
-            </span>
-          )}
-        </div>
-      )}
+      {/* Status — the wrapper is always mounted so that swapping its contents
+          is announced (a region that appears with its message is missed). */}
+      <div role="status" className="flex items-center gap-3 empty:hidden">
+        {result && (
+          <>
+            {result.ok ? (
+              <span className={lab.badgeOk}>Valid JSON</span>
+            ) : (
+              <span className={lab.badgeBad}>Invalid JSON</span>
+            )}
+            {result.ok && parsedValue !== null && (
+              <span className={lab.hint}>
+                {isArray && `Array · ${countKeys(parsedValue)} items`}
+                {isObject && `Object · ${countKeys(parsedValue)} keys`}
+                {!isArray && !isObject && typeof parsedValue}
+              </span>
+            )}
+            {!result.ok && result.line !== null && (
+              <span className={lab.hint}>
+                line {result.line}, col {result.col}
+              </span>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Error */}
-      {result && !result.ok && (
-        <div className={lab.errorBanner}>
-          <p id="json-error-message" className={lab.errorBannerText}>
-            {result.message}
-          </p>
-        </div>
-      )}
+      <div role="alert" className="empty:hidden">
+        {result && !result.ok && (
+          <div className={lab.errorBanner}>
+            <p id="json-error-message" className={lab.errorBannerText}>
+              {result.message}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Editor panes */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -231,6 +245,7 @@ export function JsonFormatter() {
               </button>
             )}
           </div>
+          <LiveStatus message={copied ? "Output copied to clipboard" : ""} />
           <textarea
             id="json-output"
             value={output}

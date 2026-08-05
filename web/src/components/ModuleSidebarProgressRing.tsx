@@ -34,7 +34,7 @@ export function ModuleSidebarProgressRing({
     >
       <title>{label}</title>
       <circle
-        className="text-zinc-800"
+        className="text-stroke"
         cx={cx}
         cy={cy}
         r={r}

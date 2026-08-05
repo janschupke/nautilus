@@ -38,6 +38,7 @@ export default function HomePage() {
               className={lab.linkExternal}
             >
               {GITHUB_REPO}
+              <span className={lab.srOnly}> (opens in a new tab)</span>
             </a>
           </li>
         </ul>

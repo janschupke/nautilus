@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { parseBigInt, derive, type Params, type Derived } from "./dh";
+import { LiveStatus } from "@/components/LiveStatus";
 import { lab } from "@/ui/lab";
 
 const EXAMPLES: { label: string; params: Params }[] = [
@@ -67,6 +68,7 @@ function Field({
   onSubmit: () => void;
 }) {
   const id = `dh-${meta.key}`;
+  const hintId = `${id}-hint`;
 
   return (
     <div>
@@ -74,9 +76,16 @@ function Field({
         <label className={lab.fieldLabel} htmlFor={id}>
           {meta.label}
         </label>
-        {derived && <span className="text-xs text-accent-fg">derived</span>}
+        {/* "derived" is otherwise conveyed only by the accent text colour. */}
+        {derived && (
+          <span id={`${id}-derived`} className="text-xs text-accent-fg">
+            derived
+          </span>
+        )}
       </div>
-      <p className={`text-xs ${lab.hint} mb-1`}>{meta.hint}</p>
+      <p id={hintId} className={`text-xs ${lab.hint} mb-1`}>
+        {meta.hint}
+      </p>
       <input
         id={id}
         type="text"
@@ -86,6 +95,7 @@ function Field({
         placeholder="integer"
         spellCheck={false}
         autoComplete="off"
+        aria-describedby={derived ? `${id}-derived ${hintId}` : hintId}
         className={`${lab.answerLineInput} ${lab.fieldBorder} ${
           derived ? "text-accent-fg" : ""
         }`}
@@ -170,16 +180,28 @@ export function DHCalculator() {
         </button>
       </div>
 
+      {/* Calculating fills the empty fields in place, which is silent for a
+          screen reader unless it is announced. */}
+      <LiveStatus
+        message={
+          result && result.errors.length === 0
+            ? "Shared secret computed; derived values filled in."
+            : ""
+        }
+      />
+
       {/* Errors */}
-      {result && result.errors.length > 0 && (
-        <div className={`${lab.errorBanner} space-y-1`}>
-          {result.errors.map((e, i) => (
-            <p key={i} className={lab.errorBannerText}>
-              {e}
-            </p>
-          ))}
-        </div>
-      )}
+      <div role="alert" className="empty:hidden">
+        {result && result.errors.length > 0 && (
+          <div className={`${lab.errorBanner} space-y-1`}>
+            {result.errors.map((e, i) => (
+              <p key={i} className={lab.errorBannerText}>
+                {e}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Parameter grid */}
       <div className={lab.panel}>
@@ -276,7 +298,8 @@ export function DHCalculator() {
           result.values.s !== undefined &&
           result.errors.length === 0 && (
             <p className={`mt-3 text-sm text-accent-fg`}>
-              ✓ Shared secret verified — both sides compute the same value.
+              <span aria-hidden="true">✓ </span>Shared secret verified — both
+              sides compute the same value.
             </p>
           )}
       </div>

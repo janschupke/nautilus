@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
+/*
+ * Colour choices here are contrast-audited against the zinc-950 page
+ * background (WCAG 2.1 AA: 4.5:1 for text, 3:1 for UI boundaries and focus
+ * indicators). Ratios are noted per token — re-check before darkening any of
+ * them.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
   --scrollbar-track: #09090b;
-  --scrollbar-thumb: #3f3f46;
-  --scrollbar-thumb-hover: #52525b;
+  --scrollbar-thumb: #71717a; /* zinc-500 — 4.1:1 on the track */
+  --scrollbar-thumb-hover: #a1a1aa; /* zinc-400 */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
@@ -19,15 +21,17 @@
   --color-surface-raised: var(--color-zinc-900);
 
   /* ── Stroke (borders / rings) ── */
-  --color-stroke: var(--color-zinc-800);
-  --color-stroke-muted: var(--color-zinc-700);
+  /* `stroke` is decorative (panel dividers, table gridlines); `stroke-muted`
+     bounds real controls and so must clear 3:1. */
+  --color-stroke: var(--color-zinc-700);
+  --color-stroke-muted: var(--color-zinc-500); /* 4.1:1 */
 
   /* ── Foreground (text) ── */
-  --color-fg: var(--color-zinc-100);
-  --color-fg-soft: var(--color-zinc-300);
-  --color-fg-muted: var(--color-zinc-400);
-  --color-fg-faint: var(--color-zinc-500);
-  --color-fg-disabled: var(--color-zinc-600);
+  --color-fg: var(--color-zinc-100); /* 18.1:1 */
+  --color-fg-soft: var(--color-zinc-300); /* 13.5:1 */
+  --color-fg-muted: var(--color-zinc-400); /* 7.6:1 */
+  --color-fg-faint: var(--color-zinc-400); /* 7.6:1 */
+  --color-fg-disabled: var(--color-zinc-400); /* placeholders are real text */
 
   /* ── Accent (emerald) ── */
   --color-accent: var(--color-emerald-600);
@@ -35,24 +39,32 @@
   --color-accent-stroke: var(--color-emerald-800);
   --color-accent-fg: var(--color-emerald-200);
 
+  /* ── Focus indicator (must clear 3:1 against every backdrop it sits on) ── */
+  --color-focus: var(--color-emerald-400); /* 10.3:1 */
+
   /* ── Danger (rose) ── */
-  --color-danger: var(--color-rose-900);
+  --color-danger: var(--color-rose-900); /* button fill; rose-100 on it = 8:1 */
+  --color-danger-stroke: var(--color-rose-600); /* 4.4:1 — state borders */
   --color-danger-surface: var(--color-rose-950);
   --color-danger-fg: var(--color-rose-200);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: #09090b; /* zinc-950 */
-  color: var(--foreground);
+  background: #09090b; /* zinc-950 — matches --color-surface */
+  color: #f4f4f5; /* zinc-100 — matches --color-fg, 18.1:1 */
   font-size: 1.125rem;
   line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {

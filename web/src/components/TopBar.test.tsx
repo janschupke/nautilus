@@ -14,7 +14,7 @@ describe("TopBar", () => {
   });
 
   it("renders navigation links with expected targets", () => {
-    render(<TopBar onMenuToggle={() => {}} />);
+    render(<TopBar sidebarOpen={false} onMenuToggle={() => {}} />);
     expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute(
       "href",
       "/",
@@ -30,7 +30,7 @@ describe("TopBar", () => {
   });
 
   it("does not render a reset button", () => {
-    render(<TopBar onMenuToggle={() => {}} />);
+    render(<TopBar sidebarOpen={false} onMenuToggle={() => {}} />);
     expect(
       screen.queryByRole("button", { name: /reset/i }),
     ).not.toBeInTheDocument();

@@ -34,7 +34,10 @@ function SolutionParagraph({ children }: { children?: React.ReactNode }) {
 
 function SolutionPre({ children }: { children?: React.ReactNode }) {
   return (
-    <CopyCodeBlock className="mb-4 overflow-x-auto rounded-md border border-zinc-800 bg-black/50 p-4 font-mono text-base text-zinc-100 last:mb-0">
+    <CopyCodeBlock
+      name="code block"
+      className="mb-4 overflow-x-auto rounded-md border border-stroke bg-black/50 p-4 font-mono text-base text-zinc-100 last:mb-0"
+    >
       {children}
     </CopyCodeBlock>
   );
@@ -143,18 +146,23 @@ function SummaryHr() {
 
 function SummaryBlockquote({ children }: { children?: React.ReactNode }) {
   return (
-    <blockquote className="border-l-2 border-emerald-900/60 pl-4 text-lg italic text-zinc-400">
+    <blockquote className="border-l-2 border-accent pl-4 text-lg italic text-zinc-400">
       {children}
     </blockquote>
   );
 }
 
 function SummaryTable({ children }: { children?: React.ReactNode }) {
-  return <LabTable>{children}</LabTable>;
+  return <LabTable caption="Reference table">{children}</LabTable>;
 }
 
 function SummaryTh({ children }: { children?: React.ReactNode }) {
-  return <th className={lab.tableTh}>{children}</th>;
+  // GFM only emits <th> in the header row, so the scope is always columnar.
+  return (
+    <th scope="col" className={lab.tableTh}>
+      {children}
+    </th>
+  );
 }
 
 function SummaryTd({ children }: { children?: React.ReactNode }) {
@@ -174,6 +182,8 @@ function SummaryA({ href, children, ...rest }: ComponentPropsWithoutRef<"a">) {
       {...rest}
     >
       {children}
+      {/* Warn before the link steals the tab away. */}
+      {external && <span className={lab.srOnly}> (opens in a new tab)</span>}
     </a>
   );
 }

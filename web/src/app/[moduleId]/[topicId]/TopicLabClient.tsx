@@ -87,27 +87,29 @@ export function TopicLabClient({ moduleId, topic }: TopicLabClientProps) {
       {topic.summaryMarkdown ? (
         <section className={lab.moduleSummarySection}>
           <div className={lab.panel}>
-            <button
-              type="button"
-              id={summaryHeadingId}
-              className={lab.questionAccordionTrigger}
-              aria-expanded={summaryExpanded}
-              aria-controls={summaryPanelId}
-              onClick={() => {
-                setSummaryExpanded((open) => {
-                  const next = !open;
-                  setTopicSummaryCollapsed(topic.id, !next);
-                  return next;
-                });
-              }}
-            >
-              <span className={lab.questionAccordionChevron} aria-hidden>
-                {summaryExpanded ? "▼" : "▶"}
-              </span>
-              <span className={`flex-1 text-left ${lab.heading2}`}>
-                Topic summary
-              </span>
-            </button>
+            <h2>
+              <button
+                type="button"
+                id={summaryHeadingId}
+                className={lab.questionAccordionTrigger}
+                aria-expanded={summaryExpanded}
+                aria-controls={summaryPanelId}
+                onClick={() => {
+                  setSummaryExpanded((open) => {
+                    const next = !open;
+                    setTopicSummaryCollapsed(topic.id, !next);
+                    return next;
+                  });
+                }}
+              >
+                <span className={lab.questionAccordionChevron} aria-hidden>
+                  {summaryExpanded ? "▼" : "▶"}
+                </span>
+                <span className={`flex-1 text-left ${lab.heading2}`}>
+                  Topic summary
+                </span>
+              </button>
+            </h2>
             <div
               id={summaryPanelId}
               role="region"
@@ -144,7 +146,10 @@ export function TopicLabClient({ moduleId, topic }: TopicLabClientProps) {
       </div>
 
       {/* Prev / next navigation */}
-      <div className="flex items-center justify-between gap-4 border-t border-stroke pt-6">
+      <nav
+        aria-label="Topic navigation"
+        className="flex items-center justify-between gap-4 border-t border-stroke pt-6"
+      >
         <Link
           href={prevHref}
           className={`${lab.btnGhost} flex items-center gap-2`}
@@ -161,7 +166,7 @@ export function TopicLabClient({ moduleId, topic }: TopicLabClientProps) {
             <span aria-hidden>→</span>
           </Link>
         )}
-      </div>
+      </nav>
     </div>
   );
 }

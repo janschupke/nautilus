@@ -41,19 +41,22 @@ export function ResetProgressModal({
       closeDisabled={confirmPending}
     >
       <p className={lab.modalBody}>{body}</p>
+      {/* `aria-disabled` rather than `disabled`: disabling the button the user
+          just activated would drop focus to <body> mid-interaction, and a
+          disabled control's aria-busy is not announced. */}
       <div className={lab.modalActions}>
         <button
           type="button"
-          className={lab.btnGhostSm}
-          disabled={confirmPending}
-          onClick={onClose}
+          className={`${lab.btnGhostSm}${confirmPending ? " pointer-events-none opacity-45" : ""}`}
+          aria-disabled={confirmPending || undefined}
+          onClick={confirmPending ? undefined : onClose}
         >
           Cancel
         </button>
         <button
           type="button"
-          className={lab.btnDanger}
-          disabled={confirmPending}
+          className={`${lab.btnDanger}${confirmPending ? " cursor-wait opacity-55" : ""}`}
+          aria-disabled={confirmPending || undefined}
           aria-busy={confirmPending ? true : undefined}
           onClick={() => void handleConfirm()}
         >

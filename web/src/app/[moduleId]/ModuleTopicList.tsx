@@ -29,7 +29,7 @@ export function ModuleTopicList({ moduleId, topics }: ModuleTopicListProps) {
               href={`/${moduleId}/${topic.id}`}
               className={`${lab.panel} ${lab.panelLink} flex items-center justify-between gap-4`}
             >
-              <span className={lab.heading3}>{topic.label}</span>
+              <h2 className={lab.heading3}>{topic.label}</h2>
               {counts && (
                 <ModuleSidebarProgressRing
                   correct={counts.correct}

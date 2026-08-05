@@ -1,3 +1,4 @@
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { lab } from "@/ui/lab";
 
 /**
@@ -8,15 +9,22 @@ import { lab } from "@/ui/lab";
 export function LabTable({
   children,
   className,
+  caption,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Names the table and its scroll region for screen readers. */
+  caption?: string;
 }) {
   return (
-    <div
-      className={`overflow-x-auto rounded-md border border-zinc-800 ${className ?? ""}`}
+    <ScrollRegion
+      label={caption ?? "Table"}
+      className={`border border-stroke ${className ?? ""}`}
     >
-      <table className={lab.table}>{children}</table>
-    </div>
+      <table className={lab.table}>
+        {caption && <caption className={lab.srOnly}>{caption}</caption>}
+        {children}
+      </table>
+    </ScrollRegion>
   );
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useId, useMemo, useRef, useSyncExternalStore } from "react";
 import nautilusLogo from "@/app/logo.png";
 import {
   MANIFEST,
@@ -30,16 +30,33 @@ import {
   moduleIdFromPathname,
   topicRouteFromPathname,
 } from "@/lib/module-pathname";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { scrollBehavior } from "@/lib/motion";
 import { lab } from "@/ui/lab";
+
+/** Target of the top bar hamburger's `aria-controls`. */
+export const SIDEBAR_ID = "course-navigation";
 
 type ModuleSidebarProps = {
   isOpen: boolean;
+  /** At `md` and up the sidebar is permanent, not an overlay drawer. */
+  isDesktop: boolean;
   onClose: () => void;
 };
 
-export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
+export function ModuleSidebar({
+  isOpen,
+  isDesktop,
+  onClose,
+}: ModuleSidebarProps) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  const listIdBase = useId();
+  // As an overlay drawer it behaves like a dialog: focus is confined while
+  // open and Escape dismisses it.
+  const isDrawerOpen = !isDesktop && isOpen;
+  useFocusTrap(asideRef, isDrawerOpen);
   const modulesRaw = useSyncExternalStore(
     subscribeSidebarModules,
     readSidebarModulesSnapshot,
@@ -82,6 +99,18 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
   }, [pathname]);
 
   useEffect(() => {
+    if (!isDrawerOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isDrawerOpen, onClose]);
+
+  useEffect(() => {
     if (!navRef.current) return;
     const topicId = pendingScrollTopicRef.current;
     if (topicId) {
@@ -89,7 +118,7 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
         `[data-sidebar-topic="${CSS.escape(topicId)}"]`,
       );
       if (el) {
-        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        el.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
         pendingScrollTopicRef.current = null;
       }
       return;
@@ -100,7 +129,7 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
         `[data-sidebar-module="${CSS.escape(moduleId)}"]`,
       );
       if (el) {
-        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        el.scrollIntoView({ block: "nearest", behavior: scrollBehavior() });
         pendingScrollModuleRef.current = null;
       }
     }
@@ -108,6 +137,13 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
 
   return (
     <aside
+      ref={asideRef}
+      id={SIDEBAR_ID}
+      tabIndex={-1}
+      aria-label="Course navigation"
+      // Off-canvas but still in the DOM: without `inert` a keyboard user tabs
+      // through ~80 invisible links.
+      inert={!isDesktop && !isOpen}
       className={`fixed inset-y-0 left-0 z-40 flex w-80 shrink-0 flex-col border-r border-stroke bg-surface text-lg transition-transform duration-200 ease-in-out md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       <div className={lab.sidebarHeader}>
@@ -122,27 +158,41 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
           />
         </Link>
       </div>
-      <div className="flex flex-col border-b border-stroke p-2 md:hidden">
+      <nav
+        aria-label="Site sections"
+        className="flex flex-col border-b border-stroke p-2 md:hidden"
+      >
         {[
           { href: "/", label: "Home" },
           { href: "/lab-setup", label: "Lab setup" },
           { href: "/stats", label: "Stats" },
           { href: "/tools", label: "Tools" },
           { href: "/rtfm", label: "RTFM" },
-        ].map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`${lab.navLink} ${pathname === href || (href !== "/" && pathname.startsWith(href)) ? lab.navLinkActive : ""}`}
-          >
-            <span className={lab.navModuleTitle}>{label}</span>
-          </Link>
-        ))}
-      </div>
-      <nav ref={navRef} className="min-h-0 flex-1 overflow-y-auto p-2">
+        ].map(({ href, label }) => {
+          const active =
+            pathname === href || (href !== "/" && pathname.startsWith(href));
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={`${lab.navLink} ${active ? lab.navLinkActive : ""}`}
+            >
+              <span className={lab.navModuleTitle}>{label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+      <nav
+        ref={navRef}
+        aria-label="Modules"
+        className="min-h-0 flex-1 overflow-y-auto p-2"
+      >
         {MANIFEST.modules.map((mod, modIndex) => {
           const collapsed = collapsedIds.has(mod.id);
           const moduleActive = activeModulePageId === mod.id;
+          const moduleLabel = `${formatModuleIndex(modIndex)} — ${mod.title}`;
+          const topicListId = `${listIdBase}-${mod.id}`;
           return (
             <div key={mod.id} className="mb-5">
               {/* Module header: caret toggle on left, link to summary on right */}
@@ -152,75 +202,82 @@ export function ModuleSidebar({ isOpen, onClose }: ModuleSidebarProps) {
               >
                 <button
                   type="button"
-                  aria-label={collapsed ? "Expand module" : "Collapse module"}
+                  // Naming the module matters: a screen reader listing buttons
+                  // would otherwise hear "Expand module" eight times.
+                  aria-label={`${collapsed ? "Expand" : "Collapse"} ${moduleLabel}`}
                   aria-expanded={!collapsed}
+                  aria-controls={topicListId}
                   onClick={() => toggleSidebarModuleCollapsed(mod.id)}
-                  className="shrink-0 rounded-md px-2 py-1.5 text-fg-faint outline-none hover:bg-surface-raised hover:text-fg-soft focus-visible:ring-2 focus-visible:ring-accent-stroke/80"
+                  className={`shrink-0 rounded-md px-2 py-1.5 text-fg-faint hover:bg-surface-raised hover:text-fg-soft ${lab.focusRing}`}
                 >
                   <span aria-hidden>{collapsed ? "▸" : "▾"}</span>
                 </button>
                 <Link
                   href={`/${mod.id}`}
+                  aria-current={moduleActive ? "page" : undefined}
                   className={`${lab.navCategoryToggle} flex-1 ${moduleActive ? lab.navCategoryActive : ""}`}
                 >
-                  <span className="min-w-0 flex-1">
-                    {formatModuleIndex(modIndex)} — {mod.title}
-                  </span>
+                  <span className="min-w-0 flex-1">{moduleLabel}</span>
                 </Link>
               </div>
 
-              {!collapsed ? (
-                <ul className="space-y-1">
-                  {mod.topics.map((topic) => {
-                    const { id, label } = topic;
-                    const href = `/${mod.id}/${id}`;
-                    const active = activeTopicId === id;
-                    const enabled = topicHasInteractiveContent(id);
-                    const fullyCorrect =
-                      enabled && isTopicFullyCorrect(progress, id);
-                    const linkClass = active
-                      ? fullyCorrect
-                        ? lab.navLinkActiveComplete
-                        : lab.navLinkActive
-                      : fullyCorrect
-                        ? lab.navLinkComplete
-                        : lab.navLink;
-                    const progressCounts = enabled
-                      ? getTopicLabProgressCounts(progress, id)
-                      : null;
-                    const showProgressRing =
-                      Boolean(progressCounts) &&
-                      topicHasAnswerChecks(progress, id);
-                    return (
-                      <li key={id}>
-                        {enabled ? (
-                          <Link
-                            href={href}
-                            className={linkClass}
-                            data-sidebar-topic={id}
-                          >
-                            <span className={lab.navModuleTitle}>{label}</span>
-                            {showProgressRing && progressCounts ? (
-                              <ModuleSidebarProgressRing
-                                correct={progressCounts.correct}
-                                total={progressCounts.total}
-                              />
-                            ) : null}
-                          </Link>
-                        ) : (
-                          <span
-                            className={lab.navLinkDisabled}
-                            data-sidebar-topic={id}
-                            title="Web exercises not available for this topic yet"
-                          >
-                            <span className={lab.navModuleTitle}>{label}</span>
+              {/* Rendered even when collapsed (just `hidden`) so the caret's
+                  aria-controls always resolves to a real element. */}
+              <ul id={topicListId} hidden={collapsed} className="space-y-1">
+                {mod.topics.map((topic) => {
+                  const { id, label } = topic;
+                  const href = `/${mod.id}/${id}`;
+                  const active = activeTopicId === id;
+                  const enabled = topicHasInteractiveContent(id);
+                  const fullyCorrect =
+                    enabled && isTopicFullyCorrect(progress, id);
+                  const linkClass = active
+                    ? fullyCorrect
+                      ? lab.navLinkActiveComplete
+                      : lab.navLinkActive
+                    : fullyCorrect
+                      ? lab.navLinkComplete
+                      : lab.navLink;
+                  const progressCounts = enabled
+                    ? getTopicLabProgressCounts(progress, id)
+                    : null;
+                  const showProgressRing =
+                    Boolean(progressCounts) &&
+                    topicHasAnswerChecks(progress, id);
+                  return (
+                    <li key={id}>
+                      {enabled ? (
+                        <Link
+                          href={href}
+                          aria-current={active ? "page" : undefined}
+                          className={linkClass}
+                          data-sidebar-topic={id}
+                        >
+                          <span className={lab.navModuleTitle}>{label}</span>
+                          {showProgressRing && progressCounts ? (
+                            <ModuleSidebarProgressRing
+                              correct={progressCounts.correct}
+                              total={progressCounts.total}
+                            />
+                          ) : null}
+                        </Link>
+                      ) : (
+                        // Not a link: the status is spelled out rather than
+                        // left to the colour and the `title` tooltip.
+                        <span
+                          className={lab.navLinkDisabled}
+                          data-sidebar-topic={id}
+                        >
+                          <span className={lab.navModuleTitle}>{label}</span>
+                          <span className={lab.srOnly}>
+                            — web exercises not available yet
                           </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : null}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           );
         })}

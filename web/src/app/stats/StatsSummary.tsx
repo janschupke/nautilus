@@ -12,6 +12,7 @@ import {
 } from "@/lib/summarize-lab-progress";
 import { ResetProgressModal } from "@/components/ResetProgressModal";
 import { ProgressBar } from "@/components/ProgressBar";
+import { LiveStatus } from "@/components/LiveStatus";
 import { formatModuleIndex } from "@/lib/format";
 import { lab } from "@/ui/lab";
 
@@ -53,6 +54,7 @@ function ModuleCard({
         <button
           type="button"
           onClick={onReset}
+          aria-label={`Reset ${title}`}
           className={`relative z-10 ${lab.btnDangerSm}`}
         >
           Reset
@@ -80,7 +82,12 @@ function ModuleCard({
         </span>
       </div>
 
-      <ProgressBar correct={correct} incorrect={incorrect} total={total} />
+      <ProgressBar
+        correct={correct}
+        incorrect={incorrect}
+        total={total}
+        label={`${title} progress`}
+      />
 
       <p className={`text-right text-xs ${lab.hint}`}>
         {correct}/{total} answered correctly
@@ -91,6 +98,9 @@ function ModuleCard({
 
 export function StatsSummary({ modules }: StatsSummaryProps) {
   const [resetTarget, setResetTarget] = useState<ResetTarget | null>(null);
+  // Resetting only changes numbers already on screen, so the outcome needs to
+  // be spoken explicitly (WCAG 4.1.3).
+  const [resetMessage, setResetMessage] = useState("");
 
   const progress = useLabProgressStore();
 
@@ -114,8 +124,13 @@ export function StatsSummary({ modules }: StatsSummaryProps) {
 
   return (
     <>
+      <LiveStatus message={resetMessage} />
+
       {/* Aggregate bar */}
-      <div className={lab.panel}>
+      <section className={lab.panel} aria-labelledby="stats-overall-heading">
+        <h2 id="stats-overall-heading" className={lab.srOnly}>
+          Overall progress
+        </h2>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className={lab.statsLabel}>
             {aggregate.correct} / {aggregate.totalQuestions} questions correct
@@ -134,11 +149,13 @@ export function StatsSummary({ modules }: StatsSummaryProps) {
             correct={aggregate.correct}
             incorrect={aggregate.incorrect}
             total={aggregate.totalQuestions}
+            label="Overall progress"
           />
         </div>
-      </div>
+      </section>
 
       {/* Per-module cards */}
+      <h2 className={lab.srOnly}>Progress by module</h2>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {moduleSummaries.map((s, i) => (
           <ModuleCard
@@ -166,8 +183,10 @@ export function StatsSummary({ modules }: StatsSummaryProps) {
           if (!resetTarget) return;
           if (resetTarget.kind === "all") {
             clearAllProgress();
+            setResetMessage("All progress reset.");
           } else {
             clearTopicsProgress(resetTarget.topicIds);
+            setResetMessage(`Progress reset for ${resetTarget.title}.`);
           }
         }}
         title={

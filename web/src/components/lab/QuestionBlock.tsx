@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { LabQuestion, QuestionResult } from "@/lib/types";
 import { LabMarkdown } from "@/components/markdown/LabMarkdown";
+import { LiveStatus } from "@/components/LiveStatus";
 import { Modal } from "@/components/Modal";
 import { resolveAnswerFormat } from "@/lib/lab-answer-format";
 import { lab, labLineInputClasses, labTextareaClasses } from "@/ui/lab";
@@ -74,25 +75,43 @@ export function QuestionBlock({
   const answerLabel =
     answerFormat === "line" ? "Your answer" : "Your answer (stdout)";
 
+  // The badge lives inside the accordion trigger, whose children screen
+  // readers treat as presentational — the outcome needs its own live region.
+  // Wording is intentionally not the bare word the badge uses, so that tests
+  // and users querying visible text still match exactly one node.
+  const resultMessage =
+    result === "correct"
+      ? `Question ${index + 1} answer is correct.`
+      : result === "incorrect"
+        ? `Question ${index + 1} answer is incorrect.`
+        : "";
+
   return (
     <>
       <section className={lab.panel} aria-labelledby={headingId}>
-        <button
-          type="button"
-          id={headingId}
-          className={lab.questionAccordionTrigger}
-          aria-expanded={isExpanded}
-          aria-controls={panelId}
-          onClick={onToggle}
-        >
-          <span className={lab.questionAccordionChevron} aria-hidden>
-            {isExpanded ? "▼" : "▶"}
-          </span>
-          <span className={`flex-1 ${lab.heading3}`}>Question {index + 1}</span>
-          <span className="shrink-0">
-            <ResultBadge result={result} />
-          </span>
-        </button>
+        {/* Real heading so questions are reachable by heading navigation. */}
+        <h3>
+          <button
+            type="button"
+            id={headingId}
+            className={lab.questionAccordionTrigger}
+            aria-expanded={isExpanded}
+            aria-controls={panelId}
+            onClick={onToggle}
+          >
+            <span className={lab.questionAccordionChevron} aria-hidden>
+              {isExpanded ? "▼" : "▶"}
+            </span>
+            <span className={`flex-1 ${lab.heading3}`}>
+              Question {index + 1}
+            </span>
+            <span className="shrink-0">
+              <ResultBadge result={result} />
+            </span>
+          </button>
+        </h3>
+
+        <LiveStatus message={resultMessage} />
 
         <div
           id={panelId}
@@ -113,6 +132,7 @@ export function QuestionBlock({
               type="text"
               className={labLineInputClasses(result)}
               value={lineDraft}
+              aria-invalid={result === "incorrect" || undefined}
               disabled={checkPending}
               onChange={(e) => {
                 const v = e.target.value.split(/\r\n|\n|\r/)[0] ?? "";
@@ -133,6 +153,7 @@ export function QuestionBlock({
               className={labTextareaClasses(result)}
               rows={8}
               value={draft}
+              aria-invalid={result === "incorrect" || undefined}
               disabled={checkPending}
               onChange={(e) => onDraftChange(e.target.value)}
               onKeyDown={(e) => {

@@ -117,7 +117,8 @@ test.describe("tools pages", () => {
         page.getByLabel("Base network"),
         page.getByRole("button", { name: "Plan", exact: true }),
         page.getByRole("button", { name: "Add subnet" }),
-        page.getByRole("button", { name: "Remove subnet" }).first(),
+        // Remove buttons are named after their row ("Remove Management").
+        page.getByRole("button", { name: /^Remove / }).first(),
       ],
       44,
     );

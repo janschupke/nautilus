@@ -1,4 +1,5 @@
 import type {
+  HotkeysFileV1,
   ProgressFileV1,
   QuestionResult,
   SidebarModulesFileV1,
@@ -7,13 +8,16 @@ import type {
 
 const STORAGE_KEY = "nautilus-lab-progress-v1";
 export const SIDEBAR_CATEGORIES_KEY = "nautilus-sidebar-categories-v1";
+export const HOTKEYS_KEY = "nautilus-hotkeys-v1";
 const TOPIC_SUMMARY_KEY = "nautilus-topic-summary-v1";
 
 const PROGRESS_VERSION = 1 as const;
 const SIDEBAR_VERSION = 1 as const;
+const HOTKEYS_VERSION = 1 as const;
 
 const PROGRESS_CHANGE_EVENT = "lab-progress-change";
 const SIDEBAR_CATEGORIES_CHANGE_EVENT = "sidebar-categories-change";
+const HOTKEYS_CHANGE_EVENT = "hotkeys-change";
 
 export const DEFAULT_SIDEBAR_MODULES_SNAPSHOT = JSON.stringify({
   version: SIDEBAR_VERSION,
@@ -232,6 +236,57 @@ export function readSidebarModulesSnapshot(): string {
 export const subscribeSidebarModules = makeStorageSubscriber(
   SIDEBAR_CATEGORIES_CHANGE_EVENT,
 );
+
+export const DEFAULT_HOTKEYS_SNAPSHOT = JSON.stringify({
+  version: HOTKEYS_VERSION,
+  enabled: true,
+} satisfies HotkeysFileV1);
+
+/** Corrupt or absent storage means "enabled" — the shortcuts ship on. */
+export function parseHotkeysRaw(raw: string | null): HotkeysFileV1 {
+  if (!raw) return { version: HOTKEYS_VERSION, enabled: true };
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      (parsed as HotkeysFileV1).version === HOTKEYS_VERSION &&
+      typeof (parsed as HotkeysFileV1).enabled === "boolean"
+    ) {
+      return parsed as HotkeysFileV1;
+    }
+  } catch {
+    // ignore corrupt storage
+  }
+  return { version: HOTKEYS_VERSION, enabled: true };
+}
+
+export function loadHotkeys(): HotkeysFileV1 {
+  if (typeof window === "undefined") {
+    return { version: HOTKEYS_VERSION, enabled: true };
+  }
+  return parseHotkeysRaw(window.localStorage.getItem(HOTKEYS_KEY));
+}
+
+export function setHotkeysEnabled(enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    HOTKEYS_KEY,
+    JSON.stringify({
+      version: HOTKEYS_VERSION,
+      enabled,
+    } satisfies HotkeysFileV1),
+  );
+  window.dispatchEvent(new Event(HOTKEYS_CHANGE_EVENT));
+}
+
+/** String snapshot for `useSyncExternalStore` (stable when storage unchanged). */
+export function readHotkeysSnapshot(): string {
+  if (typeof window === "undefined") return DEFAULT_HOTKEYS_SNAPSHOT;
+  return window.localStorage.getItem(HOTKEYS_KEY) ?? DEFAULT_HOTKEYS_SNAPSHOT;
+}
+
+export const subscribeHotkeys = makeStorageSubscriber(HOTKEYS_CHANGE_EVENT);
 
 export function setQuestionResult(
   state: ProgressFileV1,

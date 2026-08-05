@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import nautilusIcon from "@/app/icon.png";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { SIDEBAR_ID } from "@/components/ModuleSidebar";
 import { lab } from "@/ui/lab";
 
 function NavLink({
@@ -19,6 +21,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       className={`${lab.btnGhost} ${active ? lab.btnGhostActive : ""}`}
     >
       {label}
@@ -27,32 +30,41 @@ function NavLink({
 }
 
 type TopBarProps = {
+  sidebarOpen: boolean;
   onMenuToggle: () => void;
 };
 
-export function TopBar({ onMenuToggle }: TopBarProps) {
+export function TopBar({ sidebarOpen, onMenuToggle }: TopBarProps) {
   const pathname = usePathname();
 
   return (
     <header className={lab.topBar}>
       <button
         type="button"
-        aria-label="Toggle menu"
+        aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
+        aria-expanded={sidebarOpen}
+        aria-controls={SIDEBAR_ID}
         onClick={onMenuToggle}
         className={`${lab.iconButton} md:hidden`}
       >
         <Menu size={20} />
       </button>
-      <Link href="/" className="ml-3 mr-auto md:hidden">
+      <Link
+        href="/"
+        className={`ml-3 mr-auto rounded-md md:hidden ${lab.focusRing}`}
+      >
         <Image
           src={nautilusIcon}
-          alt="Nautilus"
+          alt="Nautilus home"
           width={46}
           height={32}
           className="opacity-80"
         />
       </Link>
-      <div className={`${lab.topBarActions} hidden md:flex`}>
+      <nav
+        aria-label="Primary"
+        className={`${lab.topBarActions} hidden md:flex`}
+      >
         <NavLink href="/" label="Home" active={pathname === "/"} />
         <NavLink
           href="/lab-setup"
@@ -70,6 +82,9 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
           label="RTFM"
           active={pathname.startsWith("/rtfm")}
         />
+      </nav>
+      <div className="ml-2 flex shrink-0 items-center">
+        <KeyboardShortcuts />
       </div>
     </header>
   );

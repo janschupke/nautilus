@@ -47,3 +47,12 @@ export type SidebarModulesFileV1 = {
   version: 1;
   collapsed: string[];
 };
+
+/**
+ * Whether the single-key navigation shortcuts are active. WCAG 2.1.4 requires
+ * unmodified character shortcuts to be switchable off; they stay on by default.
+ */
+export type HotkeysFileV1 = {
+  version: 1;
+  enabled: boolean;
+};

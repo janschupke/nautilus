@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { MANIFEST } from "@/content/manifest";
 import { useHotkeys } from "@/hooks/use-hotkeys";
+import { useHotkeysEnabled } from "@/hooks/use-hotkeys-enabled";
 import {
   moduleIdFromPathname,
   topicRouteFromPathname,
@@ -26,6 +27,9 @@ const FLAT_NAV: NavItem[] = MANIFEST.modules.flatMap((mod) => [
 export function NavHotkeys() {
   const router = useRouter();
   const pathname = usePathname();
+  // Unmodified character shortcuts must be switchable off (WCAG 2.1.4); the
+  // switch lives in the keyboard-shortcuts dialog.
+  const enabled = useHotkeysEnabled();
 
   const modId = moduleIdFromPathname(pathname);
   const route = topicRouteFromPathname(pathname);
@@ -36,7 +40,7 @@ export function NavHotkeys() {
       : item.topicId === route?.topicId,
   );
 
-  useHotkeys([
+  const hotkeys = [
     // ── Letter shortcuts for top-bar pages ──────────────────────
     { key: "h", action: () => router.push("/") },
     { key: "l", action: () => router.push("/lab-setup") },
@@ -62,7 +66,9 @@ export function NavHotkeys() {
         router.push(FLAT_NAV[prev]!.href);
       },
     })),
-  ]);
+  ];
+
+  useHotkeys(enabled ? hotkeys : []);
 
   return null;
 }

@@ -46,9 +46,24 @@ function Code({ children }: { children: React.ReactNode }) {
   return <code className={lab.docCode}>{children}</code>;
 }
 
-function Cmd({ children }: { children: string }) {
+/**
+ * Names the block after the command it holds, so the page's many copy buttons
+ * are distinguishable ("Copy docker compose command", not 18× "Copy code").
+ */
+function commandName(command: string): string {
+  const words = command.trim().split("\n")[0]?.split(/\s+/) ?? [];
+  const significant = words.filter((w) => !w.startsWith("-")).slice(0, 2);
+  return significant.length > 0
+    ? `${significant.join(" ")} command`
+    : "command";
+}
+
+function Cmd({ children, name }: { children: string; name?: string }) {
   return (
-    <CopyCodeBlock className="mt-3 overflow-x-auto rounded-md border border-zinc-800 bg-black/50 px-4 py-3 font-mono text-sm text-zinc-100">
+    <CopyCodeBlock
+      name={name ?? commandName(children)}
+      className="mt-3 overflow-x-auto rounded-md border border-stroke bg-black/50 px-4 py-3 font-mono text-sm text-zinc-100"
+    >
       {children}
     </CopyCodeBlock>
   );
@@ -120,12 +135,18 @@ docker compose up -d`}</Cmd>
           Containers share a bridge network at <Code>10.78.8.0/24</Code>. Each
           host has a fixed IP and a role:
         </p>
-        <LabTable className="mt-4">
+        <LabTable className="mt-4" caption="Lab hosts, addresses and roles">
           <thead>
             <tr>
-              <th className={lab.tableTh}>IP</th>
-              <th className={lab.tableTh}>Host</th>
-              <th className={lab.tableTh}>Purpose</th>
+              <th scope="col" className={lab.tableTh}>
+                IP
+              </th>
+              <th scope="col" className={lab.tableTh}>
+                Host
+              </th>
+              <th scope="col" className={lab.tableTh}>
+                Purpose
+              </th>
             </tr>
           </thead>
           <tbody>
