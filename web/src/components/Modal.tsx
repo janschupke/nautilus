@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { lab } from "@/ui/lab";
 
 type ModalProps = {
@@ -57,6 +58,7 @@ export function Modal({
   }, [open]);
 
   useFocusTrap(cardRef, open);
+  useScrollLock(open);
 
   if (!open || !mounted) return null;
 

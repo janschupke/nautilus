@@ -31,6 +31,7 @@ import {
   topicRouteFromPathname,
 } from "@/lib/module-pathname";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { scrollIntoViewNearest } from "@/lib/motion";
 import { lab } from "@/ui/lab";
 
@@ -57,6 +58,7 @@ export function ModuleSidebar({
   // open and Escape dismisses it.
   const isDrawerOpen = !isDesktop && isOpen;
   useFocusTrap(asideRef, isDrawerOpen);
+  useScrollLock(isDrawerOpen);
   const modulesRaw = useSyncExternalStore(
     subscribeSidebarModules,
     readSidebarModulesSnapshot,

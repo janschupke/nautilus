@@ -49,12 +49,19 @@
   --color-danger-fg: var(--color-rose-200);
 }
 
-/* The document is the only scroller. Padding keeps anchor and focus targets
-   clear of the sticky h-16 top bar (WCAG 2.4.11); the stable gutter stops the
-   layout shifting as the scrollbar comes and goes between pages. */
+/* The document is the only scroller. The stable gutter stops the layout
+   shifting as the scrollbar comes and goes (between pages, and when an overlay
+   locks scrolling). */
 html {
-  scroll-padding-top: 4rem;
   scrollbar-gutter: stable;
+}
+
+/* Keeps anchor and focus targets clear of the sticky h-16 top bar (WCAG
+   2.4.11). A margin on the content, not `scroll-padding` on <html>: padding
+   also applies to the top bar's own controls, so focusing one (e.g. a dialog
+   handing focus back to its trigger) would scroll the page. */
+#main * {
+  scroll-margin-top: 4rem;
 }
 
 body {
