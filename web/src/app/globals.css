@@ -49,6 +49,14 @@
   --color-danger-fg: var(--color-rose-200);
 }
 
+/* The document is the only scroller. Padding keeps anchor and focus targets
+   clear of the sticky h-16 top bar (WCAG 2.4.11); the stable gutter stops the
+   layout shifting as the scrollbar comes and goes between pages. */
+html {
+  scroll-padding-top: 4rem;
+  scrollbar-gutter: stable;
+}
+
 body {
   background: #09090b; /* zinc-950 — matches --color-surface */
   color: #f4f4f5; /* zinc-100 — matches --color-fg, 18.1:1 */

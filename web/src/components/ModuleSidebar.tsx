@@ -145,7 +145,7 @@ export function ModuleSidebar({
       // Off-canvas but still in the DOM: without `inert` a keyboard user tabs
       // through ~80 invisible links.
       inert={!isDesktop && !isOpen}
-      className={`fixed inset-y-0 left-0 z-40 flex w-80 shrink-0 flex-col border-r border-stroke bg-surface text-lg transition-transform duration-200 ease-in-out md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`fixed inset-y-0 left-0 z-40 flex w-80 shrink-0 flex-col border-r border-stroke bg-surface text-lg transition-transform duration-200 ease-in-out md:sticky md:inset-auto md:top-0 md:h-dvh md:z-auto md:translate-x-0 md:transition-none ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       <div className={lab.sidebarHeader}>
         <Link href="/" className={lab.sidebarHomeLink}>
@@ -187,7 +187,9 @@ export function ModuleSidebar({
       <nav
         ref={navRef}
         aria-label="Modules"
-        className="min-h-0 flex-1 overflow-y-auto p-2"
+        // `relative` so the sr-only spans below are clipped by this scroller
+        // rather than stretching the page.
+        className="relative min-h-0 flex-1 overflow-y-auto p-2"
       >
         {MANIFEST.modules.map((mod, modIndex) => {
           const collapsed = collapsedIds.has(mod.id);

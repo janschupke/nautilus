@@ -35,8 +35,9 @@ export const lab = {
   /** Keyboard-operable wrapper for horizontally scrolling content (WCAG 2.1.1). */
   scrollRegion: `overflow-x-auto rounded-md ${focusRing}`,
 
-  shell: "bg-decoration flex h-screen overflow-hidden text-fg",
-  main: "min-h-0 flex-1 overflow-y-auto p-6 text-lg leading-relaxed lg:p-10",
+  /** The document is the scroller; the top bar and desktop sidebar are sticky. */
+  shell: "bg-decoration flex min-h-dvh text-fg",
+  main: "flex-1 p-6 text-lg leading-relaxed lg:p-10",
   content: "mx-auto max-w-6xl space-y-10 pb-16",
 
   sidebar:
@@ -63,7 +64,7 @@ export const lab = {
     "flex min-w-0 w-full cursor-not-allowed items-center gap-2 rounded-md px-2 py-2 text-base text-fg-disabled",
 
   topBar:
-    "flex h-16 shrink-0 items-center justify-end border-b border-stroke bg-surface/80 px-5 text-lg backdrop-blur",
+    "sticky top-0 z-20 flex h-16 shrink-0 items-center justify-end border-b border-stroke bg-surface/80 px-5 text-lg backdrop-blur",
   topBarActions: "flex shrink-0 items-center gap-2",
 
   docSection: "mt-10 space-y-3",
